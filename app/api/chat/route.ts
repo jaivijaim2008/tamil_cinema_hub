@@ -20,26 +20,6 @@ You can help with:
 
 const providers = [
   {
-    name: 'Groq',
-    call: async (messages: any[]) => {
-      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'llama-3.1-8b-instant',
-          messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
-          max_tokens: 1024,
-        }),
-      })
-      if (!res.ok) throw new Error(`Groq error: ${res.status}`)
-      const data = await res.json()
-      return data.choices[0].message.content
-    }
-  },
-  {
     name: 'Gemini',
     call: async (messages: any[]) => {
       const res = await fetch(
@@ -59,6 +39,26 @@ const providers = [
       if (!res.ok) throw new Error(`Gemini error: ${res.status}`)
       const data = await res.json()
       return data.candidates[0].content.parts[0].text
+    }
+  },
+  {
+    name: 'Groq',
+    call: async (messages: any[]) => {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'llama-3.1-8b-instant',
+          messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
+          max_tokens: 1024,
+        }),
+      })
+      if (!res.ok) throw new Error(`Groq error: ${res.status}`)
+      const data = await res.json()
+      return data.choices[0].message.content
     }
   },
   {
@@ -164,6 +164,7 @@ export async function POST(req: NextRequest) {
   const { messages } = await req.json()
   const errors: string[] = []
 
+  // First attempt
   for (const provider of providers) {
     try {
       console.log(`Trying ${provider.name}...`)
@@ -177,6 +178,23 @@ export async function POST(req: NextRequest) {
       const msg = `${provider.name} failed: ${err.message}`
       console.warn(msg)
       errors.push(msg)
+      await new Promise(r => setTimeout(r, 300))
+      continue
+    }
+  }
+
+  // Auto retry after 2 seconds
+  console.log('All failed, retrying in 2s...')
+  await new Promise(r => setTimeout(r, 2000))
+
+  for (const provider of providers) {
+    try {
+      const reply = await provider.call(messages)
+      if (reply && reply.trim().length > 0) {
+        console.log(`Retry success with ${provider.name}`)
+        return NextResponse.json({ reply, provider: provider.name })
+      }
+    } catch {
       continue
     }
   }
