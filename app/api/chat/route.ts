@@ -29,7 +29,7 @@ const providers = [
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'llama3-8b-8192',
+          model: 'llama-3.1-8b-instant',
           messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
           max_tokens: 1024,
         }),
@@ -43,7 +43,7 @@ const providers = [
     name: 'Gemini',
     call: async (messages: any[]) => {
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -89,9 +89,11 @@ const providers = [
         headers: {
           'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
           'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://tamilcinema-website.vercel.app',
+          'X-Title': 'TamilCinemaHub',
         },
         body: JSON.stringify({
-          model: 'mistralai/mistral-7b-instruct:free',
+          model: 'mistralai/mistral-7b-instruct',
           messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
           max_tokens: 1024,
         }),
@@ -144,7 +146,6 @@ const providers = [
       })
       if (!res.ok) throw new Error(`Replicate error: ${res.status}`)
       const data = await res.json()
-
       let result = data
       while (result.status !== 'succeeded' && result.status !== 'failed') {
         await new Promise(r => setTimeout(r, 1000))
@@ -167,12 +168,10 @@ export async function POST(req: NextRequest) {
     try {
       console.log(`Trying ${provider.name}...`)
       const reply = await provider.call(messages)
-
       if (reply && reply.trim().length > 0) {
         console.log(`Success with ${provider.name}`)
         return NextResponse.json({ reply, provider: provider.name })
       }
-
       throw new Error('Empty response')
     } catch (err: any) {
       const msg = `${provider.name} failed: ${err.message}`
@@ -184,7 +183,7 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json(
     {
-      error: 'All providers are currently unavailable. Please try again later.',
+      error: 'All AI providers are currently busy. Please try again in a moment.',
       details: errors
     },
     { status: 503 }
