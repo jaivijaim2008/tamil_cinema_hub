@@ -3,15 +3,27 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
-  },
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "eslint",
+  "import-movies": "node scripts/importMovies.js",
+  "export-recommender": "node scripts/exportForRecommender.js",
+  "patch-posters": "node scripts/patchPosters.js",
+  "patch-cast": "node scripts/patchCast.js"
+},
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.100.1",
+    "@portabletext/react": "^6.2.0",
+    "@sanity/icons": "^3.7.4",
+    "@sanity/image-url": "^2.1.1",
+    "@sanity/vision": "^5.28.0",
     "next": "16.2.6",
+    "next-sanity": "^12.4.5",
+    "node-fetch": "^3.3.2",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "styled-components": "^6.4.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
