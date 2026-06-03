@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
+import { Suspense } from 'react'
 import { PortableText } from '@portabletext/react'
 import { client } from '../../../sanity/client'
 import { movieBySlugQuery } from '../../../lib/queries'
@@ -51,7 +52,13 @@ async function getRecommendations(slug: string): Promise<Movie[]> {
   const base = process.env.RECOMMENDER_API_URL
   if (!base) return []
   try {
-    const res = await fetch(`${base}/recommend/${slug}?n=6`, { next: { revalidate: 3600 } })
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 8000)
+    const res = await fetch(`${base}/recommend/${slug}?n=6`, {
+      next: { revalidate: 3600 },
+      signal: controller.signal,
+    })
+    clearTimeout(timeout)
     if (!res.ok) return []
     const data = await res.json()
     const recSlugs = data.recommendations?.map((r: any) => r.slug) || []
@@ -122,8 +129,6 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
   const { slug } = await params
   const movie = await getMovieData(slug)
   if (!movie) notFound()
-
-  const recommendations = await getRecommendations(slug)
 
   const posterUrl = movie.poster
     ? urlFor(movie.poster).width(600).height(900).url()
@@ -397,30 +402,39 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
         </div>
       </div>
 
-      {/* ── RECOMMENDATIONS ─────────────────────────────────────────── */}
-      {recommendations.length > 0 && (
-        <section
-          className="mt-4 pt-16 pb-20"
-          style={{ background: 'rgba(0,0,0,0.3)', borderTop: '1px solid rgba(255,255,255,0.05)' }}
-        >
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-8">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-violet-500 mb-1">You Might Like</p>
-              <h2
-                className="text-2xl font-black text-white"
-                style={{ fontFamily: "'Outfit', sans-serif" }}
-              >
-                Similar Movies
-              </h2>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {recommendations.map((rec) => (
-                <MovieCard key={rec._id} movie={rec} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      {/* ── RECOMMENDATIONS (non-blocking Suspense) ────────────────── */}
+      <Suspense fallback={null}>
+        <MovieRecommendations slug={slug} />
+      </Suspense>
     </div>
+  )
+}
+
+// ── Non-blocking recommendations (fetches async, renders when ready) ─────
+async function MovieRecommendations({ slug }: { slug: string }) {
+  const recommendations = await getRecommendations(slug)
+  if (!recommendations.length) return null
+  return (
+    <section
+      className="mt-4 pt-16 pb-20"
+      style={{ background: 'rgba(0,0,0,0.3)', borderTop: '1px solid rgba(255,255,255,0.05)' }}
+    >
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-8">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-violet-500 mb-1">You Might Like</p>
+          <h2
+            className="text-2xl font-black text-white"
+            style={{ fontFamily: "'Outfit', sans-serif" }}
+          >
+            Similar Movies
+          </h2>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {recommendations.map((rec) => (
+            <MovieCard key={rec._id} movie={rec} />
+          ))}
+        </div>
+      </div>
+    </section>
   )
 }
