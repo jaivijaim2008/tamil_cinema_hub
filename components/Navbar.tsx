@@ -3,17 +3,67 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [isSearching, setIsSearching] = useState(false)
+  const [showResults, setShowResults] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  // Handle search
+  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value
+    setSearchQuery(query)
+
+    if (query.length < 2) {
+      setSearchResults([])
+      setShowResults(false)
+      return
+    }
+
+    setIsSearching(true)
+    setShowResults(true)
+
+    try {
+      // Option 1: If using Sanity CMS
+      const response = await fetch(
+        `/api/search?q=${encodeURIComponent(query)}`
+      )
+      const data = await response.json()
+      setSearchResults(data.results || [])
+    } catch (error) {
+      console.error('Search error:', error)
+      setSearchResults([])
+    } finally {
+      setIsSearching(false)
+    }
+  }
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      router.push(`/movies?search=${encodeURIComponent(searchQuery)}`)
+      setSearchQuery('')
+      setShowResults(false)
+    }
+  }
+
+  const handleMovieClick = (movieSlug: string) => {
+    router.push(`/movies/${movieSlug}`)
+    setSearchQuery('')
+    setShowResults(false)
+  }
 
   const links = [
     { name: 'Home', href: '/', icon: '🏠' },
@@ -40,7 +90,6 @@ export default function Navbar() {
 
           {/* ── LOGO ── */}
           <Link href="/" className="flex items-center gap-2.5 group flex-shrink-0">
-            {/* Film reel icon */}
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-violet-900/50 group-hover:shadow-violet-600/50 transition-all duration-300 group-hover:scale-105">
               <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="2" y="7" width="20" height="15" rx="2" />
@@ -48,7 +97,6 @@ export default function Navbar() {
               </svg>
             </div>
 
-            {/* Name */}
             <div className="flex items-baseline gap-0">
               <span className="text-white font-black text-lg tracking-tight leading-none">
                 Tamil
@@ -82,15 +130,52 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* ── RIGHT SIDE ── */}
-          <div className="hidden md:flex items-center gap-3">
-            {/* Search hint */}
-            <div className="flex items-center gap-2 bg-white/5 border border-white/8 rounded-lg px-3 py-1.5 text-gray-500 text-xs cursor-pointer hover:bg-white/8 hover:text-gray-400 transition-colors">
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          {/* ── RIGHT SIDE: SEARCH ── */}
+          <div className="hidden md:flex items-center gap-3 relative">
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <input
+                type="text"
+                placeholder="Search movies..."
+                value={searchQuery}
+                onChange={handleSearch}
+                onFocus={() => searchQuery && setShowResults(true)}
+                className="bg-white/5 border border-white/8 rounded-lg px-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-violet-500/50 focus:bg-white/10 transition-all w-48"
+              />
+              <svg className="absolute right-3 top-2.5 w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              Search movies...
-            </div>
+
+              {/* Search Dropdown Results */}
+              {showResults && (
+                <div className="absolute top-full mt-2 w-80 bg-[#0f0f1a] border border-white/10 rounded-lg shadow-xl max-h-96 overflow-y-auto z-50">
+                  {isSearching ? (
+                    <div className="p-4 text-center text-gray-400">
+                      <div className="inline-block animate-spin h-4 w-4 border-2 border-violet-600 border-t-transparent rounded-full"></div>
+                      <p className="mt-2 text-sm">Searching...</p>
+                    </div>
+                  ) : searchResults.length > 0 ? (
+                    <div className="py-2">
+                      {searchResults.map((movie: any) => (
+                        <button
+                          key={movie._id}
+                          onClick={() => handleMovieClick(movie.slug?.current || movie._id)}
+                          className="w-full text-left px-4 py-3 hover:bg-violet-600/20 transition-colors border-b border-white/5 last:border-b-0"
+                        >
+                          <div className="font-semibold text-white text-sm">{movie.title}</div>
+                          <div className="text-xs text-gray-400 mt-0.5">
+                            {movie.year} • {movie.genre?.join(', ')}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  ) : searchQuery && !isSearching ? (
+                    <div className="p-4 text-center text-gray-400 text-sm">
+                      No movies found for "{searchQuery}"
+                    </div>
+                  ) : null}
+                </div>
+              )}
+            </form>
           </div>
 
           {/* ── MOBILE BUTTON ── */}
@@ -138,14 +223,17 @@ export default function Navbar() {
             </Link>
           ))}
 
-          {/* Mobile divider */}
+          {/* Mobile Search */}
           <div className="pt-2 mt-2 border-t border-white/5">
-            <div className="flex items-center gap-2 bg-white/5 border border-white/8 rounded-xl px-4 py-3 text-gray-500 text-sm">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              Search Tamil movies...
-            </div>
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <input
+                type="text"
+                placeholder="Search Tamil movies..."
+                value={searchQuery}
+                onChange={handleSearch}
+                className="w-full bg-white/5 border border-white/8 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-violet-500/50"
+              />
+            </form>
           </div>
         </div>
       </div>

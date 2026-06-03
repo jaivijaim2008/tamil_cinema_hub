@@ -12,7 +12,17 @@ export default {
  options: { list: ['Review','Top List','News','Actor','Director'] } },
  { name: 'mainImage', title: 'Cover Image', type: 'image' },
  { name: 'excerpt', title: 'Short Description', type: 'text' },
- { name: 'body', title: 'Blog Content', type: 'array', of: [{ type: 'block' }] },
+ { name: 'body', title: 'Blog Content', type: 'array', of: [
+    { type: 'block' },
+    {
+      type: 'image',
+      options: { hotspot: true },
+      fields: [
+        { name: 'alt', title: 'Alt Text', type: 'string' },
+        { name: 'caption', title: 'Caption', type: 'string' },
+      ],
+    },
+  ] },
  { name: 'seoTitle', title: 'SEO Title', type: 'string' },
  { name: 'seoDescription', title: 'SEO Description', type: 'text' },
  { name: 'tags', title: 'Tags', type: 'array',
