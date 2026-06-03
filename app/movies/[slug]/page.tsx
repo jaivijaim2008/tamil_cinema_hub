@@ -38,7 +38,7 @@ function getCastInitial(actor: CastMember): string {
 }
 function getCastPhoto(actor: CastMember): string | null {
   if (typeof actor === 'string' || !actor.photo) return null
-  try { return urlFor(actor.photo).width(120).height(120).url() } catch { return null }
+  try { return urlFor(actor.photo).width(300).height(300).url() } catch { return null }
 }
 
 async function getMovieData(slug: string): Promise<FullMovie | null> {
@@ -239,8 +239,8 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
               >
                 {[
-                  { icon: '📅', label: 'Year',     value: String(movie.year) },
-                  { icon: '🎬', label: 'Director', value: movie.director || '—' },
+                  { icon: '📅', label: 'Year',      value: String(movie.year) },
+                  { icon: '🎬', label: 'Director',  value: movie.director || '—' },
                   { icon: '📺', label: 'Streaming', value: movie.ottPlatform || '—' },
                 ].map(({ icon, label, value }) => (
                   <div key={label} className="flex items-start justify-between gap-2 text-xs pb-3 border-b last:border-0 last:pb-0" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
@@ -345,35 +345,114 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
               </section>
             )}
 
-            {/* Cast */}
+            {/* ── CAST ─────────────────────────────────────────────────── */}
             {movie.cast && movie.cast.length > 0 && (
               <section className="mt-10">
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-violet-500">Cast</p>
-                  <span className="text-xs text-white/25">{movie.cast.length} members</span>
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-violet-500 mb-1">Cast</p>
+                    <h3
+                      className="text-white font-black text-lg"
+                      style={{ fontFamily: "'Outfit', sans-serif" }}
+                    >
+                      Meet the Actors
+                    </h3>
+                  </div>
+                  <span
+                    className="text-xs font-bold px-3 py-1 rounded-full"
+                    style={{ background: 'rgba(124,58,237,0.15)', color: '#a78bfa', border: '1px solid rgba(124,58,237,0.25)' }}
+                  >
+                    {movie.cast.length} members
+                  </span>
                 </div>
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3">
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                   {movie.cast.map((actor, idx) => {
                     const name      = getCastName(actor)
                     const character = getCastCharacter(actor)
                     const photo     = getCastPhoto(actor)
                     const initial   = getCastInitial(actor)
+
+                    // Unique hue per actor for gradient fallback
+                    const hue = (idx * 47) % 360
+
                     return (
                       <div
                         key={idx}
-                        className="group flex flex-col items-center text-center rounded-2xl p-3 transition-all duration-200"
-                        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+                        className="group relative overflow-hidden rounded-xl transition-all duration-300 cursor-default"
+                        style={{
+                          background: 'rgba(255,255,255,0.03)',
+                          border: '1px solid rgba(255,255,255,0.07)',
+                        }}
                       >
-                        <div
-                          className="w-14 h-14 rounded-full overflow-hidden mb-2 flex-shrink-0 transition-all duration-200 group-hover:ring-2 group-hover:ring-violet-500/50"
-                          style={{ border: '2px solid rgba(255,255,255,0.08)' }}
-                        >
-                          <CastPhoto photo={photo} name={name} initial={initial} />
+                        {/* Square photo area */}
+                        <div className="relative aspect-square overflow-hidden">
+                          {photo ? (
+                            <img
+                              src={photo}
+                              alt={name}
+                              className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                            />
+                          ) : (
+                            <div
+                              className="w-full h-full flex items-center justify-center"
+                              style={{
+                                background: `linear-gradient(135deg,
+                                  hsl(${hue}, 40%, 18%) 0%,
+                                  hsl(${(hue + 40) % 360}, 30%, 10%) 100%)`,
+                              }}
+                            >
+                              <span
+                                className="text-4xl font-black select-none"
+                                style={{
+                                  color: `hsl(${hue}, 60%, 70%)`,
+                                  fontFamily: "'Outfit', sans-serif",
+                                }}
+                              >
+                                {initial}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Purple hover overlay */}
+                          <div
+                            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                            style={{
+                              background: 'linear-gradient(to top, rgba(109,40,217,0.6) 0%, transparent 55%)',
+                            }}
+                          />
+
+                          {/* Index badge — appears on hover */}
+                          <div
+                            className="absolute top-2 left-2 w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-black opacity-0 group-hover:opacity-100 transition-all duration-200"
+                            style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', color: '#a78bfa' }}
+                          >
+                            {idx + 1}
+                          </div>
                         </div>
-                        <p className="text-white text-[11px] font-bold leading-tight line-clamp-2">{name}</p>
-                        {character && (
-                          <p className="text-white/30 text-[10px] mt-0.5 line-clamp-1 italic">{character}</p>
-                        )}
+
+                        {/* Name + character row */}
+                        <div
+                          className="px-2.5 py-2.5"
+                          style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
+                        >
+                          <p className="text-white text-[11px] font-black leading-tight line-clamp-1 group-hover:text-violet-300 transition-colors duration-200">
+                            {name}
+                          </p>
+                          {character ? (
+                            <p className="text-white/35 text-[10px] mt-0.5 line-clamp-1 italic">
+                              as {character}
+                            </p>
+                          ) : (
+                            <p className="text-white/20 text-[10px] mt-0.5">Actor</p>
+                          )}
+                        </div>
+
+                        {/* Bottom violet accent bar — slides in on hover */}
+                        <div
+                          className="absolute bottom-0 left-0 right-0 h-[2px] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"
+                          style={{ background: 'linear-gradient(to right, #7c3aed, #a78bfa)' }}
+                        />
                       </div>
                     )
                   })}
@@ -402,7 +481,7 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
         </div>
       </div>
 
-      {/* ── RECOMMENDATIONS (non-blocking Suspense) ────────────────── */}
+      {/* ── RECOMMENDATIONS ────────────────────────────────────────── */}
       <Suspense fallback={null}>
         <MovieRecommendations slug={slug} />
       </Suspense>
@@ -410,7 +489,7 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
   )
 }
 
-// ── Non-blocking recommendations (fetches async, renders when ready) ─────
+// ── Non-blocking recommendations ─────────────────────────────────────────
 async function MovieRecommendations({ slug }: { slug: string }) {
   const recommendations = await getRecommendations(slug)
   if (!recommendations.length) return null
