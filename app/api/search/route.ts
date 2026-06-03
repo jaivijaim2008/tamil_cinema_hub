@@ -1,4 +1,4 @@
-import { client } from '@/sanity/client' // Your Sanity client
+import { client } from '@/sanity/lib/client'// Your Sanity client
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
