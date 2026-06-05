@@ -107,12 +107,13 @@ const BLOG_DEFS = [
 
   // 3. Top 10 Tamil Movies 2025
   // NOTE: body uses h3 headings for each movie entry (1. Coolie, 2. Thug Life, etc.)
+  // Only include images that directly correspond to a movie in the list.
+  // Vikram poster REMOVED — Vikram is not a 2025 movie and doesn't belong in this list.
   {
     slug: 'top-10-tamil-movies-2025',
     hero: { key: 'coolie_poster', filename: 'blog-hero-top10.jpg', alt: 'Coolie — the #1 Tamil movie of 2025' },
     inline: [
       { key: 'gbu_poster', filename: 'blog-inline-gbu.jpg', alt: 'Good Bad Ugly movie poster', caption: 'Good Bad Ugly — Ajith Kumar in a wild dark comedy-action hybrid', afterHeading: 3 },
-      { key: 'vikram_poster', filename: 'blog-inline-vikram.jpg', alt: 'Vikram movie poster', caption: 'Vikram — the film that launched the LCU', afterHeading: 5 },
       { key: 'amaran_poster', filename: 'blog-inline-amaran.jpg', alt: 'Amaran movie poster', caption: 'Amaran — Sivakarthikeyan delivers a career-best in this military drama', afterHeading: 8 },
     ],
   },
