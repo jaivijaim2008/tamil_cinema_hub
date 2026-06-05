@@ -127,12 +127,14 @@ const BLOG_DEFS = [
   },
 
   // 5. Lokesh Kanagaraj Director Spotlight
+  // NOTE: Both Kaithi and Vikram posters go after "Building the LCU" (heading 2)
+  // because that's where the LCU discussion happens.
   {
     slug: 'lokesh-kanagaraj-director-spotlight',
     hero: { key: 'lokesh_kanagaraj', filename: 'blog-hero-lokesh.jpg', alt: 'Lokesh Kanagaraj at the Zee Cine Awards' },
     inline: [
       { key: 'kaithi_poster', filename: 'blog-inline-kaithi.jpg', alt: 'Kaithi (2019) movie poster', caption: 'Kaithi (2019) — the film that announced Lokesh Kanagaraj as a major talent', afterHeading: 2 },
-      { key: 'vikram_poster', filename: 'blog-inline-vikram-lcu.jpg', alt: 'Vikram (2022) movie poster', caption: 'Vikram (2022) — the film that launched the Lokesh Cinematic Universe', afterHeading: 3 },
+      { key: 'vikram_poster', filename: 'blog-inline-vikram-lcu.jpg', alt: 'Vikram (2022) movie poster', caption: 'Vikram (2022) — the film that launched the Lokesh Cinematic Universe', afterHeading: 2 },
     ],
   },
 
