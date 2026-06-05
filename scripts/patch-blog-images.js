@@ -103,13 +103,14 @@ const BLOG_DEFS = [
   },
 
   // 3. Top 10 Tamil Movies 2025
+  // NOTE: body uses h3 headings for each movie entry (1. Coolie, 2. Thug Life, etc.)
   {
     slug: 'top-10-tamil-movies-2025',
     hero: { key: 'coolie_poster', filename: 'blog-hero-top10.jpg', alt: 'Coolie — the #1 Tamil movie of 2025' },
     inline: [
-      { key: 'gbu_poster', filename: 'blog-inline-gbu.jpg', alt: 'Good Bad Ugly movie poster', caption: 'Good Bad Ugly — Ajith Kumar in a wild dark comedy-action hybrid', afterHeading: 2 },
-      { key: 'vikram_poster', filename: 'blog-inline-vikram.jpg', alt: 'Vikram movie poster', caption: 'Vikram — the film that launched the LCU', afterHeading: 4 },
-      { key: 'amaran_poster', filename: 'blog-inline-amaran.jpg', alt: 'Amaran movie poster', caption: 'Amaran — Sivakarthikeyan delivers a career-best in this military drama', afterHeading: 6 },
+      { key: 'gbu_poster', filename: 'blog-inline-gbu.jpg', alt: 'Good Bad Ugly movie poster', caption: 'Good Bad Ugly — Ajith Kumar in a wild dark comedy-action hybrid', afterHeading: 3 },
+      { key: 'vikram_poster', filename: 'blog-inline-vikram.jpg', alt: 'Vikram movie poster', caption: 'Vikram — the film that launched the LCU', afterHeading: 5 },
+      { key: 'amaran_poster', filename: 'blog-inline-amaran.jpg', alt: 'Amaran movie poster', caption: 'Amaran — Sivakarthikeyan delivers a career-best in this military drama', afterHeading: 8 },
     ],
   },
 
@@ -133,14 +134,16 @@ const BLOG_DEFS = [
   },
 
   // 6. 5 Career-Best Performances
+  // NOTE: body has an introductory h2 ("Why Tamil Cinema Produces...") before the actor sections,
+  // so afterHeading values are 1 higher than the actor number.
   {
     slug: 'career-best-performances-tamil-cinema',
     hero: { key: 'kamal_haasan', filename: 'blog-hero-performances.jpg', alt: 'Kamal Haasan — legendary Tamil cinema actor' },
     inline: [
-      { key: 'vijay_sethupathi', filename: 'blog-inline-sethupathi.jpg', alt: 'Vijay Sethupathi', caption: 'Vijay Sethupathi — the "Makkal Selvan" known for fearless role choices', afterHeading: 2 },
-      { key: 'dhanush', filename: 'blog-inline-dhanush.jpg', alt: 'Dhanush', caption: 'Dhanush — a force of nature in Asuran and beyond', afterHeading: 3 },
-      { key: 'trisha', filename: 'blog-inline-trisha.jpg', alt: 'Trisha Krishnan', caption: "Trisha Krishnan — delivering one of Tamil cinema's finest performances in 96", afterHeading: 4 },
-      { key: 'suriya', filename: 'blog-inline-suriya.jpg', alt: 'Suriya', caption: 'Suriya — from Pithamagan to Jai Bhim, a career of remarkable range', afterHeading: 5 },
+      { key: 'vijay_sethupathi', filename: 'blog-inline-sethupathi.jpg', alt: 'Vijay Sethupathi', caption: 'Vijay Sethupathi — the "Makkal Selvan" known for fearless role choices', afterHeading: 3 },
+      { key: 'dhanush', filename: 'blog-inline-dhanush.jpg', alt: 'Dhanush', caption: 'Dhanush — a force of nature in Asuran and beyond', afterHeading: 4 },
+      { key: 'trisha', filename: 'blog-inline-trisha.jpg', alt: 'Trisha Krishnan', caption: "Trisha Krishnan — delivering one of Tamil cinema's finest performances in 96", afterHeading: 5 },
+      { key: 'suriya', filename: 'blog-inline-suriya.jpg', alt: 'Suriya', caption: 'Suriya — from Pithamagan to Jai Bhim, a career of remarkable range', afterHeading: 6 },
     ],
   },
 ]
