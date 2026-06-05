@@ -28,7 +28,7 @@ const CATEGORY_STYLES: Record<string, { bg: string; text: string }> = {
 
 export default function BlogCard({ blog }: BlogCardProps) {
   const imageUrl = blog.mainImage
-    ? urlFor(blog.mainImage).width(600).height(340).url()
+    ? urlFor(blog.mainImage).width(600).height(340).quality(90).fit('max').url()
     : null
 
   const formattedDate = new Date(blog.publishedAt).toLocaleDateString('en-US', {

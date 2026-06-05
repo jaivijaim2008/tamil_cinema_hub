@@ -36,7 +36,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default function MovieCard({ movie }: MovieCardProps) {
   const imageUrl = movie.poster
-    ? urlFor(movie.poster).width(400).height(600).url()
+    ? urlFor(movie.poster).width(400).height(600).quality(90).fit('max').url()
     : movie.posterUrl || null
 
   const primaryGenre = movie.genre?.[0]?.toLowerCase() || 'default'
