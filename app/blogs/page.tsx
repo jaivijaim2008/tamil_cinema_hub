@@ -23,6 +23,19 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   return {
     title,
     description: 'Tamil movie reviews, top lists, actor spotlights, and cinema news — all in one place.',
+    openGraph: {
+      title,
+      description: 'Tamil movie reviews, top lists, actor spotlights, and cinema news — all in one place.',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image' as const,
+      title,
+      description: 'Tamil movie reviews, top lists, actor spotlights, and cinema news — all in one place.',
+    },
+    alternates: {
+      canonical: 'https://kollywoodai.com/blogs',
+    },
   }
 }
 

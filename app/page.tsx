@@ -20,23 +20,55 @@ async function getData() {
 export const metadata = {
   title: 'TamilCinemaHub — Tamil Movie Reviews, Database & Recommendations',
   description:
-    'The ultimate Tamil cinema database. Discover movies, read reviews, and get personalized recommendations for Tamil films from 2000 to today.',
+    'The ultimate Tamil cinema database. Discover 1600+ Tamil movies from 2000 to 2026, read reviews, and get AI-powered personalized recommendations.',
   openGraph: {
     title: 'TamilCinemaHub — Tamil Movie Reviews, Database & Recommendations',
     description:
-      'The ultimate Tamil cinema database. Discover movies, read reviews, and get personalized recommendations.',
+      'The ultimate Tamil cinema database. Discover 1600+ Tamil movies from 2000 to 2026, read reviews, and get AI-powered personalized recommendations.',
     type: 'website',
+    url: 'https://kollywoodai.com',
+  },
+  twitter: {
+    card: 'summary_large_image' as const,
+    title: 'TamilCinemaHub — Tamil Movie Reviews, Database & Recommendations',
+    description:
+      'The ultimate Tamil cinema database. Discover 1600+ Tamil movies from 2000 to 2026, read reviews, and get AI-powered personalized recommendations.',
+  },
+  alternates: {
+    canonical: 'https://kollywoodai.com',
   },
 }
 
 export default async function HomePage() {
   const { movies, blogs } = await getData()
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'TamilCinemaHub',
+    url: 'https://kollywoodai.com',
+    description: 'Your complete guide to Tamil cinema. Explore 1600+ Tamil movies from 2000 to 2026.',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: 'https://kollywoodai.com/movies?q={search_term_string}',
+      'query-input': 'required name=search_term_string',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'TamilCinemaHub',
+      url: 'https://kollywoodai.com',
+    },
+  }
+
   return (
     <div
       className="min-h-screen text-white"
       style={{ background: '#07070f' }}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* ── HERO ─────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden">
         {/* Layered background effects */}

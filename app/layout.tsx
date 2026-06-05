@@ -13,18 +13,46 @@ const outfit = Outfit({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://kollywoodai.com'),
   title: {
     default: 'TamilCinemaHub — Tamil Movies, Reviews & AI Recommendations',
     template: '%s | TamilCinemaHub',
   },
   description: 'Your complete guide to Tamil cinema. Explore 1600+ Tamil movies from 2000 to 2026, read reviews, and get AI-powered recommendations.',
-  keywords: ['Tamil movies', 'Kollywood', 'Tamil cinema', 'Tamil movie reviews', 'Tamil film database'],
+  keywords: ['Tamil movies', 'Kollywood', 'Tamil cinema', 'Tamil movie reviews', 'Tamil film database', 'Kollywood movies', 'Tamil film reviews', 'best Tamil movies', 'Tamil actor movies', 'Tamil director films'],
+  authors: [{ name: 'TamilCinemaHub' }],
+  creator: 'TamilCinemaHub',
+  publisher: 'TamilCinemaHub',
   openGraph: {
     type: 'website',
     siteName: 'TamilCinemaHub',
+    locale: 'en_US',
+    title: 'TamilCinemaHub — Tamil Movies, Reviews & AI Recommendations',
+    description: 'Your complete guide to Tamil cinema. Explore 1600+ Tamil movies from 2000 to 2026, read reviews, and get AI-powered recommendations.',
+    url: 'https://kollywoodai.com',
+  },
+  twitter: {
+    card: 'summary_large_image',
     title: 'TamilCinemaHub — Tamil Movies, Reviews & AI Recommendations',
     description: 'Your complete guide to Tamil cinema. Explore 1600+ Tamil movies from 2000 to 2026.',
+    site: '@TamilCinemaHub',
   },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  alternates: {
+    canonical: 'https://kollywoodai.com',
+  },
+  // Add your Google Search Console verification code here:
+  // verification: { google: 'YOUR_CODE_HERE' },
 }
 
 export default function RootLayout({

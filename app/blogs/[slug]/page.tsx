@@ -45,6 +45,7 @@ export async function generateMetadata({ params }: BlogDetailProps): Promise<Met
   if (!data?.blog) return { title: 'Blog Not Found | TamilCinemaHub' }
 
   const { blog } = data
+  const ogImageUrl = blog.mainImage ? urlFor(blog.mainImage).width(1200).height(630).url() : ''
   return {
     title: `${blog.seoTitle || blog.title} | TamilCinemaHub`,
     description: blog.seoDescription || blog.excerpt,
@@ -53,8 +54,20 @@ export async function generateMetadata({ params }: BlogDetailProps): Promise<Met
       description: blog.seoDescription || blog.excerpt,
       type: 'article',
       publishedTime: blog.publishedAt,
+      modifiedTime: blog.publishedAt,
       authors: [blog.author],
-      images: blog.mainImage ? [urlFor(blog.mainImage).width(1200).height(630).url()] : [],
+      url: `https://kollywoodai.com/blogs/${slug}`,
+      siteName: 'TamilCinemaHub',
+      images: ogImageUrl ? [{ url: ogImageUrl, width: 1200, height: 630, alt: blog.title }] : [],
+    },
+    twitter: {
+      card: 'summary_large_image' as const,
+      title: blog.seoTitle || blog.title,
+      description: blog.seoDescription || blog.excerpt,
+      images: ogImageUrl ? [ogImageUrl] : [],
+    },
+    alternates: {
+      canonical: `https://kollywoodai.com/blogs/${slug}`,
     },
   }
 }
@@ -152,11 +165,50 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
     day: 'numeric', month: 'long', year: 'numeric',
   })
 
+  const jsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blog.seoTitle || blog.title,
+      description: blog.seoDescription || blog.excerpt,
+      image: coverUrl || '',
+      url: `https://kollywoodai.com/blogs/${slug}`,
+      author: {
+        '@type': 'Person',
+        name: blog.author,
+      },
+      publisher: {
+        '@type': 'Organization',
+        name: 'TamilCinemaHub',
+        url: 'https://kollywoodai.com',
+      },
+      datePublished: blog.publishedAt,
+      dateModified: blog.publishedAt,
+      mainEntityOfPage: {
+        '@type': 'WebPage',
+        '@id': `https://kollywoodai.com/blogs/${slug}`,
+      },
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://kollywoodai.com' },
+        { '@type': 'ListItem', position: 2, name: 'Blogs', item: 'https://kollywoodai.com/blogs' },
+        { '@type': 'ListItem', position: 3, name: blog.title },
+      ],
+    },
+  ]
+
   return (
     <main
       className="min-h-screen"
       style={{ background: '#07070f', fontFamily: "'Outfit', sans-serif" }}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* ── Hero ── */}
       <div className="relative w-full overflow-hidden" style={{ minHeight: 'clamp(320px, 52vw, 580px)' }}>
         {coverUrl ? (

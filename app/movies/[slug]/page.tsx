@@ -86,9 +86,19 @@ export async function generateMetadata({ params }: MovieDetailProps): Promise<Me
     description: movie.synopsis || `Full details, cast, rating and review for ${movie.title} (${movie.year}).`,
     openGraph: {
       title: `${movie.title} (${movie.year})`,
-      description: movie.synopsis || '',
+      description: movie.synopsis || `Full details, cast, rating and review for ${movie.title} (${movie.year}).`,
       type: 'video.movie',
-      images: posterUrl ? [{ url: posterUrl, width: 500, height: 750 }] : [],
+      url: `https://kollywoodai.com/movies/${slug}`,
+      images: posterUrl ? [{ url: posterUrl, width: 500, height: 750, alt: `${movie.title} movie poster` }] : [],
+    },
+    twitter: {
+      card: 'summary_large_image' as const,
+      title: `${movie.title} (${movie.year})`,
+      description: movie.synopsis || `Full details, cast, rating and review for ${movie.title} (${movie.year}).`,
+      images: posterUrl ? [posterUrl] : [],
+    },
+    alternates: {
+      canonical: `https://kollywoodai.com/movies/${slug}`,
     },
   }
 }
@@ -139,21 +149,34 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
   const fullStars = Math.floor(rating)
   const hasHalf = rating - fullStars >= 0.5
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Movie',
-    name: movie.title,
-    dateCreated: movie.year,
-    director: { '@type': 'Person', name: movie.director || 'Unknown' },
-    description: movie.synopsis || '',
-    image: posterUrl || '',
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: rating,
-      bestRating: '5',
-      ratingCount: '1',
+  const jsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Movie',
+      name: movie.title,
+      dateCreated: movie.year,
+      director: { '@type': 'Person', name: movie.director || 'Unknown' },
+      description: movie.synopsis || '',
+      image: posterUrl || '',
+      url: `https://kollywoodai.com/movies/${slug}`,
+      genre: movie.genre || [],
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: rating,
+        bestRating: '5',
+        ratingCount: '1',
+      },
     },
-  }
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://kollywoodai.com' },
+        { '@type': 'ListItem', position: 2, name: 'Movies', item: 'https://kollywoodai.com/movies' },
+        { '@type': 'ListItem', position: 3, name: movie.title },
+      ],
+    },
+  ]
 
   return (
     <div className="min-h-screen text-white" style={{ background: '#07070f' }}>

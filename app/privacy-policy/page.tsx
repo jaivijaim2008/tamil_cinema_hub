@@ -3,6 +3,20 @@ import Link from 'next/link'
 export const metadata = {
   title: 'Privacy Policy — TamilCinemaHub',
   description: 'Privacy Policy and Terms of Use for TamilCinemaHub. Learn how we handle cookies, data, and Google AdSense advertising.',
+  openGraph: {
+    title: 'Privacy Policy — TamilCinemaHub',
+    description: 'Privacy Policy and Terms of Use for TamilCinemaHub. Learn how we handle cookies, data, and Google AdSense advertising.',
+    type: 'website',
+    url: 'https://kollywoodai.com/privacy-policy',
+  },
+  twitter: {
+    card: 'summary' as const,
+    title: 'Privacy Policy — TamilCinemaHub',
+    description: 'Privacy Policy and Terms of Use for TamilCinemaHub. Learn how we handle cookies, data, and Google AdSense advertising.',
+  },
+  alternates: {
+    canonical: 'https://kollywoodai.com/privacy-policy',
+  },
 }
 
 const sections = [

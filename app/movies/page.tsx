@@ -23,6 +23,19 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   return {
     title,
     description: 'Browse and search Tamil movies from 2000 to 2026. Ratings, cast, reviews, and OTT availability.',
+    openGraph: {
+      title,
+      description: 'Browse and search Tamil movies from 2000 to 2026. Ratings, cast, reviews, and OTT availability.',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image' as const,
+      title,
+      description: 'Browse and search Tamil movies from 2000 to 2026. Ratings, cast, reviews, and OTT availability.',
+    },
+    alternates: {
+      canonical: 'https://kollywoodai.com/movies',
+    },
   }
 }
 
