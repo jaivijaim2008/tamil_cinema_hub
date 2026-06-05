@@ -29,7 +29,8 @@ export async function GET(request: Request) {
     const results = await client.fetch(
       `*[_type == "movie" && (
         title match $q ||
-        director match $q
+        director match $q ||
+        cast[] match $q
       )] | order(year desc) [0...10] {
         _id,
         title,
