@@ -186,32 +186,26 @@ async function patchBlog(def) {
 
   let totalPatched = 0
 
-  // --- Hero / mainImage ---
-  if (!blog.mainImage) {
-    console.log(`  🖼️  Setting hero image...`)
-    try {
-      const assetId = await uploadImage(IMAGES[def.hero.key], def.hero.filename)
-      await sanity.patch(blog._id).set({
-        mainImage: { _type: 'image', asset: { _type: 'reference', _ref: assetId } }
-      }).commit()
-      totalPatched++
-      console.log(`  ✅ Hero image set & committed`)
-    } catch (err) {
-      console.log(`  ❌ Hero image failed: ${err.message}`)
-    }
-    await sleep(500)
-    // Re-fetch after commit
-    blog = await fetchBlog(def.slug)
-  } else {
-    console.log(`  ✅ Hero image already exists`)
+  // --- Hero / mainImage (always overwrite with correct image) ---
+  console.log(`  🖼️  Setting hero image...`)
+  try {
+    const assetId = await uploadImage(IMAGES[def.hero.key], def.hero.filename)
+    await sanity.patch(blog._id).set({
+      mainImage: { _type: 'image', asset: { _type: 'reference', _ref: assetId } }
+    }).commit()
+    totalPatched++
+    console.log(`  ✅ Hero image set & committed`)
+  } catch (err) {
+    console.log(`  ❌ Hero image failed: ${err.message}`)
   }
+  await sleep(500)
+  // Re-fetch after commit
+  blog = await fetchBlog(def.slug)
 
   // --- Inline images: upload all, then compose body with images in correct positions ---
   const existingBody = blog.body || []
-  const existingAlts = new Set(
-    existingBody.filter(b => b._type === 'image').map(b => b.alt)
-  )
-  const missing = def.inline.filter(img => !existingAlts.has(img.alt) && IMAGES[img.key])
+  // Always re-upload inline images with correct content
+  const missing = def.inline.filter(img => IMAGES[img.key])
 
   if (missing.length === 0) {
     console.log(`  ✅ Body already has all inline images`)
@@ -240,8 +234,8 @@ async function patchBlog(def) {
     }
 
     if (uploaded.length > 0) {
-      // Compose new body: insert images at correct heading positions
-      const newBody = [...existingBody]
+      // Compose new body: remove existing image blocks, then insert new ones at correct positions
+      const newBody = existingBody.filter(b => b._type !== 'image')
       let offset = 0
       for (const item of uploaded) {
         const insertIdx = findInsertIndex(newBody, item.afterHeading || 1) + offset
