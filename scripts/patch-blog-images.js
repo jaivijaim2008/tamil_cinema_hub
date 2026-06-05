@@ -235,12 +235,11 @@ async function patchBlog(def) {
 
     if (uploaded.length > 0) {
       // Compose new body: remove existing image blocks, then insert new ones at correct positions
+      // No offset needed — findInsertIndex is called on the modified body each time
       const newBody = existingBody.filter(b => b._type !== 'image')
-      let offset = 0
       for (const item of uploaded) {
-        const insertIdx = findInsertIndex(newBody, item.afterHeading || 1) + offset
+        const insertIdx = findInsertIndex(newBody, item.afterHeading || 1)
         newBody.splice(insertIdx, 0, item.imageBlock)
-        offset++
         console.log(`  ✅ Inline: ${item.alt} (after heading ${item.afterHeading})`)
       }
 
