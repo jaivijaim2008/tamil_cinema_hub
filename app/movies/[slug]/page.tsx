@@ -38,7 +38,7 @@ function getCastInitial(actor: CastMember): string {
 }
 function getCastPhoto(actor: CastMember): string | null {
   if (typeof actor === 'string' || !actor.photo) return null
-  try { return urlFor(actor.photo).width(300).height(300).url() } catch { return null }
+  try { return urlFor(actor.photo).width(300).height(300).quality(90).fit('max').url() } catch { return null }
 }
 
 async function getMovieData(slug: string): Promise<FullMovie | null> {
@@ -79,7 +79,7 @@ export async function generateMetadata({ params }: MovieDetailProps): Promise<Me
   const movie = await getMovieData(slug)
   if (!movie) return { title: 'Movie Not Found | TamilCinemaHub' }
   const posterUrl = movie.poster
-    ? urlFor(movie.poster).width(600).height(900).url()
+    ? urlFor(movie.poster).width(600).height(900).quality(90).fit('max').url()
     : movie.posterUrl || null
   return {
     title: `${movie.title} (${movie.year}) | TamilCinemaHub`,
@@ -131,7 +131,7 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
   if (!movie) notFound()
 
   const posterUrl = movie.poster
-    ? urlFor(movie.poster).width(600).height(900).url()
+    ? urlFor(movie.poster).width(600).height(900).quality(90).fit('max').url()
     : movie.posterUrl || null
 
   const backdropUrl = movie.backdropUrl || null
