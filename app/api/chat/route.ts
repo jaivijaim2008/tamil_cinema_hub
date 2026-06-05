@@ -1,5 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+// ── In-memory rate limiter ─────────────────────────────────────────────────
+// Tracks requests per IP. Sliding window: max 20 requests per 60 seconds.
+const RATE_LIMIT_WINDOW_MS = 60_000
+const RATE_LIMIT_MAX = 20
+const rateLimitMap = new Map<string, { count: number; windowStart: number }>()
+
+function getRateLimitKey(req: NextRequest): string {
+  const xff = req.headers.get('x-forwarded-for')
+  if (xff) return xff.split(',')[0].trim()
+  return req.headers.get('x-real-ip') ?? 'unknown'
+}
+
+function checkRateLimit(key: string): { ok: boolean; retryAfter: number } {
+  const now = Date.now()
+  const entry = rateLimitMap.get(key)
+
+  if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+    rateLimitMap.set(key, { count: 1, windowStart: now })
+    return { ok: true, retryAfter: 0 }
+  }
+
+  entry.count++
+  if (entry.count > RATE_LIMIT_MAX) {
+    const retryAfter = Math.ceil((entry.windowStart + RATE_LIMIT_WINDOW_MS - now) / 1000)
+    return { ok: false, retryAfter }
+  }
+
+  return { ok: true, retryAfter: 0 }
+}
+
+// Periodic cleanup every 5 minutes to prevent unbounded memory growth
+setInterval(() => {
+  const now = Date.now()
+  for (const [key, entry] of rateLimitMap) {
+    if (now - entry.windowStart > RATE_LIMIT_WINDOW_MS * 2) {
+      rateLimitMap.delete(key)
+    }
+  }
+}, 300_000)
+
 const SYSTEM_PROMPT = `You are TamilCinemaHub AI, an expert Tamil cinema assistant.
 
 You know every Tamil movie from 2000 to 2026 including cast, directors, plots, ratings, and OTT platforms.
@@ -23,7 +63,7 @@ const providers = [
     name: 'Gemini',
     call: async (messages: any[]) => {
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -161,6 +201,16 @@ const providers = [
 ]
 
 export async function POST(req: NextRequest) {
+  // ── Rate limit check ──
+  const ip = getRateLimitKey(req)
+  const { ok, retryAfter } = checkRateLimit(ip)
+  if (!ok) {
+    return NextResponse.json(
+      { error: `Rate limit exceeded. Try again in ${retryAfter} seconds.` },
+      { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+    )
+  }
+
   const { messages } = await req.json()
   const errors: string[] = []
 
