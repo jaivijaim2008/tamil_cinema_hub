@@ -62,6 +62,9 @@ async function uploadImage(url, filename) {
 }
 
 // ── Verified Image URLs (Wikipedia / Wikimedia Commons) ────────
+// RULE: Only add images here if you have VERIFIED the image matches the content.
+// If you cannot confirm a match, do NOT add it — it's better to have no image
+// than a wrong one. Always double-check by visiting the Wikimedia page.
 const IMAGES = {
   // Movie posters
   coolie_poster:       'https://upload.wikimedia.org/wikipedia/en/a/a8/Coolie_%282025_film%29_poster.jpg',
