@@ -118,7 +118,7 @@ const BLOG_DEFS = [
     slug: 'thalapathy-vijay-jananayagan-final-film',
     hero: { key: 'vijay_actor', filename: 'blog-hero-vijay.jpg', alt: 'Thalapathy Vijay' },
     inline: [
-      { key: 'kamal_haasan', filename: 'blog-inline-vijay-tribute.jpg', alt: 'Kamal Haasan and Vijay — two pillars of Tamil cinema', caption: 'Two generations of Tamil cinema superstars — Vijay follows in the footsteps of legends like Kamal Haasan', afterHeading: 1 },
+      { key: 'vijay_actor', filename: 'blog-inline-vijay-tribute.jpg', alt: 'Thalapathy Vijay — three decades of cinema', caption: 'Vijay follows in the footsteps of legends, closing one of the greatest careers in Tamil cinema', afterHeading: 1 },
     ],
   },
 
