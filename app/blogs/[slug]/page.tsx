@@ -123,11 +123,11 @@ const ptComponents = {
   },
   types: {
     image: ({ value }: any) => {
-      const url = value?.asset ? urlFor(value).width(900).url() : null
+      const url = value?.asset ? urlFor(value).width(900).quality(90).fit('max').url() : null
       if (!url) return null
       return (
-        <figure className="my-8 overflow-hidden rounded-xl">
-          <img src={url} alt={value.alt || ''} className="w-full object-cover" />
+        <figure className="my-8 mx-auto max-w-[85%] overflow-hidden rounded-xl">
+          <img src={url} alt={value.alt || ''} className="w-full object-cover rounded-lg" loading="lazy" />
           {value.caption && (
             <figcaption className="mt-2 text-center text-sm text-[#888]">{value.caption}</figcaption>
           )}
@@ -147,7 +147,7 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
 
   const { blog, related } = data
   const cat = CATEGORY_CONFIG[blog.category] ?? { color: '#a855f7', glow: 'rgba(168,85,247,0.3)', label: blog.category }
-  const coverUrl = blog.mainImage ? urlFor(blog.mainImage).width(1400).height(600).url() : null
+  const coverUrl = blog.mainImage ? urlFor(blog.mainImage).width(1400).height(600).quality(90).fit('max').url() : null
   const formattedDate = new Date(blog.publishedAt).toLocaleDateString('en-US', {
     day: 'numeric', month: 'long', year: 'numeric',
   })
@@ -315,7 +315,7 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {related.map((rel) => {
                 const relCat = CATEGORY_CONFIG[rel.category] ?? cat
-                const relImg = rel.mainImage ? urlFor(rel.mainImage).width(500).height(280).url() : null
+                const relImg = rel.mainImage ? urlFor(rel.mainImage).width(500).height(280).quality(85).fit('max').url() : null
                 const relDate = new Date(rel.publishedAt).toLocaleDateString('en-US', {
                   day: 'numeric', month: 'short', year: 'numeric',
                 })
