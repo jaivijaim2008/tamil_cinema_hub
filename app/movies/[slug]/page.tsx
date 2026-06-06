@@ -88,7 +88,7 @@ export async function generateMetadata({ params }: MovieDetailProps): Promise<Me
       title: `${movie.title} (${movie.year})`,
       description: movie.synopsis || `Full details, cast, rating and review for ${movie.title} (${movie.year}).`,
       type: 'video.movie',
-      url: `https://kollywoodai.com/movies/${slug}`,
+      url: `https://tamilcinemahub.xyz/movies/${slug}`,
       images: posterUrl ? [{ url: posterUrl, width: 500, height: 750, alt: `${movie.title} movie poster` }] : [],
     },
     twitter: {
@@ -98,7 +98,7 @@ export async function generateMetadata({ params }: MovieDetailProps): Promise<Me
       images: posterUrl ? [posterUrl] : [],
     },
     alternates: {
-      canonical: `https://kollywoodai.com/movies/${slug}`,
+      canonical: `https://tamilcinemahub.xyz/movies/${slug}`,
     },
   }
 }
@@ -158,7 +158,7 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
       director: { '@type': 'Person', name: movie.director || 'Unknown' },
       description: movie.synopsis || '',
       image: posterUrl || '',
-      url: `https://kollywoodai.com/movies/${slug}`,
+      url: `https://tamilcinemahub.xyz/movies/${slug}`,
       genre: movie.genre || [],
       aggregateRating: {
         '@type': 'AggregateRating',
@@ -171,8 +171,8 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://kollywoodai.com' },
-        { '@type': 'ListItem', position: 2, name: 'Movies', item: 'https://kollywoodai.com/movies' },
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://tamilcinemahub.xyz' },
+        { '@type': 'ListItem', position: 2, name: 'Movies', item: 'https://tamilcinemahub.xyz/movies' },
         { '@type': 'ListItem', position: 3, name: movie.title },
       ],
     },

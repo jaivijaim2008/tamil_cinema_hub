@@ -34,7 +34,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
       description: 'Browse and search Tamil movies from 2000 to 2026. Ratings, cast, reviews, and OTT availability.',
     },
     alternates: {
-      canonical: 'https://kollywoodai.com/movies',
+      canonical: 'https://tamilcinemahub.xyz/movies',
     },
   }
 }

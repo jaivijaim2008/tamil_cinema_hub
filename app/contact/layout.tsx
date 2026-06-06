@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     description: 'Get in touch with TamilCinemaHub. Have questions, movie suggestions, or feedback about Tamil cinema?',
   },
   alternates: {
-    canonical: 'https://kollywoodai.com/contact',
+    canonical: 'https://tamilcinemahub.xyz/contact',
   },
 }
 

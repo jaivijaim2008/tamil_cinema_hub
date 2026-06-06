@@ -5,7 +5,7 @@ import { allMovieSlugsQuery, allBlogSlugsQuery } from '../lib/queries'
 export const revalidate = 3600 // Cache sitemap for 1 hour
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://kollywoodai.com'
+  const baseUrl = 'https://tamilcinemahub.xyz'
 
   let movieSlugs: string[] = []
   let blogSlugs: string[] = []

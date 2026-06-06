@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/studio/', '/api/'],
       },
     ],
-    sitemap: 'https://kollywoodai.com/sitemap.xml',
+    sitemap: 'https://tamilcinemahub.xyz/sitemap.xml',
   }
 }

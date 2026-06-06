@@ -26,7 +26,7 @@ export const metadata = {
     description:
       'The ultimate Tamil cinema database. Discover 1600+ Tamil movies from 2000 to 2026, read reviews, and get AI-powered personalized recommendations.',
     type: 'website',
-    url: 'https://kollywoodai.com',
+    url: 'https://tamilcinemahub.xyz',
   },
   twitter: {
     card: 'summary_large_image' as const,
@@ -35,7 +35,7 @@ export const metadata = {
       'The ultimate Tamil cinema database. Discover 1600+ Tamil movies from 2000 to 2026, read reviews, and get AI-powered personalized recommendations.',
   },
   alternates: {
-    canonical: 'https://kollywoodai.com',
+    canonical: 'https://tamilcinemahub.xyz',
   },
 }
 
@@ -46,17 +46,17 @@ export default async function HomePage() {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'TamilCinemaHub',
-    url: 'https://kollywoodai.com',
+    url: 'https://tamilcinemahub.xyz',
     description: 'Your complete guide to Tamil cinema. Explore 1600+ Tamil movies from 2000 to 2026.',
     potentialAction: {
       '@type': 'SearchAction',
-      target: 'https://kollywoodai.com/movies?q={search_term_string}',
+      target: 'https://tamilcinemahub.xyz/movies?q={search_term_string}',
       'query-input': 'required name=search_term_string',
     },
     publisher: {
       '@type': 'Organization',
       name: 'TamilCinemaHub',
-      url: 'https://kollywoodai.com',
+      url: 'https://tamilcinemahub.xyz',
     },
   }
 

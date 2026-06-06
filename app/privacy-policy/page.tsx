@@ -7,7 +7,7 @@ export const metadata = {
     title: 'Privacy Policy — TamilCinemaHub',
     description: 'Privacy Policy and Terms of Use for TamilCinemaHub. Learn how we handle cookies, data, and Google AdSense advertising.',
     type: 'website',
-    url: 'https://kollywoodai.com/privacy-policy',
+    url: 'https://tamilcinemahub.xyz/privacy-policy',
   },
   twitter: {
     card: 'summary' as const,
@@ -15,7 +15,7 @@ export const metadata = {
     description: 'Privacy Policy and Terms of Use for TamilCinemaHub. Learn how we handle cookies, data, and Google AdSense advertising.',
   },
   alternates: {
-    canonical: 'https://kollywoodai.com/privacy-policy',
+    canonical: 'https://tamilcinemahub.xyz/privacy-policy',
   },
 }
 

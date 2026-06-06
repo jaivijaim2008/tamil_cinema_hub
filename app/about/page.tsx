@@ -7,7 +7,7 @@ export const metadata = {
     title: 'About Us — TamilCinemaHub',
     description: 'Learn about TamilCinemaHub, our mission to celebrate Tamil cinema, and the AI-powered tools we built for movie lovers.',
     type: 'website',
-    url: 'https://kollywoodai.com/about',
+    url: 'https://tamilcinemahub.xyz/about',
   },
   twitter: {
     card: 'summary' as const,
@@ -15,7 +15,7 @@ export const metadata = {
     description: 'Learn about TamilCinemaHub, our mission to celebrate Tamil cinema, and the AI-powered tools we built for movie lovers.',
   },
   alternates: {
-    canonical: 'https://kollywoodai.com/about',
+    canonical: 'https://tamilcinemahub.xyz/about',
   },
 }
 

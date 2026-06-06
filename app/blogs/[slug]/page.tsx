@@ -56,7 +56,7 @@ export async function generateMetadata({ params }: BlogDetailProps): Promise<Met
       publishedTime: blog.publishedAt,
       modifiedTime: blog.publishedAt,
       authors: [blog.author],
-      url: `https://kollywoodai.com/blogs/${slug}`,
+      url: `https://tamilcinemahub.xyz/blogs/${slug}`,
       siteName: 'TamilCinemaHub',
       images: ogImageUrl ? [{ url: ogImageUrl, width: 1200, height: 630, alt: blog.title }] : [],
     },
@@ -67,7 +67,7 @@ export async function generateMetadata({ params }: BlogDetailProps): Promise<Met
       images: ogImageUrl ? [ogImageUrl] : [],
     },
     alternates: {
-      canonical: `https://kollywoodai.com/blogs/${slug}`,
+      canonical: `https://tamilcinemahub.xyz/blogs/${slug}`,
     },
   }
 }
@@ -172,7 +172,7 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
       headline: blog.seoTitle || blog.title,
       description: blog.seoDescription || blog.excerpt,
       image: coverUrl || '',
-      url: `https://kollywoodai.com/blogs/${slug}`,
+      url: `https://tamilcinemahub.xyz/blogs/${slug}`,
       author: {
         '@type': 'Person',
         name: blog.author,
@@ -180,21 +180,21 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
       publisher: {
         '@type': 'Organization',
         name: 'TamilCinemaHub',
-        url: 'https://kollywoodai.com',
+        url: 'https://tamilcinemahub.xyz',
       },
       datePublished: blog.publishedAt,
       dateModified: blog.publishedAt,
       mainEntityOfPage: {
         '@type': 'WebPage',
-        '@id': `https://kollywoodai.com/blogs/${slug}`,
+        '@id': `https://tamilcinemahub.xyz/blogs/${slug}`,
       },
     },
     {
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://kollywoodai.com' },
-        { '@type': 'ListItem', position: 2, name: 'Blogs', item: 'https://kollywoodai.com/blogs' },
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://tamilcinemahub.xyz' },
+        { '@type': 'ListItem', position: 2, name: 'Blogs', item: 'https://tamilcinemahub.xyz/blogs' },
         { '@type': 'ListItem', position: 3, name: blog.title },
       ],
     },

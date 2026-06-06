@@ -13,7 +13,7 @@ const outfit = Outfit({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://kollywoodai.com'),
+  metadataBase: new URL('https://tamilcinemahub.xyz'),
   title: {
     default: 'TamilCinemaHub — Tamil Movies, Reviews & AI Recommendations',
     template: '%s | TamilCinemaHub',
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     title: 'TamilCinemaHub — Tamil Movies, Reviews & AI Recommendations',
     description: 'Your complete guide to Tamil cinema. Explore 1600+ Tamil movies from 2000 to 2026, read reviews, and get AI-powered recommendations.',
-    url: 'https://kollywoodai.com',
+    url: 'https://tamilcinemahub.xyz',
   },
   twitter: {
     card: 'summary_large_image',
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://kollywoodai.com',
+    canonical: 'https://tamilcinemahub.xyz',
   },
   // Add your Google Search Console verification code here:
   // verification: { google: 'YOUR_CODE_HERE' },

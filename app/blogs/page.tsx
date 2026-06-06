@@ -34,7 +34,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
       description: 'Tamil movie reviews, top lists, actor spotlights, and cinema news — all in one place.',
     },
     alternates: {
-      canonical: 'https://kollywoodai.com/blogs',
+      canonical: 'https://tamilcinemahub.xyz/blogs',
     },
   }
 }
