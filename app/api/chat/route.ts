@@ -1,9 +1,177 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { client } from '@/sanity/client'
 
-// ── In-memory rate limiter ─────────────────────────────────────────────────
-// Tracks requests per IP. Sliding window: max 20 requests per 60 seconds.
+// Sanity GROQ queries
+const MOVIE_FIELDS = `_id, title, titleTanglish, "slug": slug.current, year, director, cast[]->{name}, genre, rating, synopsis, ottPlatform`
+
+async function searchMovies(query: string) {
+  return client.fetch(`*[_type == "movie" && (title match $q || titleTanglish match $q || director match $q || $q in cast[].name)] | order(year desc)[0...5] { ${MOVIE_FIELDS} }`, { q: `*${query}*` })
+}
+
+async function getMoviesByGenre(genre: string) {
+  return client.fetch(`*[_type == "movie" && $genre in genre] | order(year desc)[0...5] { ${MOVIE_FIELDS} }`, { genre })
+}
+
+async function getMoviesByYear(year: number) {
+  return client.fetch(`*[_type == "movie" && year == $year] | order(rating desc)[0...5] { ${MOVIE_FIELDS} }`, { year })
+}
+
+async function getTopRated() {
+  return client.fetch(`*[_type == "movie" && rating != null] | order(rating desc)[0...5] { ${MOVIE_FIELDS} }`)
+}
+
+async function getRecentMovies() {
+  return client.fetch(`*[_type == "movie"] | order(year desc)[0...5] { ${MOVIE_FIELDS} }`)
+}
+
+async function getMoviesByDirector(director: string) {
+  return client.fetch(`*[_type == "movie" && director match $d] | order(year desc)[0...5] { ${MOVIE_FIELDS} }`, { d: `*${director}*` })
+}
+
+async function getMoviesByActor(actor: string) {
+  return client.fetch(`*[_type == "movie" && cast[].name match $a] | order(year desc)[0...5] { ${MOVIE_FIELDS} }`, { a: `*${actor}*` })
+}
+
+// Intent detection
+type Intent = { type: string; query: string }
+
+function detectIntent(message: string): Intent {
+  const lower = message.toLowerCase().trim()
+
+  if (/^(hi|hello|hey|namaste|vanakkam|sup|yo|howdy|good\s*(morning|evening|afternoon))\b/.test(lower)) {
+    return { type: 'greeting', query: '' }
+  }
+  if (/(how are you|how('s| is) it going|what('s| is) up|enna status)/i.test(lower)) {
+    return { type: 'howru', query: '' }
+  }
+  if (/\b(thanks?|thank you|nandri|thx)\b/i.test(lower)) {
+    return { type: 'thanks', query: '' }
+  }
+  if (/\b(top|best|highest rated|greatest|masterpiece|classic)\b.*\b(movie|film|movies|films|kollywood|tamil)\b/i.test(lower) ||
+      /\b(movie|film|kollywood)\b.*\b(top|best|highest rated|greatest)\b/i.test(lower)) {
+    return { type: 'top_rated', query: '' }
+  }
+  if (/\b(recent|new|latest|upcoming|2024|2025|2026)\b.*\b(movie|film|movies|films)?\b/i.test(lower) ||
+      /\b(movie|film|kollywood)\b.*\b(recent|new|latest|2024|2025|2026)\b/i.test(lower)) {
+    return { type: 'recent', query: '' }
+  }
+
+  const genreMatch = lower.match(/\b(action|romance|comedy|thriller|horror|drama|scifi|sci-fi|fantasy|family|crime|mystery|adventure|animation|musical|war|political|period)\b/)
+  if (genreMatch) {
+    const genreMap: Record<string, string> = { scifi: 'Sci-Fi', 'sci-fi': 'Sci-Fi', action: 'Action', romance: 'Romance', comedy: 'Comedy', thriller: 'Thriller', horror: 'Horror', drama: 'Drama', fantasy: 'Fantasy', family: 'Family', crime: 'Crime', mystery: 'Mystery', adventure: 'Adventure', animation: 'Animation', musical: 'Musical', war: 'War', political: 'Political', period: 'Period' }
+    return { type: 'genre', query: genreMap[genreMatch[1]] || genreMatch[1] }
+  }
+
+  const yearMatch = lower.match(/\b(19|20)\d{2}\b/)
+  if (yearMatch) {
+    return { type: 'year', query: yearMatch[0] }
+  }
+
+  const directorPatterns = [/(?:movies?|films?)\s+(?:by|from|of|directed by)\s+(.+)/i, /(?:directed by|director)\s+(.+)/i, /(.+?)\s+(?:directed|dir\.?)\s+(?:movies?|films?)/i]
+  for (const pattern of directorPatterns) {
+    const match = lower.match(pattern)
+    if (match) return { type: 'director', query: match[1].trim() }
+  }
+
+  const knownActors = ['rajinikanth', 'rajini', 'kamal haasan', 'kamal', 'vijay', 'ajith', 'dhanush', 'suriya', 'vikram', 'simbu', 'karthi', 'nayanthara', 'samantha', 'trisha', 'anushka', 'keerthy suresh', 'prabhas', 'allu arjun', 'lokesh kanagaraj', 'mani ratnam', 'shankar']
+  for (const actor of knownActors) {
+    if (lower.includes(actor)) return { type: 'actor', query: actor }
+  }
+  const actorPatterns = [/(?:movies?|films?)\s+(?:of|starring|with|featuring)\s+(.+)/i, /(.+?)\s+(?:movies?|films?|padangal|padam)/i]
+  for (const pattern of actorPatterns) {
+    const match = lower.match(pattern)
+    if (match) return { type: 'actor', query: match[1].trim() }
+  }
+
+  const moviePatterns = [/(?:about|tell me about|info on|details of|what is|what's)\s+(.+?)(?:\?|$)/i, /(?:movie|film|padam)\s+(.+?)(?:\?|$)/i]
+  for (const pattern of moviePatterns) {
+    const match = lower.match(pattern)
+    if (match && match[1].trim().length > 1) return { type: 'search', query: match[1].trim() }
+  }
+
+  if (lower.length > 2) return { type: 'search', query: lower }
+  return { type: 'unknown', query: '' }
+}
+
+// Response formatters
+function formatMovieList(movies: any[], title: string): string {
+  if (!movies || movies.length === 0) return "I couldn't find any movies for that. Try asking about a specific genre, actor, director, or year!"
+  let response = `🎬 ${title}\n\n`
+  movies.forEach((m, i) => {
+    const cast = m.cast?.map((c: any) => c.name).filter(Boolean).join(', ') || 'N/A'
+    const genres = m.genre?.join(', ') || 'N/A'
+    const rating = m.rating ? ` ⭐ ${m.rating}/5` : ''
+    const ott = m.ottPlatform ? ` | 📺 ${m.ottPlatform}` : ''
+    response += `${i + 1}. ${m.title} (${m.year})\n   Director: ${m.director || 'N/A'} | Cast: ${cast}\n   Genre: ${genres}${rating}${ott}\n`
+    if (m.synopsis) response += `   ${m.synopsis.slice(0, 120)}${m.synopsis.length > 120 ? '...' : ''}\n`
+    response += '\n'
+  })
+  return response.trim()
+}
+
+function formatMovieDetail(movie: any): string {
+  const cast = movie.cast?.map((c: any) => c.name).filter(Boolean).join(', ') || 'N/A'
+  const genres = movie.genre?.join(', ') || 'N/A'
+  let r = `🎬 ${movie.title} (${movie.year})\n\nDirector: ${movie.director || 'N/A'}\nCast: ${cast}\nGenre: ${genres}\n`
+  if (movie.rating) r += `Rating: ⭐ ${movie.rating}/5\n`
+  if (movie.ottPlatform) r += `OTT: 📺 ${movie.ottPlatform}\n`
+  if (movie.synopsis) r += `\nSynopsis: ${movie.synopsis}\n`
+  r += `\nView full details: /movies/${movie.slug}`
+  return r
+}
+
+async function generateResponse(intent: Intent): Promise<string> {
+  switch (intent.type) {
+    case 'greeting':
+      return `🎬 Vanakkam! Welcome to TamilCinemaHub AI!\n\nI'm your Tamil cinema expert powered by our database of 1,600+ movies. Try asking:\n\n• "Recommend action movies"\n• "Movies by Lokesh Kanagaraj"\n• "Vijay movies"\n• "Best movies of 2024"\n• "Tell me about Ponniyin Selvan"\n\nWhat would you like to know?`
+    case 'howru':
+      return `😊 I'm doing great! Ready to talk about Tamil cinema with you. What movies are you interested in?`
+    case 'thanks':
+      return `🙏 You're welcome! Feel free to ask me anything about Tamil movies, actors, or directors.`
+    case 'top_rated': {
+      const m = await getTopRated()
+      return formatMovieList(m, '🏆 Top Rated Tamil Movies')
+    }
+    case 'recent': {
+      const m = await getRecentMovies()
+      return formatMovieList(m, '🆕 Latest Tamil Movies')
+    }
+    case 'genre': {
+      const m = await getMoviesByGenre(intent.query)
+      return formatMovieList(m, `🎭 ${intent.query} Movies`)
+    }
+    case 'year': {
+      const m = await getMoviesByYear(parseInt(intent.query))
+      return formatMovieList(m, `📅 Movies from ${intent.query}`)
+    }
+    case 'director': {
+      const m = await getMoviesByDirector(intent.query)
+      if (m.length > 0) return formatMovieList(m, `🎬 Movies by ${intent.query}`)
+      const s = await searchMovies(intent.query)
+      if (s.length > 0) return formatMovieList(s, `🔍 Results for "${intent.query}"`)
+      return `I couldn't find any movies by "${intent.query}". Try checking the spelling.`
+    }
+    case 'actor': {
+      const m = await getMoviesByActor(intent.query)
+      if (m.length > 0) return formatMovieList(m, `🎭 Movies featuring ${intent.query}`)
+      const s = await searchMovies(intent.query)
+      if (s.length > 0) return formatMovieList(s, `🔍 Results for "${intent.query}"`)
+      return `I couldn't find movies featuring "${intent.query}". Try checking the spelling.`
+    }
+    case 'search': {
+      const m = await searchMovies(intent.query)
+      if (m.length === 1) return formatMovieDetail(m[0])
+      if (m.length > 0) return formatMovieList(m, `🔍 Results for "${intent.query}"`)
+      return `I couldn't find any movies matching "${intent.query}". Try a movie name, actor, director, or genre!`
+    }
+    default:
+      return `I'm not sure what you're asking about. Try:\n\n• "best action movies"\n• "Vijay movies"\n• "movies by Mani Ratnam"\n• "movies from 2024"\n• "Tell me about Vikram"`
+  }
+}
+
+// Rate limiter
 const RATE_LIMIT_WINDOW_MS = 60_000
-const RATE_LIMIT_MAX = 20
+const RATE_LIMIT_MAX = 30
 const rateLimitMap = new Map<string, { count: number; windowStart: number }>()
 
 function getRateLimitKey(req: NextRequest): string {
@@ -15,23 +183,18 @@ function getRateLimitKey(req: NextRequest): string {
 function checkRateLimit(key: string): { ok: boolean; retryAfter: number } {
   const now = Date.now()
   const entry = rateLimitMap.get(key)
-
   if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
     rateLimitMap.set(key, { count: 1, windowStart: now })
     return { ok: true, retryAfter: 0 }
   }
-
   entry.count++
   if (entry.count > RATE_LIMIT_MAX) {
     const retryAfter = Math.ceil((entry.windowStart + RATE_LIMIT_WINDOW_MS - now) / 1000)
     return { ok: false, retryAfter }
   }
-
   return { ok: true, retryAfter: 0 }
 }
 
-
-// ── Structured logger for Vercel Function Logs ───────────────────────────
 function log(level: 'info' | 'warn' | 'error', msg: string, data?: Record<string, any>) {
   const entry = { time: new Date().toISOString(), level, msg, ...data }
   if (level === 'error') console.error(JSON.stringify(entry))
@@ -39,191 +202,8 @@ function log(level: 'info' | 'warn' | 'error', msg: string, data?: Record<string
   else console.log(JSON.stringify(entry))
 }
 
-const SYSTEM_PROMPT = `You are TamilCinemaHub AI, an expert Tamil cinema assistant.
-
-You know every Tamil movie from 2000 to 2026 including cast, directors, plots, ratings, and OTT platforms.
-
-Always reply in clear, simple English that anyone can understand.
-Be friendly, helpful, and enthusiastic about Tamil cinema.
-Give detailed and accurate information about movies, actors, and directors.
-When recommending movies, explain why someone would enjoy them.
-Keep responses concise but informative.
-
-You can help with:
-- Movie recommendations based on genre, actor, or director
-- Movie plot summaries and reviews
-- Actor and director filmographies
-- OTT platform availability
-- Comparing movies
-- Answering trivia about Tamil cinema`
-
-// Total timeout guard — Vercel Hobby plan kills functions after ~10s
-const MAX_FUNCTION_MS = 9_000
-function timeLeft(start: number) {
-  return MAX_FUNCTION_MS - (Date.now() - start)
-}
-
-const providers = [
-  {
-    name: 'Gemini',
-    call: async (messages: any[]) => {
-      // Gemini requires contents to start with 'user' role and alternate user/model
-      // Ensure first message is always 'user'
-      let mapped = messages.map((m: any) => ({
-        role: m.role === 'assistant' ? 'model' as const : 'user' as const,
-        parts: [{ text: m.content }]
-      }))
-      // Drop leading model messages and merge consecutive same-role messages
-      while (mapped.length > 0 && mapped[0].role !== 'user') {
-        mapped = mapped.slice(1)
-      }
-      mapped = mapped.reduce((acc: typeof mapped, cur) => {
-        if (acc.length && acc[acc.length - 1].role === cur.role) {
-          acc[acc.length - 1].parts[0].text += '\n' + cur.parts[0].text
-        } else {
-          acc.push(cur)
-        }
-        return acc
-      }, [])
-      if (mapped.length === 0) return null // No user message to send
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-            contents: mapped
-          })
-        }
-      )
-      if (!res.ok) throw new Error(`Gemini error: ${res.status}`)
-      const data = await res.json()
-      return data.candidates[0].content.parts[0].text
-    }
-  },
-  {
-    name: 'Groq',
-    call: async (messages: any[]) => {
-      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'llama-3.1-8b-instant',
-          messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
-          max_tokens: 1024,
-        }),
-      })
-      if (!res.ok) throw new Error(`Groq error: ${res.status}`)
-      const data = await res.json()
-      return data.choices[0].message.content
-    }
-  },
-  {
-    name: 'Cerebras',
-    call: async (messages: any[]) => {
-      const res = await fetch('https://api.cerebras.ai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.CEREBRAS_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'llama3.1-8b',
-          messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
-          max_tokens: 1024,
-        }),
-      })
-      if (!res.ok) throw new Error(`Cerebras error: ${res.status}`)
-      const data = await res.json()
-      return data.choices[0].message.content
-    }
-  },
-  {
-    name: 'OpenRouter',
-    call: async (messages: any[]) => {
-      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://tamilcinema-website.vercel.app',
-          'X-Title': 'TamilCinemaHub',
-        },
-        body: JSON.stringify({
-          model: 'mistralai/mistral-7b-instruct',
-          messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
-          max_tokens: 1024,
-        }),
-      })
-      if (!res.ok) throw new Error(`OpenRouter error: ${res.status}`)
-      const data = await res.json()
-      return data.choices[0].message.content
-    }
-  },
-  {
-    name: 'HuggingFace',
-    call: async (messages: any[]) => {
-      const lastMessage = messages[messages.length - 1].content
-      const res = await fetch(
-        'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3',
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            inputs: `${SYSTEM_PROMPT}\n\nUser: ${lastMessage}\nAssistant:`,
-            parameters: { max_new_tokens: 512, return_full_text: false }
-          })
-        }
-      )
-      if (!res.ok) throw new Error(`HuggingFace error: ${res.status}`)
-      const data = await res.json()
-      return data[0].generated_text
-    }
-  },
-  {
-    name: 'Replicate',
-    call: async (messages: any[]) => {
-      const lastMessage = messages[messages.length - 1].content
-      const res = await fetch('https://api.replicate.com/v1/models/meta/meta-llama-3-8b-instruct/predictions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.REPLICATE_API_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          input: {
-            prompt: lastMessage,
-            system_prompt: SYSTEM_PROMPT,
-            max_tokens: 512,
-          }
-        })
-      })
-      if (!res.ok) throw new Error(`Replicate error: ${res.status}`)
-      const data = await res.json()
-      let result = data
-      while (result.status !== 'succeeded' && result.status !== 'failed') {
-        await new Promise(r => setTimeout(r, 1000))
-        const poll = await fetch(result.urls.get, {
-          headers: { 'Authorization': `Bearer ${process.env.REPLICATE_API_TOKEN}` }
-        })
-        result = await poll.json()
-      }
-      if (result.status === 'failed') throw new Error('Replicate prediction failed')
-      return result.output.join('')
-    }
-  }
-]
-
 export async function POST(req: NextRequest) {
   try {
-    // ── Rate limit check ──
     const ip = getRateLimitKey(req)
     const { ok, retryAfter } = checkRateLimit(ip)
     if (!ok) {
@@ -232,49 +212,18 @@ export async function POST(req: NextRequest) {
         { status: 429, headers: { 'Retry-After': String(retryAfter) } }
       )
     }
-
     const { messages } = await req.json()
-    const msgCount = messages?.length ?? 0
-    const lastUserMsg = messages?.filter((m: any) => m.role === 'user').pop()?.content?.slice(0, 80) ?? ''
-
-    log('info', 'Chat request received', { ip, msgCount, lastUserMsg })
-
-    // Try each provider — the 6-provider chain IS the retry (no per-provider retry)
-    const start = Date.now()
-    for (const provider of providers) {
-      if (timeLeft(start) < 2000) {
-        log('warn', 'Function timeout approaching, stopping provider chain')
-        break
-      }
-      try {
-        log('info', `Trying ${provider.name}`, { msgCount })
-        const reply = await Promise.race([
-          provider.call(messages),
-          new Promise<null>((_, reject) =>
-            setTimeout(() => reject(new Error('Provider timeout')), Math.min(timeLeft(start) - 500, 8000))
-          ),
-        ])
-        if (reply && reply.trim().length > 0) {
-          log('info', `Success with ${provider.name}`, { replyLen: reply.length })
-          return NextResponse.json({ reply, provider: provider.name })
-        }
-      } catch (err: any) {
-        const statusMatch = err.message?.match(/(\d{3})/)
-        const status = statusMatch ? parseInt(statusMatch[1]) : undefined
-        log('warn', `${provider.name} failed`, { error: err.message, status })
-      }
-    }
-
-    log('error', 'All providers exhausted', { msgCount, lastUserMsg })
-    return NextResponse.json(
-      { error: 'All AI providers are currently busy. Please try again in a moment.' },
-      { status: 503 }
-    )
+    const lastUserMsg = messages?.filter((m: any) => m.role === 'user').pop()?.content ?? ''
+    log('info', 'Chat request', { ip, msg: lastUserMsg.slice(0, 80) })
+    const intent = detectIntent(lastUserMsg)
+    log('info', 'Intent detected', { type: intent.type, query: intent.query })
+    const reply = await generateResponse(intent)
+    return NextResponse.json({ reply, provider: 'TamilCinemaHub Local' })
   } catch (err: any) {
-    log('error', 'Unhandled error in POST handler', { error: err?.message, stack: err?.stack?.slice(0, 500) })
+    log('error', 'Chat error', { error: err?.message, stack: err?.stack?.slice(0, 300) })
     return NextResponse.json(
-      { error: 'An unexpected error occurred. Please try again.' },
-      { status: 500 }
+      { reply: 'Sorry, something went wrong. Please try again!', provider: 'TamilCinemaHub Local' },
+      { status: 200 }
     )
   }
 }
