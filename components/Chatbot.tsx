@@ -265,10 +265,10 @@ export default function TamilCinemaHubChatbot() {
 
       {/* ── CHAT WINDOW ── */}
       {isOpen && (
-        <div className="mb-4 w-[420px] max-w-[calc(100vw-48px)] h-[520px] max-h-[calc(100vh-120px)] max-[479px]:w-full max-[479px]:h-full max-[479px]:max-w-full max-[479px]:max-h-full max-[479px]:mb-0 max-[479px]:rounded-none max-[479px]:border-0 bg-[#0d0d1a] border border-white/10 rounded-2xl shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
+        <div className="mb-4 w-[420px] max-w-[calc(100vw-48px)] h-[520px] max-h-[calc(100vh-120px)] max-[479px]:w-full max-[479px]:h-full max-[479px]:max-w-full max-[479px]:max-h-full max-[479px]:mb-0 max-[479px]:rounded-none max-[479px]:border-0 bg-[#0d0d1a] border border-white/10 rounded-2xl shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
 
           {/* Header */}
-          <div className="bg-gradient-to-r from-violet-700 to-indigo-700 px-4 py-3 flex items-center justify-between flex-shrink-0">
+          <div className="bg-gradient-to-r from-violet-700 to-indigo-700 px-4 py-3 flex items-center justify-between flex-shrink-0" style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top, 0px))' }}>
             <div className="flex items-center gap-3">
               {/* Avatar */}
               <div className="w-9 h-9 rounded-xl bg-white/20 border border-white/20 flex items-center justify-center flex-shrink-0">

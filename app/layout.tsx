@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Outfit } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
@@ -11,6 +11,12 @@ const outfit = Outfit({
   variable: '--font-outfit',
   weight: ['400', '500', '600', '700', '800', '900'],
 })
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover' as const,
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://tamilcinemahub.xyz'),
