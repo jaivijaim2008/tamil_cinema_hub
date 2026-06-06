@@ -40,6 +40,14 @@ setInterval(() => {
   }
 }, 300_000)
 
+// ── Structured logger for Vercel Function Logs ───────────────────────────
+function log(level: 'info' | 'warn' | 'error', msg: string, data?: Record<string, any>) {
+  const entry = { time: new Date().toISOString(), level, msg, ...data }
+  if (level === 'error') console.error(JSON.stringify(entry))
+  else if (level === 'warn') console.warn(JSON.stringify(entry))
+  else console.log(JSON.stringify(entry))
+}
+
 const SYSTEM_PROMPT = `You are TamilCinemaHub AI, an expert Tamil cinema assistant.
 
 You know every Tamil movie from 2000 to 2026 including cast, directors, plots, ratings, and OTT platforms.
@@ -62,6 +70,16 @@ const providers = [
   {
     name: 'Gemini',
     call: async (messages: any[]) => {
+      // Gemini requires contents to start with 'user' role and alternate user/model
+      // Ensure first message is always 'user'
+      let mapped = messages.map((m: any) => ({
+        role: m.role === 'assistant' ? 'model' as const : 'user' as const,
+        parts: [{ text: m.content }]
+      }))
+      if (mapped.length > 0 && mapped[0].role !== 'user') {
+        mapped = mapped.slice(1) // Drop leading model message
+      }
+      if (mapped.length === 0) return null // No user message to send
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
         {
@@ -69,10 +87,7 @@ const providers = [
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-            contents: messages.map((m: any) => ({
-              role: m.role === 'assistant' ? 'model' : 'user',
-              parts: [{ text: m.content }]
-            }))
+            contents: mapped
           })
         }
       )
@@ -212,47 +227,57 @@ export async function POST(req: NextRequest) {
   }
 
   const { messages } = await req.json()
-  const errors: string[] = []
+  const errors: { provider: string; message: string; status?: number }[] = []
+  const msgCount = messages?.length ?? 0
+  const lastUserMsg = messages?.filter((m: any) => m.role === 'user').pop()?.content?.slice(0, 80) ?? ''
+
+  log('info', 'Chat request received', { ip, msgCount, lastUserMsg })
 
   // First attempt
   for (const provider of providers) {
     try {
-      console.log(`Trying ${provider.name}...`)
+      log('info', `Trying ${provider.name}`, { msgCount })
       const reply = await provider.call(messages)
       if (reply && reply.trim().length > 0) {
-        console.log(`Success with ${provider.name}`)
+        log('info', `Success with ${provider.name}`, { replyLen: reply.length })
         return NextResponse.json({ reply, provider: provider.name })
       }
       throw new Error('Empty response')
     } catch (err: any) {
-      const msg = `${provider.name} failed: ${err.message}`
-      console.warn(msg)
-      errors.push(msg)
+      const statusMatch = err.message?.match(/(\d{3})/)
+      const status = statusMatch ? parseInt(statusMatch[1]) : undefined
+      log('warn', `${provider.name} failed`, { error: err.message, status, attempt: 1 })
+      errors.push({ provider: provider.name, message: err.message, status })
       await new Promise(r => setTimeout(r, 300))
       continue
     }
   }
 
   // Auto retry after 2 seconds
-  console.log('All failed, retrying in 2s...')
+  log('warn', 'All providers failed on first attempt, retrying in 2s', { errors: errors.map(e => `${e.provider}: ${e.message}`) })
   await new Promise(r => setTimeout(r, 2000))
 
   for (const provider of providers) {
     try {
       const reply = await provider.call(messages)
       if (reply && reply.trim().length > 0) {
-        console.log(`Retry success with ${provider.name}`)
+        log('info', `Retry success with ${provider.name}`, { replyLen: reply.length })
         return NextResponse.json({ reply, provider: provider.name })
       }
-    } catch {
+    } catch (err: any) {
+      const statusMatch = err.message?.match(/(\d{3})/)
+      const status = statusMatch ? parseInt(statusMatch[1]) : undefined
+      log('warn', `Retry ${provider.name} failed`, { error: err.message, status, attempt: 2 })
+      errors.push({ provider: provider.name, message: err.message, status })
       continue
     }
   }
 
+  log('error', 'All providers exhausted', { errors, msgCount, lastUserMsg })
   return NextResponse.json(
     {
       error: 'All AI providers are currently busy. Please try again in a moment.',
-      details: errors
+      details: errors.map(e => `${e.provider}: ${e.message}`)
     },
     { status: 503 }
   )

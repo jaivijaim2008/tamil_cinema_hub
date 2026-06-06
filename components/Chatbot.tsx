@@ -1,12 +1,15 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 
 type Message = {
   role: 'user' | 'assistant'
   content: string
   provider?: string
 }
+
+const CHARS_PER_TICK = 3
+const TICK_MS = 20
 
 export default function TamilCinemaHubChatbot() {
   const [isOpen, setIsOpen] = useState(false)
@@ -19,50 +22,114 @@ export default function TamilCinemaHubChatbot() {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesRef = useRef<Message[]>(messages)
+  const isLoadingRef = useRef(false)
+
+  // ── Typewriter streaming state ──
+  const [streamingText, setStreamingText] = useState<string | null>(null)
+  const [streamingProvider, setStreamingProvider] = useState<string | undefined>()
+  const streamRef = useRef({ full: '', idx: 0, timer: null as any, provider: undefined as string | undefined })
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    messagesRef.current = messages
+  }, [messages])
+  useEffect(() => {
+    isLoadingRef.current = isLoading
+  }, [isLoading])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, isLoading])
+  }, [messages, isLoading, streamingText])
 
-  async function sendMessage() {
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (streamRef.current.timer) clearInterval(streamRef.current.timer)
+    }
+  }, [])
+
+  /** Start typewriter animation for a response */
+  const startStreaming = useCallback((fullText: string, provider?: string) => {
+    // Clear any existing stream
+    if (streamRef.current.timer) clearInterval(streamRef.current.timer)
+
+    streamRef.current = { full: fullText, idx: 0, timer: null, provider }
+    setStreamingText('')
+    setStreamingProvider(provider)
+    setIsLoading(false) // Stop loading dots, show streaming instead
+
+    const tick = () => {
+      const s = streamRef.current
+      s.idx = Math.min(s.idx + CHARS_PER_TICK, s.full.length)
+      setStreamingText(s.full.slice(0, s.idx))
+
+      if (s.idx >= s.full.length) {
+        clearInterval(s.timer!)
+        s.timer = null
+        // Commit the streamed message to messages array + sync ref
+        const committed = [...messagesRef.current, { role: 'assistant' as const, content: s.full, provider: s.provider }]
+        messagesRef.current = committed
+        setMessages(committed)
+        setStreamingText(null)
+        setStreamingProvider(undefined)
+      }
+    }
+
+    streamRef.current.timer = setInterval(tick, TICK_MS)
+  }, [])
+
+  /** Skip to end of current stream */
+  const finishStream = useCallback(() => {
+    const s = streamRef.current
+    if (s.timer) {
+      clearInterval(s.timer)
+      s.timer = null
+      // Commit + sync ref so sendMessage sees the full conversation
+      const committed = [...messagesRef.current, { role: 'assistant' as const, content: s.full, provider: s.provider }]
+      messagesRef.current = committed
+      setMessages(committed)
+      setStreamingText(null)
+      setStreamingProvider(undefined)
+    }
+  }, [])
+
+  const sendMessage = useCallback(async () => {
     const trimmed = input.trim()
-    if (!trimmed || isLoading) return
+    if (!trimmed || isLoadingRef.current) return
 
-    const newMessages: Message[] = [...messages, { role: 'user', content: trimmed }]
+    // If there's a stream in progress, finish it immediately
+    finishStream()
+
+    const userMessage: Message = { role: 'user', content: trimmed }
+    const newMessages: Message[] = [...messagesRef.current, userMessage]
+    messagesRef.current = newMessages
     setMessages(newMessages)
     setInput('')
     setIsLoading(true)
+
+    // Filter out the welcome message and cap history to last 20 messages to avoid context limits
+    const apiMessages = newMessages
+      .filter((m, i) => !(i === 0 && m.role === 'assistant'))
+      .slice(-20)
 
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages }),
+        body: JSON.stringify({ messages: apiMessages }),
       })
 
       if (!res.ok) throw new Error('Server error')
       const data = await res.json()
+      const reply = data.reply || 'Sorry, I could not get a response. Please try again.'
 
-      setMessages([
-        ...newMessages,
-        {
-          role: 'assistant',
-          content: data.reply || 'Sorry, I could not get a response. Please try again.',
-          provider: data.provider,
-        },
-      ])
+      // Start typewriter effect
+      startStreaming(reply, data.provider)
     } catch {
-      setMessages([
-        ...newMessages,
-        {
-          role: 'assistant',
-          content: 'All AI providers are currently busy. Please try again in a moment.',
-        },
-      ])
-    } finally {
-      setIsLoading(false)
+      startStreaming('All AI providers are currently busy. Please try again in a moment.')
     }
-  }
+  }, [input, startStreaming, finishStream])
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -137,8 +204,8 @@ export default function TamilCinemaHubChatbot() {
               </div>
             ))}
 
-            {/* Typing indicator */}
-            {isLoading && (
+            {/* Typing indicator (before streaming starts) */}
+            {isLoading && !streamingText && (
               <div className="flex justify-start">
                 <div className="w-6 h-6 rounded-full bg-violet-700 flex items-center justify-center flex-shrink-0 mr-2 mt-1">
                   <span className="text-white text-xs">🎬</span>
@@ -147,6 +214,27 @@ export default function TamilCinemaHubChatbot() {
                   <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce [animation-delay:0ms]" />
                   <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce [animation-delay:150ms]" />
                   <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce [animation-delay:300ms]" />
+                </div>
+              </div>
+            )}
+
+            {/* Streaming / typewriter message */}
+            {streamingText !== null && (
+              <div className="flex justify-start">
+                <div className="w-6 h-6 rounded-full bg-violet-700 flex items-center justify-center flex-shrink-0 mr-2 mt-1">
+                  <span className="text-white text-xs">🎬</span>
+                </div>
+                <div className="max-w-[78%] flex flex-col items-start">
+                  <div className="px-3.5 py-2.5 text-sm leading-relaxed bg-white/8 border border-white/8 text-gray-200 rounded-2xl rounded-bl-sm">
+                    {streamingText}
+                    <span className="inline-block w-0.5 h-4 bg-violet-400 ml-0.5 align-text-bottom animate-pulse" />
+                  </div>
+                  <button
+                    onClick={finishStream}
+                    className="text-[10px] text-violet-400/60 hover:text-violet-300 mt-1 px-1 transition-colors"
+                  >
+                    skip ▸
+                  </button>
                 </div>
               </div>
             )}

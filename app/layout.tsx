@@ -60,8 +60,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://tamilcinemahub.xyz',
   },
-  // Add your Google Search Console verification code here:
-  // verification: { google: 'YOUR_CODE_HERE' },
+  // verification: { google: 'YOUR_GSC_VERIFICATION_CODE' },
+  // ── Google Analytics (add your GA4 Measurement ID, e.g. G-XXXXXXXXXX) ──
+  // analytics: { measurementId: 'YOUR_GA4_MEASUREMENT_ID' },
 }
 
 export default function RootLayout({
