@@ -265,7 +265,7 @@ export default function TamilCinemaHubChatbot() {
 
       {/* ── CHAT WINDOW ── */}
       {isOpen && (
-        <div className="mb-4 w-[340px] h-[480px] bg-[#0d0d1a] border border-white/10 rounded-2xl shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
+        <div className="mb-4 w-[420px] h-[520px] bg-[#0d0d1a] border border-white/10 rounded-2xl shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
 
           {/* Header */}
           <div className="bg-gradient-to-r from-violet-700 to-indigo-700 px-4 py-3 flex items-center justify-between flex-shrink-0">
@@ -309,7 +309,7 @@ export default function TamilCinemaHubChatbot() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3 bg-[#080812]"
+          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-[#080812]"
             style={{ scrollbarWidth: 'thin', scrollbarColor: '#3b0764 transparent' }}
           >
             {messages.map((msg, index) => (
