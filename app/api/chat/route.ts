@@ -3,7 +3,7 @@ import { client } from '@/sanity/client'
 import { urlFor } from '@/sanity/lib/image'
 
 // Sanity GROQ queries
-const MOVIE_FIELDS = `_id, title, titleTanglish, "slug": slug.current, year, director, cast[]{name}, genre, rating, synopsis, ottPlatform, poster`
+const MOVIE_FIELDS = `_id, title, titleTanglish, "slug": slug.current, year, director, cast[]{name}, genre, rating, synopsis, ottPlatform, poster, posterUrl`
 
 async function searchMovies(query: string) {
   return client.fetch(`*[_type == "movie" && (title match $q || titleTanglish match $q || director match $q || cast[].name match $q)] | order(year desc)[0...5] { ${MOVIE_FIELDS} }`, { q: `*${query}*` })
@@ -98,8 +98,9 @@ function detectIntent(message: string): Intent {
 // Response formatters
 function getPosterUrl(movie: any): string | null {
   if (movie.poster) {
-    try { return urlFor(movie.poster).width(80).height(120).quality(70).fit('max').url() } catch {}
+    try { return urlFor(movie.poster).width(80).height(120).quality(70).fit('max').url() } catch { /* fallthrough */ }
   }
+  if (movie.posterUrl && typeof movie.posterUrl === 'string') return movie.posterUrl
   return null
 }
 
