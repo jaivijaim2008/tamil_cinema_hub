@@ -13,12 +13,20 @@ const TICK_MS = 20
 
 export default function TamilCinemaHubChatbot() {
   const [isOpen, setIsOpen] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'assistant',
-      content: 'Welcome! I am your Tamil cinema guide. Ask me about any movie, actor, director, or get personalized recommendations!',
-    },
-  ])
+  const WELCOME_MSG: Message = {
+    role: 'assistant',
+    content: 'Welcome! I am your Tamil cinema guide. Ask me about any movie, actor, director, or get personalized recommendations!',
+  }
+  const [messages, setMessages] = useState<Message[]>(() => {
+    try {
+      const saved = localStorage.getItem('chatbot-messages')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      }
+    } catch {}
+    return [WELCOME_MSG]
+  })
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [rateLimitCountdown, setRateLimitCountdown] = useState(0)
@@ -39,6 +47,14 @@ export default function TamilCinemaHubChatbot() {
       if (saved) setFeedback(JSON.parse(saved))
     } catch {}
   }, [])
+
+  // Persist messages to localStorage (skip ephemeral system messages, cap at 50)
+  useEffect(() => {
+    const toSave = messages.filter((m) => m.role !== 'system').slice(-50)
+    try {
+      localStorage.setItem('chatbot-messages', JSON.stringify(toSave))
+    } catch {}
+  }, [messages])
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -166,6 +182,13 @@ export default function TamilCinemaHubChatbot() {
     }
   }, [input, startStreaming, finishStream])
 
+  function clearChat() {
+    setMessages([WELCOME_MSG])
+    setFeedback({})
+    localStorage.removeItem('chatbot-messages')
+    localStorage.removeItem('chatbot-feedback')
+  }
+
   function handleFeedback(index: number, type: 'up' | 'down') {
     setFeedback((prev) => {
       const next = { ...prev }
@@ -212,15 +235,27 @@ export default function TamilCinemaHubChatbot() {
                 </div>
               </div>
             </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/80 hover:text-white transition-colors"
-              aria-label="Close chat"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={clearChat}
+                className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/60 hover:text-white transition-colors"
+                aria-label="Clear chat"
+                title="Clear conversation"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/80 hover:text-white transition-colors"
+                aria-label="Close chat"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* Messages */}
