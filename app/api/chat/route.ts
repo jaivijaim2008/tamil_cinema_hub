@@ -246,7 +246,7 @@ export async function POST(req: NextRequest) {
   const { ok, retryAfter } = checkRateLimit(ip)
   if (!ok) {
     return NextResponse.json(
-      { error: `Rate limit exceeded. Try again in ${retryAfter} seconds.` },
+      { error: `Rate limit exceeded. Try again in ${retryAfter} seconds.`, retryAfter },
       { status: 429, headers: { 'Retry-After': String(retryAfter) } }
     )
   }

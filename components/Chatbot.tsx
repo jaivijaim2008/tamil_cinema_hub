@@ -3,9 +3,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 
 type Message = {
-  role: 'user' | 'assistant'
+  role: 'user' | 'assistant' | 'system'
   content: string
   provider?: string
+  retryAfter?: number
 }
 
 const CHARS_PER_TICK = 3
@@ -21,6 +22,7 @@ export default function TamilCinemaHubChatbot() {
   ])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [rateLimitCountdown, setRateLimitCountdown] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesRef = useRef<Message[]>(messages)
   const isLoadingRef = useRef(false)
@@ -41,6 +43,15 @@ export default function TamilCinemaHubChatbot() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isLoading, streamingText])
+
+  // Rate limit countdown timer
+  useEffect(() => {
+    if (rateLimitCountdown <= 0) return
+    const timer = setInterval(() => {
+      setRateLimitCountdown((prev) => (prev <= 1 ? 0 : prev - 1))
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [rateLimitCountdown])
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -120,6 +131,22 @@ export default function TamilCinemaHubChatbot() {
         body: JSON.stringify({ messages: apiMessages }),
       })
 
+      if (res.status === 429) {
+        const data = await res.json()
+        const waitSeconds = data.retryAfter || 30
+        setRateLimitCountdown(waitSeconds)
+        // Remove user message and show rate limit warning instead
+        const rateLimitMsg: Message = {
+          role: 'system',
+          content: `You're sending messages too fast. Please wait a moment before trying again.`,
+          retryAfter: waitSeconds,
+        }
+        const updated = [...messagesRef.current.slice(0, -1), rateLimitMsg]
+        messagesRef.current = updated
+        setMessages(updated)
+        return
+      }
+
       if (!res.ok) throw new Error('Server error')
       const data = await res.json()
       const reply = data.reply || 'Sorry, I could not get a response. Please try again.'
@@ -180,27 +207,39 @@ export default function TamilCinemaHubChatbot() {
           >
             {messages.map((msg, index) => (
               <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                {/* Bot avatar */}
-                {msg.role === 'assistant' && (
-                  <div className="w-6 h-6 rounded-full bg-violet-700 flex items-center justify-center flex-shrink-0 mr-2 mt-1">
-                    <span className="text-white text-xs">🎬</span>
+                {msg.role === 'system' ? (
+                  /* Rate limit / system warning */
+                  <div className="w-full flex justify-center">
+                    <div className="flex items-center gap-2 bg-amber-900/30 border border-amber-500/30 text-amber-200 text-xs px-3.5 py-2.5 rounded-xl max-w-[85%]">
+                      <span className="text-amber-400 text-base flex-shrink-0">⏱</span>
+                      <span>{msg.content}{rateLimitCountdown > 0 && ` (${rateLimitCountdown}s)`}</span>
+                    </div>
                   </div>
-                )}
+                ) : (
+                  <>
+                    {/* Bot avatar */}
+                    {msg.role === 'assistant' && (
+                      <div className="w-6 h-6 rounded-full bg-violet-700 flex items-center justify-center flex-shrink-0 mr-2 mt-1">
+                        <span className="text-white text-xs">🎬</span>
+                      </div>
+                    )}
 
-                <div className={`max-w-[78%] ${msg.role === 'user' ? 'items-end' : 'items-start'} flex flex-col`}>
-                  <div
-                    className={`px-3.5 py-2.5 text-sm leading-relaxed ${
-                      msg.role === 'user'
-                        ? 'bg-gradient-to-br from-violet-600 to-indigo-700 text-white rounded-2xl rounded-br-sm shadow-lg'
-                        : 'bg-white/8 border border-white/8 text-gray-200 rounded-2xl rounded-bl-sm'
-                    }`}
-                  >
-                    {msg.content}
-                  </div>
-                  {msg.provider && (
-                    <p className="text-[10px] text-gray-600 mt-1 px-1">via {msg.provider}</p>
-                  )}
-                </div>
+                    <div className={`max-w-[78%] ${msg.role === 'user' ? 'items-end' : 'items-start'} flex flex-col`}>
+                      <div
+                        className={`px-3.5 py-2.5 text-sm leading-relaxed ${
+                          msg.role === 'user'
+                            ? 'bg-gradient-to-br from-violet-600 to-indigo-700 text-white rounded-2xl rounded-br-sm shadow-lg'
+                            : 'bg-white/8 border border-white/8 text-gray-200 rounded-2xl rounded-bl-sm'
+                        }`}
+                      >
+                        {msg.content}
+                      </div>
+                      {msg.provider && (
+                        <p className="text-[10px] text-gray-600 mt-1 px-1">via {msg.provider}</p>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             ))}
 
@@ -268,12 +307,12 @@ export default function TamilCinemaHubChatbot() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask about Tamil movies..."
-              disabled={isLoading}
+              disabled={isLoading || rateLimitCountdown > 0}
               className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm outline-none focus:border-violet-500/60 focus:bg-white/8 disabled:opacity-50 text-white placeholder:text-gray-600 transition-all"
             />
             <button
               onClick={sendMessage}
-              disabled={isLoading || !input.trim()}
+              disabled={isLoading || rateLimitCountdown > 0 || !input.trim()}
               className="w-9 h-9 bg-gradient-to-br from-violet-600 to-indigo-700 hover:from-violet-500 hover:to-indigo-600 disabled:opacity-30 text-white rounded-xl flex items-center justify-center flex-shrink-0 transition-all active:scale-95 shadow-lg shadow-violet-900/50"
               aria-label="Send message"
             >
