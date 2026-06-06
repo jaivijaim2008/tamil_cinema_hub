@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { client } from '@/sanity/client'
+import { urlFor } from '@/sanity/lib/image'
 
 // Sanity GROQ queries
-const MOVIE_FIELDS = `_id, title, titleTanglish, "slug": slug.current, year, director, cast[]{name}, genre, rating, synopsis, ottPlatform`
+const MOVIE_FIELDS = `_id, title, titleTanglish, "slug": slug.current, year, director, cast[]{name}, genre, rating, synopsis, ottPlatform, poster`
 
 async function searchMovies(query: string) {
   return client.fetch(`*[_type == "movie" && (title match $q || titleTanglish match $q || director match $q || cast[].name match $q)] | order(year desc)[0...5] { ${MOVIE_FIELDS} }`, { q: `*${query}*` })
@@ -95,6 +96,13 @@ function detectIntent(message: string): Intent {
 }
 
 // Response formatters
+function getPosterUrl(movie: any): string | null {
+  if (movie.poster) {
+    try { return urlFor(movie.poster).width(80).height(120).quality(70).fit('max').url() } catch {}
+  }
+  return null
+}
+
 function formatMovieList(movies: any[], title: string): string {
   if (!movies || movies.length === 0) return "I couldn't find any movies for that. Try asking about a specific genre, actor, director, or year!"
   let response = `🎬 ${title}\n\n`
@@ -103,7 +111,9 @@ function formatMovieList(movies: any[], title: string): string {
     const genres = m.genre?.join(', ') || 'N/A'
     const rating = m.rating ? ` ⭐ ${m.rating}/5` : ''
     const ott = m.ottPlatform ? ` | 📺 ${m.ottPlatform}` : ''
-    response += `${i + 1}. [${m.title}](/movies/${m.slug}) (${m.year})\n   Director: ${m.director || 'N/A'} | Cast: ${cast}\n   Genre: ${genres}${rating}${ott}\n`
+    const posterUrl = getPosterUrl(m)
+    const posterTag = posterUrl ? `[poster:${posterUrl}]` : ''
+    response += `${posterTag}${i + 1}. [${m.title}](/movies/${m.slug}) (${m.year})\n   Director: ${m.director || 'N/A'} | Cast: ${cast}\n   Genre: ${genres}${rating}${ott}\n`
     if (m.synopsis) response += `   ${m.synopsis.slice(0, 120)}${m.synopsis.length > 120 ? '...' : ''}\n`
     response += '\n'
   })
@@ -113,7 +123,9 @@ function formatMovieList(movies: any[], title: string): string {
 function formatMovieDetail(movie: any): string {
   const cast = movie.cast?.map((c: any) => c.name).filter(Boolean).join(', ') || 'N/A'
   const genres = movie.genre?.join(', ') || 'N/A'
-  let r = `🎬 [${movie.title}](/movies/${movie.slug}) (${movie.year})\n\nDirector: ${movie.director || 'N/A'}\nCast: ${cast}\nGenre: ${genres}\n`
+  const posterUrl = getPosterUrl(movie)
+  const posterTag = posterUrl ? `[poster:${posterUrl}]` : ''
+  let r = `${posterTag}🎬 [${movie.title}](/movies/${movie.slug}) (${movie.year})\n\nDirector: ${movie.director || 'N/A'}\nCast: ${cast}\nGenre: ${genres}\n`
   if (movie.rating) r += `Rating: ⭐ ${movie.rating}/5\n`
   if (movie.ottPlatform) r += `OTT: 📺 ${movie.ottPlatform}\n`
   if (movie.synopsis) r += `\nSynopsis: ${movie.synopsis}\n`

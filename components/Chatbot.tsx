@@ -224,21 +224,36 @@ export default function TamilCinemaHubChatbot() {
     }
   }
 
-  /** Parse markdown-style [text](url) links into clickable elements */
+  /** Parse [poster:URL] tags into thumbnails and [text](url) links into clickable elements */
   function renderMessageText(text: string) {
-    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g
+    // Combined regex: match [poster:URL] OR [text](url) in a single pass
+    const tagRegex = /\[poster:([^\]]+)\]|\[([^\]]+)\]\(([^)]+)\)/g
     const parts: (string | React.ReactElement)[] = []
     let lastIndex = 0
     let match: RegExpExecArray | null
-    while ((match = linkRegex.exec(text)) !== null) {
+    while ((match = tagRegex.exec(text)) !== null) {
       if (match.index > lastIndex) {
         parts.push(text.slice(lastIndex, match.index))
       }
-      parts.push(
-        <a key={match.index} href={match[2]} className="text-violet-400 hover:text-violet-300 underline decoration-violet-400/30 hover:decoration-violet-300/50 transition-colors">
-          {match[1]}
-        </a>
-      )
+      if (match[1] !== undefined) {
+        // [poster:URL] — render as small thumbnail
+        parts.push(
+          <img
+            key={`poster-${match.index}`}
+            src={match[1]}
+            alt="Poster"
+            className="inline-block w-10 h-[60px] object-cover rounded-md mr-2 mb-1 align-middle shadow-md border border-white/10"
+            loading="lazy"
+          />
+        )
+      } else {
+        // [text](url) — render as clickable link
+        parts.push(
+          <a key={match.index} href={match[3]} className="text-violet-400 hover:text-violet-300 underline decoration-violet-400/30 hover:decoration-violet-300/50 transition-colors">
+            {match[2]}
+          </a>
+        )
+      }
       lastIndex = match.index + match[0].length
     }
     if (lastIndex < text.length) parts.push(text.slice(lastIndex))
