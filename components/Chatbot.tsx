@@ -6,7 +6,6 @@ type Message = {
   role: 'user' | 'assistant' | 'system'
   content: string
   provider?: string
-  retryAfter?: number
 }
 
 const CHARS_PER_TICK = 3
@@ -135,11 +134,11 @@ export default function TamilCinemaHubChatbot() {
         const data = await res.json()
         const waitSeconds = data.retryAfter || 30
         setRateLimitCountdown(waitSeconds)
+        setIsLoading(false)
         // Keep the user message, add rate limit warning below it
         const rateLimitMsg: Message = {
           role: 'system',
           content: `You're sending messages too fast. Please wait a moment before trying again.`,
-          retryAfter: waitSeconds,
         }
         const updated = [...messagesRef.current, rateLimitMsg]
         messagesRef.current = updated
