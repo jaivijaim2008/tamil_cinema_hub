@@ -180,54 +180,98 @@ function formatMovieDetail(movie: any): string {
   return r
 }
 
-async function generateResponse(intent: Intent): Promise<string> {
+type ChatResponse = { reply: string; suggestions: string[] }
+
+async function generateResponse(intent: Intent): Promise<ChatResponse> {
+  const noSuggestions: string[] = []
   switch (intent.type) {
     case 'greeting':
-      return `🎬 Vanakkam! Welcome to TamilCinemaHub AI!\n\nI'm your Tamil cinema expert with access to 1,600+ movies from 2000–2026. I can help you with:\n\n• 🎭 Movie recommendations by genre, mood, or actor\n• 🎬 Filmographies of any Tamil actor or director\n• 🏆 Best-rated movies and hidden gems\n• 📅 Movies from a specific year\n• 🔄 Compare actors (e.g. \"Vijay vs Ajith\")\n• 📺 OTT platform availability\n\nWhat would you like to explore?`
+      return {
+        reply: `🎬 Vanakkam! Welcome to TamilCinemaHub AI!\n\nI'm your Tamil cinema expert with access to 1,600+ movies from 2000–2026. I can help you with:\n\n• 🎭 Movie recommendations by genre, mood, or actor\n• 🎬 Filmographies of any Tamil actor or director\n• 🏆 Best-rated movies and hidden gems\n• 📅 Movies from a specific year\n• 🔄 Compare actors (e.g. \"Vijay vs Ajith\")\n• 📺 OTT platform availability\n\nWhat would you like to explore?`,
+        suggestions: ['Best action movies', 'Vijay movies', 'Top rated films', 'Recommend something'],
+      }
     case 'howru':
-      return `😊 I'm doing great — powered by caffeine and Kollywood! Ready to talk about Tamil cinema. What movies are you interested in?`
+      return {
+        reply: `😊 I'm doing great — powered by caffeine and Kollywood! Ready to talk about Tamil cinema. What movies are you interested in?`,
+        suggestions: ['Best 2024 movies', 'Vijay films', 'Action movies'],
+      }
     case 'thanks':
-      return `🙏 You're welcome! I'm always here when you need Tamil movie recommendations or info. Just ask away!`
+      return {
+        reply: `🙏 You're welcome! I'm always here when you need Tamil movie recommendations or info. Just ask away!`,
+        suggestions: [],
+      }
     case 'help':
-      return `📖 How to use TamilCinemaHub AI:\n\nHere are some things you can try:\n\n🔹 \"Best action movies\" — find top-rated films by genre\n🔹 \"Vijay movies\" — full filmography of any actor\n🔹 \"Movies by Lokesh Kanagaraj\" — director filmographies\n🔹 \"Best movies of 2024\" — year-specific picks\n🔹 \"Recommend something funny\" — mood-based picks\n🔹 \"Tell me about Ponniyin Selvan\" — detailed movie info\n🔹 \"Vijay vs Ajith\" — compare two actors\n🔹 \"Netflix movies\" — OTT-specific listings\n\nI search our database of 1,600+ Tamil movies in real-time. What sounds good?`
+      return {
+        reply: `📖 How to use TamilCinemaHub AI:\n\nHere are some things you can try:\n\n🔹 \"Best action movies\" — find top-rated films by genre\n🔹 \"Vijay movies\" — full filmography of any actor\n🔹 \"Movies by Lokesh Kanagaraj\" — director filmographies\n🔹 \"Best movies of 2024\" — year-specific picks\n🔹 \"Recommend something funny\" — mood-based picks\n🔹 \"Tell me about Ponniyin Selvan\" — detailed movie info\n🔹 \"Vijay vs Ajith\" — compare two actors\n🔹 \"Netflix movies\" — OTT-specific listings\n\nI search our database of 1,600+ Tamil movies in real-time. What sounds good?`,
+        suggestions: ['Vijay movies', 'Best thriller films', 'Movies by Mani Ratnam'],
+      }
     case 'top_rated': {
       const m = await getTopRated()
-      return formatMovieList(m, '🏆 Top Rated Tamil Movies\n\nThese are the highest-rated films in our database — the cream of Kollywood!')
+      return {
+        reply: formatMovieList(m, '🏆 Top Rated Tamil Movies\n\nThese are the highest-rated films in our database — the cream of Kollywood!'),
+        suggestions: ['Best action movies', 'Best 2024 movies', 'Vijay vs Ajith'],
+      }
     }
     case 'recent': {
       const m = await getRecentMovies()
-      return formatMovieList(m, '🆕 Latest Tamil Movies\n\nFresh from the Kollywood pipeline:')
+      return {
+        reply: formatMovieList(m, '🆕 Latest Tamil Movies\n\nFresh from the Kollywood pipeline:'),
+        suggestions: ['Top rated films', 'Best comedy movies', 'Movies by Lokesh Kanagaraj'],
+      }
     }
     case 'genre': {
       const m = await getMoviesByGenre(intent.query)
-      if (m.length === 0) return `I couldn't find any ${intent.query} movies in our database. Try a different genre like Action, Comedy, Thriller, Drama, or Romance!`
-      return formatMovieList(m, `🎭 Best ${intent.query} Movies\n\nHere are some great ${intent.query.toLowerCase()} films from Tamil cinema:`)
+      if (m.length === 0) return {
+        reply: `I couldn't find any ${intent.query} movies in our database. Try a different genre like Action, Comedy, Thriller, Drama, or Romance!`,
+        suggestions: ['Action movies', 'Comedy movies', 'Thriller movies'],
+      }
+      return {
+        reply: formatMovieList(m, `🎭 Best ${intent.query} Movies\n\nHere are some great ${intent.query.toLowerCase()} films from Tamil cinema:`),
+        suggestions: [`Best ${intent.query} movies from 2024`, `Vijay ${intent.query.toLowerCase()} films`, 'Top rated films'],
+      }
     }
     case 'year': {
       const m = await getMoviesByYear(parseInt(intent.query))
-      if (m.length === 0) return `I couldn't find movies from ${intent.query} in our database. Our collection covers 2000–2026 — try a different year!`
-      return formatMovieList(m, `📅 Movies from ${intent.query}\n\nFilms released in ${intent.query}:`)
+      if (m.length === 0) return {
+        reply: `I couldn't find movies from ${intent.query} in our database. Our collection covers 2000–2026 — try a different year!`,
+        suggestions: ['Latest movies', 'Top rated films', 'Best 2024 movies'],
+      }
+      return {
+        reply: formatMovieList(m, `📅 Movies from ${intent.query}\n\nFilms released in ${intent.query}:`),
+        suggestions: [`Movies from ${parseInt(intent.query) - 1}`, 'Top rated films', 'Action movies'],
+      }
     }
     case 'mood': {
       const m = await getMoviesByGenre(intent.query)
-      if (m.length > 0) return formatMovieList(m, `✨ Perfect for your mood — ${intent.query} Movies\n\nHere are some ${intent.query.toLowerCase()} Tamil films I think you'll enjoy:`)
+      if (m.length > 0) return {
+        reply: formatMovieList(m, `✨ Perfect for your mood — ${intent.query} Movies\n\nHere are some ${intent.query.toLowerCase()} Tamil films I think you'll enjoy:`),
+        suggestions: [`More ${intent.query.toLowerCase()} films`, 'Vijay movies', 'Top rated films'],
+      }
       const fallback = await getTopRated()
-      return formatMovieList(fallback, `✨ Here are some top-rated picks to match your mood:`)
+      return {
+        reply: formatMovieList(fallback, `✨ Here are some top-rated picks to match your mood:`),
+        suggestions: ['Action movies', 'Comedy movies', 'Thriller movies'],
+      }
     }
     case 'recommend': {
       const m = await getTopRated()
-      return formatMovieList(m, `✨ My Top Picks for You\n\nHere are some highly-rated Tamil films — perfect if you're looking for something great to watch:`)
+      return {
+        reply: formatMovieList(m, `✨ My Top Picks for You\n\nHere are some highly-rated Tamil films — perfect if you're looking for something great to watch:`),
+        suggestions: ['Best comedy movies', 'Vijay films', 'Romance movies'],
+      }
     }
     case 'comparison': {
       const [name1, name2] = intent.query.split('|')
       const m1 = await searchMovies(name1)
       const m2 = await searchMovies(name2)
-      if (m1.length === 0 && m2.length === 0) return `I couldn't find movies for either \"${name1}\" or \"${name2}\". Try checking the names!`
+      if (m1.length === 0 && m2.length === 0) return {
+        reply: `I couldn't find movies for either \"${name1}\" or \"${name2}\". Try checking the names!`,
+        suggestions: ['Vijay movies', 'Ajith movies', 'Top rated films'],
+      }
       let response = `🔄 ${name1} vs ${name2}\n\n`
       if (m1.length > 0) {
         response += `── ${name1.charAt(0).toUpperCase() + name1.slice(1)} ──\n`
         m1.slice(0, 3).forEach((m: any) => {
-          const cast = m.cast?.map((c: any) => c.name).filter(Boolean).join(', ') || 'N/A'
           response += `• ${m.title} (${m.year}) — ⭐ ${m.rating || 'N/A'}/10\n  ${m.director ? `Dir: ${m.director}` : ''} ${m.genre?.length ? `| ${m.genre.join(', ')}` : ''}\n`
         })
         response += '\n'
@@ -239,36 +283,75 @@ async function generateResponse(intent: Intent): Promise<string> {
         })
       }
       response += `\nWant me to dive deeper into either one's filmography?`
-      return response.trim()
+      return {
+        reply: response.trim(),
+        suggestions: [`${name1} movies`, `${name2} movies`, 'Top rated films'],
+      }
     }
     case 'director': {
       const m = await getMoviesByDirector(intent.query)
-      if (m.length > 0) return formatMovieList(m, `🎬 Movies by ${intent.query}\n\nHere's the filmography I found:`)
+      if (m.length > 0) return {
+        reply: formatMovieList(m, `🎬 Movies by ${intent.query}\n\nHere's the filmography I found:`),
+        suggestions: [`Best ${intent.query} film`, 'Similar directors', 'Top rated films'],
+      }
       const s = await searchMovies(intent.query)
-      if (s.length > 0) return formatMovieList(s, `🔍 Results for \"${intent.query}\"`)
-      return `I couldn't find any movies by \"${intent.query}\". Try checking the spelling, or ask about a specific movie name!`
+      if (s.length > 0) return {
+        reply: formatMovieList(s, `🔍 Results for \"${intent.query}\"`),
+        suggestions: ['Top rated films', 'Action movies', 'Latest movies'],
+      }
+      return {
+        reply: `I couldn't find any movies by \"${intent.query}\". Try checking the spelling, or ask about a specific movie name!`,
+        suggestions: ['Movies by Mani Ratnam', 'Movies by Lokesh Kanagaraj', 'Top rated films'],
+      }
     }
     case 'actor': {
       const m = await getMoviesByActor(intent.query)
-      if (m.length > 0) return formatMovieList(m, `🎭 Movies featuring ${intent.query}\n\nHere's what I found in our database:`)
+      if (m.length > 0) return {
+        reply: formatMovieList(m, `🎭 Movies featuring ${intent.query}\n\nHere's what I found in our database:`),
+        suggestions: [`Best ${intent.query} film`, `Vijay vs ${intent.query}`, 'Top rated films'],
+      }
       const s = await searchMovies(intent.query)
-      if (s.length > 0) return formatMovieList(s, `🔍 Results for \"${intent.query}\"`)
-      return `I couldn't find movies featuring \"${intent.query}\". Try checking the spelling — you can search for actors like Vijay, Ajith, Dhanush, Suriya, or Vikram!`
+      if (s.length > 0) return {
+        reply: formatMovieList(s, `🔍 Results for \"${intent.query}\"`),
+        suggestions: ['Top rated films', 'Action movies', 'Latest movies'],
+      }
+      return {
+        reply: `I couldn't find movies featuring \"${intent.query}\". Try checking the spelling — you can search for actors like Vijay, Ajith, Dhanush, Suriya, or Vikram!`,
+        suggestions: ['Vijay movies', 'Ajith movies', 'Dhanush movies'],
+      }
     }
     case 'ott': {
       const platform = intent.query.charAt(0).toUpperCase() + intent.query.slice(1)
       const m = await client.fetch(`*[_type == "movie" && ottPlatform match $p] | order(year desc)[0...5] { ${MOVIE_FIELDS} }`, { p: `*${intent.query}*` })
-      if (m.length > 0) return formatMovieList(m, `📺 Tamil Movies on ${platform}\n\nHere's what's streaming:`)
-      return `I couldn't find specific ${platform} listings in our database. Try asking about a genre or actor instead!`
+      if (m.length > 0) return {
+        reply: formatMovieList(m, `📺 Tamil Movies on ${platform}\n\nHere's what's streaming:`),
+        suggestions: [`Best ${platform} movies`, 'Top rated films', 'Latest movies'],
+      }
+      return {
+        reply: `I couldn't find specific ${platform} listings in our database. Try asking about a genre or actor instead!`,
+        suggestions: ['Action movies', 'Comedy movies', 'Top rated films'],
+      }
     }
     case 'search': {
       const m = await searchMovies(intent.query)
-      if (m.length === 1) return formatMovieDetail(m[0])
-      if (m.length > 0) return formatMovieList(m, `🔍 Results for \"${intent.query}\"`)
-      return `I couldn't find any movies matching \"${intent.query}\". Try a movie name, actor, director, or genre!\n\nSome popular searches:\n• \"Vijay movies\"\n• \"Best 2024 movies\"\n• \"Action films\"\n• \"Movies by Mani Ratnam\"`
+      if (m.length === 1) return {
+        reply: formatMovieDetail(m[0]),
+        suggestions: [`Movies like ${m[0].title}`, `Movies by ${m[0].director || 'the director'}`, 'Top rated films'],
+      }
+      if (m.length > 0) return {
+        reply: formatMovieList(m, `🔍 Results for \"${intent.query}\"`),
+        suggestions: ['Top rated films', 'Action movies', 'Latest movies'],
+      }
+      return {
+        reply: `I couldn't find any movies matching \"${intent.query}\". Try a movie name, actor, director, or genre!\n\nSome popular searches:\n• \"Vijay movies\"\n• \"Best 2024 movies\"\n• \"Action films\"\n• \"Movies by Mani Ratnam\"`,
+        suggestions: ['Vijay movies', 'Best 2024 movies', 'Action films'],
+      }
     }
     default:
-      return `I'm not quite sure what you're asking about. Here are some things I can help with:\n\n• \"best action movies\" — genre picks\n• \"Vijay movies\" — actor filmographies\n• \"movies by Mani Ratnam\" — director picks\n• \"movies from 2024\" — year-specific\n• \"Tell me about Vikram\" — movie details\n• \"Vijay vs Ajith\" — compare actors\n• \"recommend something funny\" — mood picks\n\nWhat interests you?`
+      return {
+        reply: `I'm not quite sure what you're asking about. Here are some things I can help with:\n\n• \"best action movies\" — genre picks\n• \"Vijay movies\" — actor filmographies\n• \"movies by Mani Ratnam\" — director picks\n• \"movies from 2024\" — year-specific\n• \"Tell me about Vikram\" — movie details\n• \"Vijay vs Ajith\" — compare actors\n• \"recommend something funny\" — mood picks\n\nWhat interests you?`,
+        suggestions: ['Best action movies', 'Vijay films', 'Recommend something'],
+      }
   }
 }
 
@@ -320,8 +403,8 @@ export async function POST(req: NextRequest) {
     log('info', 'Chat request', { ip, msg: lastUserMsg.slice(0, 80) })
     const intent = detectIntent(lastUserMsg)
     log('info', 'Intent detected', { type: intent.type, query: intent.query })
-    const reply = await generateResponse(intent)
-    return NextResponse.json({ reply, provider: 'TamilCinemaHub Local' })
+    const { reply, suggestions } = await generateResponse(intent)
+    return NextResponse.json({ reply, suggestions, provider: 'TamilCinemaHub Local' })
   } catch (err: any) {
     log('error', 'Chat error', { error: err?.message, stack: err?.stack?.slice(0, 300) })
     return NextResponse.json(

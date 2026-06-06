@@ -6,6 +6,7 @@ type Message = {
   role: 'user' | 'assistant' | 'system'
   content: string
   provider?: string
+  suggestions?: string[]
 }
 
 const CHARS_PER_TICK = 3
@@ -38,7 +39,7 @@ export default function TamilCinemaHubChatbot() {
   // ── Typewriter streaming state ──
   const [streamingText, setStreamingText] = useState<string | null>(null)
   const [streamingProvider, setStreamingProvider] = useState<string | undefined>()
-  const streamRef = useRef({ full: '', idx: 0, timer: null as any, provider: undefined as string | undefined })
+  const streamRef = useRef({ full: '', idx: 0, timer: null as any, provider: undefined as string | undefined, suggestions: undefined as string[] | undefined })
 
   // Load feedback from localStorage on mount
   useEffect(() => {
@@ -106,11 +107,11 @@ export default function TamilCinemaHubChatbot() {
   }, [])
 
   /** Start typewriter animation for a response */
-  const startStreaming = useCallback((fullText: string, provider?: string) => {
+  const startStreaming = useCallback((fullText: string, provider?: string, suggestions?: string[]) => {
     // Clear any existing stream
     if (streamRef.current.timer) clearInterval(streamRef.current.timer)
 
-    streamRef.current = { full: fullText, idx: 0, timer: null, provider }
+    streamRef.current = { full: fullText, idx: 0, timer: null, provider, suggestions }
     setStreamingText('')
     setStreamingProvider(provider)
     setIsLoading(false) // Stop loading dots, show streaming instead
@@ -124,7 +125,7 @@ export default function TamilCinemaHubChatbot() {
         clearInterval(s.timer!)
         s.timer = null
         // Commit the streamed message to messages array + sync ref
-        const committed = [...messagesRef.current, { role: 'assistant' as const, content: s.full, provider: s.provider }]
+        const committed = [...messagesRef.current, { role: 'assistant' as const, content: s.full, provider: s.provider, suggestions: s.suggestions }]
         messagesRef.current = committed
         setMessages(committed)
         setStreamingText(null)
@@ -142,7 +143,7 @@ export default function TamilCinemaHubChatbot() {
       clearInterval(s.timer)
       s.timer = null
       // Commit + sync ref so sendMessage sees the full conversation
-      const committed = [...messagesRef.current, { role: 'assistant' as const, content: s.full, provider: s.provider }]
+      const committed = [...messagesRef.current, { role: 'assistant' as const, content: s.full, provider: s.provider, suggestions: s.suggestions }]
       messagesRef.current = committed
       setMessages(committed)
       setStreamingText(null)
@@ -195,9 +196,10 @@ export default function TamilCinemaHubChatbot() {
       if (!res.ok) throw new Error('Server error')
       const data = await res.json()
       const reply = data.reply || 'Sorry, I could not get a response. Please try again.'
+      const suggestions = data.suggestions || []
 
       // Start typewriter effect
-      startStreaming(reply, data.provider)
+      startStreaming(reply, data.provider, suggestions)
     } catch {
       startStreaming('All AI providers are currently busy. Please try again in a moment.')
     }
@@ -208,6 +210,14 @@ export default function TamilCinemaHubChatbot() {
     setFeedback({})
     localStorage.removeItem('chatbot-messages')
     localStorage.removeItem('chatbot-feedback')
+  }
+
+  function handleSuggestionClick(suggestion: string) {
+    setInput(suggestion)
+    // Small delay to let setInput take effect, then send
+    setTimeout(() => {
+      sendMessage()
+    }, 50)
   }
 
   function handleFeedback(index: number, type: 'up' | 'down') {
@@ -422,6 +432,35 @@ export default function TamilCinemaHubChatbot() {
                 </div>
               </div>
             )}
+
+            {/* Smart follow-up suggestions after the latest assistant message */}
+            {!isLoading && !streamingText && (() => {
+              // Find the latest assistant message with suggestions
+              for (let i = messages.length - 1; i >= 0; i--) {
+                const msg = messages[i]
+                if (msg.role === 'assistant' && msg.suggestions && msg.suggestions.length > 0) {
+                  // Only show if this is the last assistant message
+                  const isLatest = !messages.slice(i + 1).some(m => m.role === 'assistant')
+                  if (!isLatest) break
+                  return (
+                    <div className="flex justify-start pl-8">
+                      <div className="flex flex-wrap gap-1.5 max-w-[78%]">
+                        {msg.suggestions.map((s) => (
+                          <button
+                            key={s}
+                            onClick={() => handleSuggestionClick(s)}
+                            className="text-[11px] bg-violet-900/40 border border-violet-700/30 text-violet-300 px-3 py-1.5 rounded-full hover:bg-violet-800/50 hover:border-violet-600/40 transition-all whitespace-nowrap active:scale-95"
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                }
+              }
+              return null
+            })()}
 
             <div ref={messagesEndRef} />
           </div>
