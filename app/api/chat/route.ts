@@ -5,7 +5,7 @@ import { client } from '@/sanity/client'
 const MOVIE_FIELDS = `_id, title, titleTanglish, "slug": slug.current, year, director, cast[]->{name}, genre, rating, synopsis, ottPlatform`
 
 async function searchMovies(query: string) {
-  return client.fetch(`*[_type == "movie" && (title match $q || titleTanglish match $q || director match $q || $q in cast[].name)] | order(year desc)[0...5] { ${MOVIE_FIELDS} }`, { q: `*${query}*` })
+  return client.fetch(`*[_type == "movie" && (title match $q || titleTanglish match $q || director match $q || cast[].name match $q)] | order(year desc)[0...5] { ${MOVIE_FIELDS} }`, { q: `*${query}*` })
 }
 
 async function getMoviesByGenre(genre: string) {
@@ -73,6 +73,13 @@ function detectIntent(message: string): Intent {
     if (match) return { type: 'director', query: match[1].trim() }
   }
 
+  // Movie-specific patterns FIRST (before known actors, so "Tell me about Vikram" searches the DB)
+  const moviePatterns = [/(?:about|tell me about|info on|details of|what is|what's)\s+(.+?)(?:\?|$)/i, /(?:movie|film|padam)\s+(.+?)(?:\?|$)/i]
+  for (const pattern of moviePatterns) {
+    const match = lower.match(pattern)
+    if (match && match[1].trim().length > 1) return { type: 'search', query: match[1].trim() }
+  }
+
   const knownActors = ['rajinikanth', 'rajini', 'kamal haasan', 'kamal', 'vijay', 'ajith', 'dhanush', 'suriya', 'vikram', 'simbu', 'karthi', 'nayanthara', 'samantha', 'trisha', 'anushka', 'keerthy suresh', 'prabhas', 'allu arjun', 'lokesh kanagaraj', 'mani ratnam', 'shankar']
   for (const actor of knownActors) {
     if (lower.includes(actor)) return { type: 'actor', query: actor }
@@ -81,12 +88,6 @@ function detectIntent(message: string): Intent {
   for (const pattern of actorPatterns) {
     const match = lower.match(pattern)
     if (match) return { type: 'actor', query: match[1].trim() }
-  }
-
-  const moviePatterns = [/(?:about|tell me about|info on|details of|what is|what's)\s+(.+?)(?:\?|$)/i, /(?:movie|film|padam)\s+(.+?)(?:\?|$)/i]
-  for (const pattern of moviePatterns) {
-    const match = lower.match(pattern)
-    if (match && match[1].trim().length > 1) return { type: 'search', query: match[1].trim() }
   }
 
   if (lower.length > 2) return { type: 'search', query: lower }
