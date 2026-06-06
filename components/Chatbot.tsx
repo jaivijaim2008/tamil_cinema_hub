@@ -48,13 +48,27 @@ export default function TamilCinemaHubChatbot() {
     } catch {}
   }, [])
 
-  // Persist messages to localStorage (skip ephemeral system messages, cap at 50)
+  // Debounced save: only write to localStorage after 500ms of no message changes
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => {
-    const toSave = messages.filter((m) => m.role !== 'system').slice(-50)
-    try {
-      localStorage.setItem('chatbot-messages', JSON.stringify(toSave))
-    } catch {}
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+    saveTimerRef.current = setTimeout(() => {
+      const toSave = messages.filter((m) => m.role !== 'system').slice(-50)
+      try {
+        localStorage.setItem('chatbot-messages', JSON.stringify(toSave))
+      } catch {}
+    }, 500)
+    return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current) }
   }, [messages])
+  // Save on unmount only — uses messagesRef so it never re-runs
+  useEffect(() => {
+    return () => {
+      const toSave = messagesRef.current.filter((m) => m.role !== 'system').slice(-50)
+      try {
+        localStorage.setItem('chatbot-messages', JSON.stringify(toSave))
+      } catch {}
+    }
+  }, [])
 
   // Keep refs in sync with state
   useEffect(() => {
