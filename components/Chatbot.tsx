@@ -22,6 +22,7 @@ export default function TamilCinemaHubChatbot() {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [rateLimitCountdown, setRateLimitCountdown] = useState(0)
+  const [feedback, setFeedback] = useState<Record<number, 'up' | 'down'>>({})
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesRef = useRef<Message[]>(messages)
   const isLoadingRef = useRef(false)
@@ -30,6 +31,14 @@ export default function TamilCinemaHubChatbot() {
   const [streamingText, setStreamingText] = useState<string | null>(null)
   const [streamingProvider, setStreamingProvider] = useState<string | undefined>()
   const streamRef = useRef({ full: '', idx: 0, timer: null as any, provider: undefined as string | undefined })
+
+  // Load feedback from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('chatbot-feedback')
+      if (saved) setFeedback(JSON.parse(saved))
+    } catch {}
+  }, [])
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -157,6 +166,20 @@ export default function TamilCinemaHubChatbot() {
     }
   }, [input, startStreaming, finishStream])
 
+  function handleFeedback(index: number, type: 'up' | 'down') {
+    setFeedback((prev) => {
+      const next = { ...prev }
+      // Toggle off if same reaction clicked again
+      if (next[index] === type) {
+        delete next[index]
+      } else {
+        next[index] = type
+      }
+      localStorage.setItem('chatbot-feedback', JSON.stringify(next))
+      return next
+    })
+  }
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -235,6 +258,37 @@ export default function TamilCinemaHubChatbot() {
                       </div>
                       {msg.provider && (
                         <p className="text-[10px] text-gray-600 mt-1 px-1">via {msg.provider}</p>
+                      )}
+                      {/* Thumbs up / down feedback */}
+                      {msg.role === 'assistant' && (
+                        <div className="flex items-center gap-1 mt-0.5 px-1">
+                          <button
+                            onClick={() => handleFeedback(index, 'up')}
+                            className={`p-0.5 rounded transition-all ${
+                              feedback[index] === 'up'
+                                ? 'text-green-400 scale-110'
+                                : 'text-gray-600 hover:text-green-400/70'
+                            }`}
+                            aria-label="Helpful"
+                          >
+                            <svg className="w-3 h-3" fill={feedback[index] === 'up' ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleFeedback(index, 'down')}
+                            className={`p-0.5 rounded transition-all ${
+                              feedback[index] === 'down'
+                                ? 'text-red-400 scale-110'
+                                : 'text-gray-600 hover:text-red-400/70'
+                            }`}
+                            aria-label="Not helpful"
+                          >
+                            <svg className="w-3 h-3" fill={feedback[index] === 'down' ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10zM17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3" />
+                            </svg>
+                          </button>
+                        </div>
                       )}
                     </div>
                   </>
