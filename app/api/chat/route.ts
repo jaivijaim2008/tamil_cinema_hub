@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { client } from '@/sanity/client'
 
 // Sanity GROQ queries
-const MOVIE_FIELDS = `_id, title, titleTanglish, "slug": slug.current, year, director, cast[]->{name}, genre, rating, synopsis, ottPlatform`
+const MOVIE_FIELDS = `_id, title, titleTanglish, "slug": slug.current, year, director, cast[]{name}, genre, rating, synopsis, ottPlatform`
 
 async function searchMovies(query: string) {
   return client.fetch(`*[_type == "movie" && (title match $q || titleTanglish match $q || director match $q || cast[].name match $q)] | order(year desc)[0...5] { ${MOVIE_FIELDS} }`, { q: `*${query}*` })
