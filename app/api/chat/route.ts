@@ -252,7 +252,6 @@ export async function POST(req: NextRequest) {
   }
 
   const { messages } = await req.json()
-  const errors: { provider: string; message: string; status?: number }[] = []
   const msgCount = messages?.length ?? 0
   const lastUserMsg = messages?.filter((m: any) => m.role === 'user').pop()?.content?.slice(0, 80) ?? ''
 
@@ -271,11 +270,10 @@ export async function POST(req: NextRequest) {
       const statusMatch = err.message?.match(/(\d{3})/)
       const status = statusMatch ? parseInt(statusMatch[1]) : undefined
       log('warn', `${provider.name} exhausted`, { error: err.message, status })
-      errors.push({ provider: provider.name, message: err.message, status })
     }
   }
 
-  log('error', 'All providers exhausted', { errors, msgCount, lastUserMsg })
+  log('error', 'All providers exhausted', { msgCount, lastUserMsg })
   return NextResponse.json(
     { error: 'All AI providers are currently busy. Please try again in a moment.' },
     { status: 503 }
