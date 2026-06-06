@@ -76,9 +76,18 @@ const providers = [
         role: m.role === 'assistant' ? 'model' as const : 'user' as const,
         parts: [{ text: m.content }]
       }))
-      if (mapped.length > 0 && mapped[0].role !== 'user') {
-        mapped = mapped.slice(1) // Drop leading model message
+      // Drop leading model messages and merge consecutive same-role messages
+      while (mapped.length > 0 && mapped[0].role !== 'user') {
+        mapped = mapped.slice(1)
       }
+      mapped = mapped.reduce((acc: typeof mapped, cur) => {
+        if (acc.length && acc[acc.length - 1].role === cur.role) {
+          acc[acc.length - 1].parts[0].text += '\n' + cur.parts[0].text
+        } else {
+          acc.push(cur)
+        }
+        return acc
+      }, [])
       if (mapped.length === 0) return null // No user message to send
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
