@@ -66,6 +66,22 @@ You can help with:
 - Comparing movies
 - Answering trivia about Tamil cinema`
 
+// Retry wrapper with exponential backoff for transient errors (429, 503, 502)
+async function withRetry<T>(fn: () => Promise<T>, retries = 2, baseDelayMs = 1000): Promise<T> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn()
+    } catch (err: any) {
+      const isTransient = err.message?.match(/(429|503|502|500)/) && attempt < retries
+      if (!isTransient) throw err
+      const delay = baseDelayMs * Math.pow(2, attempt) // 1s, 2s
+      log('warn', `Transient error, retrying in ${delay}ms`, { attempt: attempt + 1, error: err.message })
+      await new Promise(r => setTimeout(r, delay))
+    }
+  }
+  throw new Error('Retry exhausted')
+}
+
 const providers = [
   {
     name: 'Gemini',
@@ -242,52 +258,26 @@ export async function POST(req: NextRequest) {
 
   log('info', 'Chat request received', { ip, msgCount, lastUserMsg })
 
-  // First attempt
+  // Try each provider with built-in retry + backoff
   for (const provider of providers) {
     try {
       log('info', `Trying ${provider.name}`, { msgCount })
-      const reply = await provider.call(messages)
+      const reply = await withRetry(() => provider.call(messages), 2, 1500)
       if (reply && reply.trim().length > 0) {
         log('info', `Success with ${provider.name}`, { replyLen: reply.length })
         return NextResponse.json({ reply, provider: provider.name })
       }
-      throw new Error('Empty response')
     } catch (err: any) {
       const statusMatch = err.message?.match(/(\d{3})/)
       const status = statusMatch ? parseInt(statusMatch[1]) : undefined
-      log('warn', `${provider.name} failed`, { error: err.message, status, attempt: 1 })
+      log('warn', `${provider.name} exhausted`, { error: err.message, status })
       errors.push({ provider: provider.name, message: err.message, status })
-      await new Promise(r => setTimeout(r, 300))
-      continue
-    }
-  }
-
-  // Auto retry after 2 seconds
-  log('warn', 'All providers failed on first attempt, retrying in 2s', { errors: errors.map(e => `${e.provider}: ${e.message}`) })
-  await new Promise(r => setTimeout(r, 2000))
-
-  for (const provider of providers) {
-    try {
-      const reply = await provider.call(messages)
-      if (reply && reply.trim().length > 0) {
-        log('info', `Retry success with ${provider.name}`, { replyLen: reply.length })
-        return NextResponse.json({ reply, provider: provider.name })
-      }
-    } catch (err: any) {
-      const statusMatch = err.message?.match(/(\d{3})/)
-      const status = statusMatch ? parseInt(statusMatch[1]) : undefined
-      log('warn', `Retry ${provider.name} failed`, { error: err.message, status, attempt: 2 })
-      errors.push({ provider: provider.name, message: err.message, status })
-      continue
     }
   }
 
   log('error', 'All providers exhausted', { errors, msgCount, lastUserMsg })
   return NextResponse.json(
-    {
-      error: 'All AI providers are currently busy. Please try again in a moment.',
-      details: errors.map(e => `${e.provider}: ${e.message}`)
-    },
+    { error: 'All AI providers are currently busy. Please try again in a moment.' },
     { status: 503 }
   )
 }
