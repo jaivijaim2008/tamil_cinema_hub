@@ -135,13 +135,13 @@ export default function TamilCinemaHubChatbot() {
         const data = await res.json()
         const waitSeconds = data.retryAfter || 30
         setRateLimitCountdown(waitSeconds)
-        // Remove user message and show rate limit warning instead
+        // Keep the user message, add rate limit warning below it
         const rateLimitMsg: Message = {
           role: 'system',
           content: `You're sending messages too fast. Please wait a moment before trying again.`,
           retryAfter: waitSeconds,
         }
-        const updated = [...messagesRef.current.slice(0, -1), rateLimitMsg]
+        const updated = [...messagesRef.current, rateLimitMsg]
         messagesRef.current = updated
         setMessages(updated)
         return
@@ -212,7 +212,7 @@ export default function TamilCinemaHubChatbot() {
                   <div className="w-full flex justify-center">
                     <div className="flex items-center gap-2 bg-amber-900/30 border border-amber-500/30 text-amber-200 text-xs px-3.5 py-2.5 rounded-xl max-w-[85%]">
                       <span className="text-amber-400 text-base flex-shrink-0">⏱</span>
-                      <span>{msg.content}{rateLimitCountdown > 0 && ` (${rateLimitCountdown}s)`}</span>
+                      <span>{msg.content}{index === messages.length - 1 && rateLimitCountdown > 0 && ` (${rateLimitCountdown}s)`}</span>
                     </div>
                   </div>
                 ) : (
