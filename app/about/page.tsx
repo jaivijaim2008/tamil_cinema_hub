@@ -8,11 +8,20 @@ export const metadata = {
     description: 'Learn about TamilCinemaHub, our mission to celebrate Tamil cinema, and the AI-powered tools we built for movie lovers.',
     type: 'website',
     url: 'https://tamilcinemahub.xyz/about',
+    images: [
+      {
+        url: 'https://tamilcinemahub.xyz/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'About TamilCinemaHub',
+      },
+    ],
   },
   twitter: {
-    card: 'summary' as const,
+    card: 'summary_large_image' as const,
     title: 'About Us — TamilCinemaHub',
     description: 'Learn about TamilCinemaHub, our mission to celebrate Tamil cinema, and the AI-powered tools we built for movie lovers.',
+    images: ['https://tamilcinemahub.xyz/opengraph-image'],
   },
   alternates: {
     canonical: 'https://tamilcinemahub.xyz/about',

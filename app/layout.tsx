@@ -30,12 +30,21 @@ export const metadata: Metadata = {
     title: 'TamilCinemaHub — Tamil Movies, Reviews & AI Recommendations',
     description: 'Your complete guide to Tamil cinema. Explore 1600+ Tamil movies from 2000 to 2026, read reviews, and get AI-powered recommendations.',
     url: 'https://tamilcinemahub.xyz',
+    images: [
+      {
+        url: 'https://tamilcinemahub.xyz/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'TamilCinemaHub — Tamil Movies, Reviews & AI Recommendations',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'TamilCinemaHub — Tamil Movies, Reviews & AI Recommendations',
     description: 'Your complete guide to Tamil cinema. Explore 1600+ Tamil movies from 2000 to 2026.',
     site: '@TamilCinemaHub',
+    images: ['https://tamilcinemahub.xyz/opengraph-image'],
   },
   robots: {
     index: true,

@@ -27,12 +27,21 @@ export const metadata = {
       'The ultimate Tamil cinema database. Discover 1600+ Tamil movies from 2000 to 2026, read reviews, and get AI-powered personalized recommendations.',
     type: 'website',
     url: 'https://tamilcinemahub.xyz',
+    images: [
+      {
+        url: 'https://tamilcinemahub.xyz/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'TamilCinemaHub — Tamil Movie Reviews, Database & Recommendations',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image' as const,
     title: 'TamilCinemaHub — Tamil Movie Reviews, Database & Recommendations',
     description:
       'The ultimate Tamil cinema database. Discover 1600+ Tamil movies from 2000 to 2026, read reviews, and get AI-powered personalized recommendations.',
+    images: ['https://tamilcinemahub.xyz/opengraph-image'],
   },
   alternates: {
     canonical: 'https://tamilcinemahub.xyz',

@@ -8,11 +8,20 @@ export const metadata = {
     description: 'Privacy Policy and Terms of Use for TamilCinemaHub. Learn how we handle cookies, data, and Google AdSense advertising.',
     type: 'website',
     url: 'https://tamilcinemahub.xyz/privacy-policy',
+    images: [
+      {
+        url: 'https://tamilcinemahub.xyz/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'TamilCinemaHub Privacy Policy',
+      },
+    ],
   },
   twitter: {
-    card: 'summary' as const,
+    card: 'summary_large_image' as const,
     title: 'Privacy Policy — TamilCinemaHub',
     description: 'Privacy Policy and Terms of Use for TamilCinemaHub. Learn how we handle cookies, data, and Google AdSense advertising.',
+    images: ['https://tamilcinemahub.xyz/opengraph-image'],
   },
   alternates: {
     canonical: 'https://tamilcinemahub.xyz/privacy-policy',

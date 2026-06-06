@@ -27,11 +27,20 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
       title,
       description: 'Browse and search Tamil movies from 2000 to 2026. Ratings, cast, reviews, and OTT availability.',
       type: 'website',
+    images: [
+      {
+        url: 'https://tamilcinemahub.xyz/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'TamilCinemaHub Movies Database',
+      },
+    ],
     },
     twitter: {
       card: 'summary_large_image' as const,
       title,
       description: 'Browse and search Tamil movies from 2000 to 2026. Ratings, cast, reviews, and OTT availability.',
+      images: ['https://tamilcinemahub.xyz/opengraph-image'],
     },
     alternates: {
       canonical: 'https://tamilcinemahub.xyz/movies',
