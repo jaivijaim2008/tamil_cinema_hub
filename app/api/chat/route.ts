@@ -57,20 +57,10 @@ You can help with:
 - Comparing movies
 - Answering trivia about Tamil cinema`
 
-// Retry wrapper with exponential backoff for transient errors (429, 503, 502)
-async function withRetry<T>(fn: () => Promise<T>, retries = 2, baseDelayMs = 1000): Promise<T> {
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      return await fn()
-    } catch (err: any) {
-      const isTransient = err.message?.match(/(429|503|502|500)/) && attempt < retries
-      if (!isTransient) throw err
-      const delay = baseDelayMs * Math.pow(2, attempt) // 1s, 2s
-      log('warn', `Transient error, retrying in ${delay}ms`, { attempt: attempt + 1, error: err.message })
-      await new Promise(r => setTimeout(r, delay))
-    }
-  }
-  throw new Error('Retry exhausted')
+// Total timeout guard — Vercel Hobby plan kills functions after ~10s
+const MAX_FUNCTION_MS = 9_000
+function timeLeft(start: number) {
+  return MAX_FUNCTION_MS - (Date.now() - start)
 }
 
 const providers = [
@@ -249,11 +239,21 @@ export async function POST(req: NextRequest) {
 
     log('info', 'Chat request received', { ip, msgCount, lastUserMsg })
 
-    // Try each provider with built-in retry + backoff
+    // Try each provider — the 6-provider chain IS the retry (no per-provider retry)
+    const start = Date.now()
     for (const provider of providers) {
+      if (timeLeft(start) < 2000) {
+        log('warn', 'Function timeout approaching, stopping provider chain')
+        break
+      }
       try {
         log('info', `Trying ${provider.name}`, { msgCount })
-        const reply = await withRetry(() => provider.call(messages), 2, 1500)
+        const reply = await Promise.race([
+          provider.call(messages),
+          new Promise<null>((_, reject) =>
+            setTimeout(() => reject(new Error('Provider timeout')), Math.min(timeLeft(start) - 500, 8000))
+          ),
+        ])
         if (reply && reply.trim().length > 0) {
           log('info', `Success with ${provider.name}`, { replyLen: reply.length })
           return NextResponse.json({ reply, provider: provider.name })
@@ -261,7 +261,7 @@ export async function POST(req: NextRequest) {
       } catch (err: any) {
         const statusMatch = err.message?.match(/(\d{3})/)
         const status = statusMatch ? parseInt(statusMatch[1]) : undefined
-        log('warn', `${provider.name} exhausted`, { error: err.message, status })
+        log('warn', `${provider.name} failed`, { error: err.message, status })
       }
     }
 
