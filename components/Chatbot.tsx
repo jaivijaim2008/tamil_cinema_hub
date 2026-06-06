@@ -242,7 +242,7 @@ export default function TamilCinemaHubChatbot() {
             key={`poster-${match.index}`}
             src={match[1]}
             alt="Poster"
-            className="inline-block w-10 h-[60px] object-cover rounded-md mr-2 mb-1 align-middle shadow-md border border-white/10"
+            className="inline-block w-12 h-[72px] object-cover rounded-md mr-2 mb-1 align-middle shadow-md border border-white/10"
             loading="lazy"
           />
         )

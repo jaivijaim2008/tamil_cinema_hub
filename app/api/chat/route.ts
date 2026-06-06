@@ -98,7 +98,7 @@ function detectIntent(message: string): Intent {
 // Response formatters
 function getPosterUrl(movie: any): string | null {
   if (movie.poster) {
-    try { return urlFor(movie.poster).width(80).height(120).quality(70).fit('max').url() } catch { /* fallthrough */ }
+    try { return urlFor(movie.poster).width(100).height(150).quality(75).fit('max').url() } catch { /* fallthrough */ }
   }
   if (movie.posterUrl && typeof movie.posterUrl === 'string') return movie.posterUrl
   return null
