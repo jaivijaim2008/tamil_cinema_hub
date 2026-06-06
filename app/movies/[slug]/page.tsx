@@ -146,8 +146,9 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
 
   const backdropUrl = movie.backdropUrl || null
   const rating = movie.rating || 0
-  const fullStars = Math.floor(rating)
-  const hasHalf = rating - fullStars >= 0.5
+  const ratingOutOf5 = rating / 2
+  const fullStars = Math.floor(ratingOutOf5)
+  const hasHalf = ratingOutOf5 - fullStars >= 0.25
 
   const jsonLd = [
     {
@@ -163,7 +164,7 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
       aggregateRating: {
         '@type': 'AggregateRating',
         ratingValue: rating,
-        bestRating: '5',
+        bestRating: '10',
         ratingCount: '1',
       },
     },
@@ -325,7 +326,7 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
                   )
                 })}
                 <span className="ml-2 text-white font-black text-lg">{rating.toFixed(1)}</span>
-                <span className="text-white/30 text-sm ml-0.5">/5</span>
+                <span className="text-white/30 text-sm ml-0.5">/10</span>
               </div>
 
               <Pill>{movie.year}</Pill>

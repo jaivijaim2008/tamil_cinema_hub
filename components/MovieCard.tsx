@@ -42,8 +42,9 @@ export default function MovieCard({ movie }: MovieCardProps) {
   const primaryGenre = movie.genre?.[0]?.toLowerCase() || 'default'
   const accentColor = CATEGORY_COLORS[primaryGenre] ?? CATEGORY_COLORS.default
 
-  const fullStars  = Math.floor(movie.rating)
-  const hasHalf    = movie.rating - fullStars >= 0.5
+  const ratingOutOf5 = movie.rating / 2
+  const fullStars  = Math.floor(ratingOutOf5)
+  const hasHalf    = ratingOutOf5 - fullStars >= 0.25
 
   return (
     <Link href={`/movies/${movie.slug}`} className="group block h-full">

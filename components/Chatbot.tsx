@@ -98,6 +98,13 @@ export default function TamilCinemaHubChatbot() {
     }
   }, [])
 
+  // Listen for 'open-chatbot' custom event (from homepage CTA button)
+  useEffect(() => {
+    const handler = () => setIsOpen(true)
+    window.addEventListener('open-chatbot', handler)
+    return () => window.removeEventListener('open-chatbot', handler)
+  }, [])
+
   /** Start typewriter animation for a response */
   const startStreaming = useCallback((fullText: string, provider?: string) => {
     // Clear any existing stream
