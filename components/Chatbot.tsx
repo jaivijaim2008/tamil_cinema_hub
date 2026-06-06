@@ -217,11 +217,32 @@ export default function TamilCinemaHubChatbot() {
     })
   }
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       sendMessage()
     }
+  }
+
+  /** Parse markdown-style [text](url) links into clickable elements */
+  function renderMessageText(text: string) {
+    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g
+    const parts: (string | React.ReactElement)[] = []
+    let lastIndex = 0
+    let match: RegExpExecArray | null
+    while ((match = linkRegex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(text.slice(lastIndex, match.index))
+      }
+      parts.push(
+        <a key={match.index} href={match[2]} className="text-violet-400 hover:text-violet-300 underline decoration-violet-400/30 hover:decoration-violet-300/50 transition-colors">
+          {match[1]}
+        </a>
+      )
+      lastIndex = match.index + match[0].length
+    }
+    if (lastIndex < text.length) parts.push(text.slice(lastIndex))
+    return parts
   }
 
   return (
@@ -297,13 +318,13 @@ export default function TamilCinemaHubChatbot() {
 
                     <div className={`max-w-[78%] ${msg.role === 'user' ? 'items-end' : 'items-start'} flex flex-col`}>
                       <div
-                        className={`px-3.5 py-2.5 text-sm leading-relaxed ${
+                        className={`px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-line ${
                           msg.role === 'user'
                             ? 'bg-gradient-to-br from-violet-600 to-indigo-700 text-white rounded-2xl rounded-br-sm shadow-lg'
                             : 'bg-white/8 border border-white/8 text-gray-200 rounded-2xl rounded-bl-sm'
                         }`}
                       >
-                        {msg.content}
+                        {msg.role === 'assistant' ? renderMessageText(msg.content) : msg.content}
                       </div>
                       {msg.provider && (
                         <p className="text-[10px] text-gray-600 mt-1 px-1">via {msg.provider}</p>
@@ -366,8 +387,8 @@ export default function TamilCinemaHubChatbot() {
                   <span className="text-white text-xs">🎬</span>
                 </div>
                 <div className="max-w-[78%] flex flex-col items-start">
-                  <div className="px-3.5 py-2.5 text-sm leading-relaxed bg-white/8 border border-white/8 text-gray-200 rounded-2xl rounded-bl-sm">
-                    {streamingText}
+                  <div className="px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-line bg-white/8 border border-white/8 text-gray-200 rounded-2xl rounded-bl-sm">
+                    {renderMessageText(streamingText)}
                     <span className="inline-block w-0.5 h-4 bg-violet-400 ml-0.5 align-text-bottom animate-pulse" />
                   </div>
                   <button

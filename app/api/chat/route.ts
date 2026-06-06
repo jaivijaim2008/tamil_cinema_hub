@@ -103,7 +103,7 @@ function formatMovieList(movies: any[], title: string): string {
     const genres = m.genre?.join(', ') || 'N/A'
     const rating = m.rating ? ` ⭐ ${m.rating}/5` : ''
     const ott = m.ottPlatform ? ` | 📺 ${m.ottPlatform}` : ''
-    response += `${i + 1}. ${m.title} (${m.year})\n   Director: ${m.director || 'N/A'} | Cast: ${cast}\n   Genre: ${genres}${rating}${ott}\n`
+    response += `${i + 1}. [${m.title}](/movies/${m.slug}) (${m.year})\n   Director: ${m.director || 'N/A'} | Cast: ${cast}\n   Genre: ${genres}${rating}${ott}\n`
     if (m.synopsis) response += `   ${m.synopsis.slice(0, 120)}${m.synopsis.length > 120 ? '...' : ''}\n`
     response += '\n'
   })
@@ -113,11 +113,11 @@ function formatMovieList(movies: any[], title: string): string {
 function formatMovieDetail(movie: any): string {
   const cast = movie.cast?.map((c: any) => c.name).filter(Boolean).join(', ') || 'N/A'
   const genres = movie.genre?.join(', ') || 'N/A'
-  let r = `🎬 ${movie.title} (${movie.year})\n\nDirector: ${movie.director || 'N/A'}\nCast: ${cast}\nGenre: ${genres}\n`
+  let r = `🎬 [${movie.title}](/movies/${movie.slug}) (${movie.year})\n\nDirector: ${movie.director || 'N/A'}\nCast: ${cast}\nGenre: ${genres}\n`
   if (movie.rating) r += `Rating: ⭐ ${movie.rating}/5\n`
   if (movie.ottPlatform) r += `OTT: 📺 ${movie.ottPlatform}\n`
   if (movie.synopsis) r += `\nSynopsis: ${movie.synopsis}\n`
-  r += `\nView full details: /movies/${movie.slug}`
+  r += `\n[View full details →](/movies/${movie.slug})`
   return r
 }
 
