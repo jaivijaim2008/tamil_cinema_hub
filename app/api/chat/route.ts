@@ -30,15 +30,6 @@ function checkRateLimit(key: string): { ok: boolean; retryAfter: number } {
   return { ok: true, retryAfter: 0 }
 }
 
-// Periodic cleanup every 5 minutes to prevent unbounded memory growth
-setInterval(() => {
-  const now = Date.now()
-  for (const [key, entry] of rateLimitMap) {
-    if (now - entry.windowStart > RATE_LIMIT_WINDOW_MS * 2) {
-      rateLimitMap.delete(key)
-    }
-  }
-}, 300_000)
 
 // ── Structured logger for Vercel Function Logs ───────────────────────────
 function log(level: 'info' | 'warn' | 'error', msg: string, data?: Record<string, any>) {
@@ -241,41 +232,49 @@ const providers = [
 ]
 
 export async function POST(req: NextRequest) {
-  // ── Rate limit check ──
-  const ip = getRateLimitKey(req)
-  const { ok, retryAfter } = checkRateLimit(ip)
-  if (!ok) {
+  try {
+    // ── Rate limit check ──
+    const ip = getRateLimitKey(req)
+    const { ok, retryAfter } = checkRateLimit(ip)
+    if (!ok) {
+      return NextResponse.json(
+        { error: `Rate limit exceeded. Try again in ${retryAfter} seconds.`, retryAfter },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+      )
+    }
+
+    const { messages } = await req.json()
+    const msgCount = messages?.length ?? 0
+    const lastUserMsg = messages?.filter((m: any) => m.role === 'user').pop()?.content?.slice(0, 80) ?? ''
+
+    log('info', 'Chat request received', { ip, msgCount, lastUserMsg })
+
+    // Try each provider with built-in retry + backoff
+    for (const provider of providers) {
+      try {
+        log('info', `Trying ${provider.name}`, { msgCount })
+        const reply = await withRetry(() => provider.call(messages), 2, 1500)
+        if (reply && reply.trim().length > 0) {
+          log('info', `Success with ${provider.name}`, { replyLen: reply.length })
+          return NextResponse.json({ reply, provider: provider.name })
+        }
+      } catch (err: any) {
+        const statusMatch = err.message?.match(/(\d{3})/)
+        const status = statusMatch ? parseInt(statusMatch[1]) : undefined
+        log('warn', `${provider.name} exhausted`, { error: err.message, status })
+      }
+    }
+
+    log('error', 'All providers exhausted', { msgCount, lastUserMsg })
     return NextResponse.json(
-      { error: `Rate limit exceeded. Try again in ${retryAfter} seconds.`, retryAfter },
-      { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+      { error: 'All AI providers are currently busy. Please try again in a moment.' },
+      { status: 503 }
+    )
+  } catch (err: any) {
+    log('error', 'Unhandled error in POST handler', { error: err?.message, stack: err?.stack?.slice(0, 500) })
+    return NextResponse.json(
+      { error: 'An unexpected error occurred. Please try again.' },
+      { status: 500 }
     )
   }
-
-  const { messages } = await req.json()
-  const msgCount = messages?.length ?? 0
-  const lastUserMsg = messages?.filter((m: any) => m.role === 'user').pop()?.content?.slice(0, 80) ?? ''
-
-  log('info', 'Chat request received', { ip, msgCount, lastUserMsg })
-
-  // Try each provider with built-in retry + backoff
-  for (const provider of providers) {
-    try {
-      log('info', `Trying ${provider.name}`, { msgCount })
-      const reply = await withRetry(() => provider.call(messages), 2, 1500)
-      if (reply && reply.trim().length > 0) {
-        log('info', `Success with ${provider.name}`, { replyLen: reply.length })
-        return NextResponse.json({ reply, provider: provider.name })
-      }
-    } catch (err: any) {
-      const statusMatch = err.message?.match(/(\d{3})/)
-      const status = statusMatch ? parseInt(statusMatch[1]) : undefined
-      log('warn', `${provider.name} exhausted`, { error: err.message, status })
-    }
-  }
-
-  log('error', 'All providers exhausted', { msgCount, lastUserMsg })
-  return NextResponse.json(
-    { error: 'All AI providers are currently busy. Please try again in a moment.' },
-    { status: 503 }
-  )
 }
