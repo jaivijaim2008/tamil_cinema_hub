@@ -261,11 +261,11 @@ export default function TamilCinemaHubChatbot() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <div className={`fixed z-50 flex flex-col items-end ${isOpen ? 'bottom-6 right-6 max-[479px]:inset-0 max-[479px]:!bottom-0 max-[479px]:!right-0' : 'bottom-6 right-6'}`}>
 
       {/* ── CHAT WINDOW ── */}
       {isOpen && (
-        <div className="mb-4 w-[420px] max-w-[calc(100vw-48px)] h-[520px] max-h-[calc(100vh-120px)] bg-[#0d0d1a] border border-white/10 rounded-2xl shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
+        <div className="mb-4 w-[420px] max-w-[calc(100vw-48px)] h-[520px] max-h-[calc(100vh-120px)] max-[479px]:w-full max-[479px]:h-full max-[479px]:max-w-full max-[479px]:max-h-full max-[479px]:mb-0 max-[479px]:rounded-none max-[479px]:border-0 bg-[#0d0d1a] border border-white/10 rounded-2xl shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
 
           {/* Header */}
           <div className="bg-gradient-to-r from-violet-700 to-indigo-700 px-4 py-3 flex items-center justify-between flex-shrink-0">
@@ -469,7 +469,7 @@ export default function TamilCinemaHubChatbot() {
         onClick={() => setIsOpen(!isOpen)}
         className={`w-14 h-14 rounded-2xl shadow-[0_8px_30px_rgba(109,40,217,0.6)] flex items-center justify-center transition-all duration-300 active:scale-95 ${
           isOpen
-            ? 'bg-white/10 border border-white/20 backdrop-blur-md'
+            ? 'bg-white/10 border border-white/20 backdrop-blur-md max-[479px]:hidden'
             : 'bg-gradient-to-br from-violet-600 to-indigo-700 hover:shadow-[0_8px_40px_rgba(109,40,217,0.8)] hover:scale-105'
         }`}
         aria-label={isOpen ? 'Close chat' : 'Open TamilCinemaHub AI chat'}
