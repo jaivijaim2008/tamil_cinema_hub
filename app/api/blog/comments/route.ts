@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { slug, author, email, content } = body
+  const { slug, author, email, content, parentId } = body
   if (!slug || !author?.trim() || !content?.trim()) {
     return NextResponse.json({ error: 'slug, author, and content required' }, { status: 400 })
   }
@@ -60,6 +60,7 @@ export async function POST(req: NextRequest) {
       createdAt: new Date().toISOString(),
     }
     if (email?.trim()) comment.email = email.trim().slice(0, 200)
+    if (parentId) comment.parentId = parentId
 
     const result = await writeClient
       .patch(docId)
@@ -69,7 +70,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      comment: { _id: comment._key, author: cleanAuthor, email: comment.email, content: cleanContent, createdAt: comment.createdAt },
+      comment: { _id: comment._key, author: cleanAuthor, email: comment.email, content: cleanContent, createdAt: comment.createdAt, parentId: comment.parentId },
     })
   } catch (err: any) {
     console.error('[Comments API]', err?.message)
