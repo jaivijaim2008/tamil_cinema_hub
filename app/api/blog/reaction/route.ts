@@ -27,23 +27,21 @@ export async function POST(req: NextRequest) {
 
   try {
     const field = type === 'like' ? 'likes' : 'dislikes'
-    // Fetch the document ID — GROQ returns the ID as a plain string
-    const docId = await client.fetch<string | null>(
-      `*[_type == "blog" && slug.current == $slug][0]._id`,
+
+    // Fetch document ID and current value in one query using projection
+    const doc = await client.fetch<{ _id: string; likes: number | null; dislikes: number | null } | null>(
+      `*[_type == "blog" && slug.current == $slug][0]{ _id, likes, dislikes }`,
       { slug }
     )
-    if (!docId) return NextResponse.json({ error: 'Blog not found' }, { status: 404 })
+    if (!doc?._id) return NextResponse.json({ error: 'Blog not found' }, { status: 404 })
 
-    // Fetch current value (handle null from undeclared schema fields)
-    const current = await writeClient.fetch<number | null>(
-      `*[_type == "blog" && _id == $id][0}.${field}`,
-      { id: docId }
-    )
+    // Handle null/undefined fields from undeclared schema fields
+    const current = doc[field] ?? 0
 
-    // Set to (current || 0) + 1 — handles null, undefined, and missing fields
+    // Set to current + 1
     const result = await writeClient
-      .patch(docId)
-      .set({ [field]: (current || 0) + 1 })
+      .patch(doc._id)
+      .set({ [field]: current + 1 })
       .commit({ returnDocuments: true })
 
     return NextResponse.json({
