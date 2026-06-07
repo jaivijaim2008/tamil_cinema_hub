@@ -5,12 +5,21 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
+
+interface Movie {
+  _id: string
+  slug?: { current: string }
+  title: string
+  year: number
+  genre?: string[]
+}
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState([])
+  const [searchResults, setSearchResults] = useState<Movie[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const pathname = usePathname()
@@ -86,14 +95,16 @@ export default function Navbar() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
 
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group flex-shrink-0">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-violet-900/50 group-hover:shadow-violet-600/60 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3">
-              <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="7" width="20" height="15" rx="2" />
-                <path d="M2 11h20M2 7l4-4M8 7l4-4M14 7l4-4M20 7l2-2M2 3h20" />
-              </svg>
-            </div>
+          {/* Logo - UPDATED */}
+          <Link href="/" className="flex items-center gap-3 group flex-shrink-0">
+            <Image 
+              src="/images/logo.svg" 
+              alt="TamilCinemaHub" 
+              width={48}
+              height={48}
+              className="w-12 h-12 group-hover:scale-110 transition-all duration-500"
+              priority
+            />
             <div className="flex items-baseline gap-0">
               <span className="text-white font-black text-lg tracking-tight leading-none">Tamil</span>
               <span className="text-violet-400 font-black text-lg tracking-tight leading-none">Cinema</span>
@@ -130,7 +141,8 @@ export default function Navbar() {
                 value={searchQuery}
                 onChange={handleSearch}
                 onFocus={() => searchQuery && setShowResults(true)}
-                className="bg-white/5 border border-white/[0.08] rounded-xl px-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-violet-500/50 focus:bg-white/[0.08] focus:shadow-[0_0_20px_rgba(124,58,237,0.15)] transition-all duration-300" style={{ width: searchQuery ? '16rem' : '12rem' }}
+                className="bg-white/5 border border-white/[0.08] rounded-xl px-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-violet-500/50 focus:bg-white/[0.08] focus:shadow-[0_0_20px_rgba(124,58,237,0.15)] transition-all duration-300" 
+                style={{ width: searchQuery ? '16rem' : '12rem' }}
               />
               <svg className="absolute right-3 top-2.5 w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -152,7 +164,7 @@ export default function Navbar() {
                       </div>
                     ) : searchResults.length > 0 ? (
                       <div className="py-2">
-                        {searchResults.map((movie: any) => (
+                        {searchResults.map((movie: Movie) => (
                           <button
                             key={movie._id}
                             onClick={() => handleMovieClick(movie.slug?.current || movie._id)}
