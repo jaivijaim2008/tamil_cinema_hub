@@ -6,6 +6,8 @@ import { client } from '../../../sanity/client'
 import { blogBySlugQuery, relatedBlogsQuery } from '../../../lib/queries'
 import { urlFor } from '../../../sanity/lib/image'
 import { Blog } from '../../../components/BlogCard'
+import BlogReactions from '../../../components/BlogReactions'
+import BlogComments from '../../../components/BlogComments'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -324,9 +326,12 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
           )}
         </article>
 
+        {/* Reactions */}
+        <BlogReactions slug={slug} />
+
         {/* Tags */}
         {blog.tags && blog.tags.length > 0 && (
-          <div className="mt-12 flex flex-wrap gap-2">
+          <div className="mt-6 flex flex-wrap gap-2">
             {blog.tags.map((tag, i) => (
               <span
                 key={i}
@@ -342,6 +347,9 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
             ))}
           </div>
         )}
+
+        {/* Comments */}
+        <BlogComments slug={slug} />
 
         {/* ── Related Articles ── */}
         {related && related.length > 0 && (

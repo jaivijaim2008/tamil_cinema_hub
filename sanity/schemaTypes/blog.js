@@ -27,5 +27,7 @@ export default {
  { name: 'seoDescription', title: 'SEO Description', type: 'text' },
  { name: 'tags', title: 'Tags', type: 'array',
  of: [{ type: 'string' }] },
+ { name: 'likes', title: 'Likes', type: 'number', initialValue: 0 },
+ { name: 'dislikes', title: 'Dislikes', type: 'number', initialValue: 0 },
  ]
 }

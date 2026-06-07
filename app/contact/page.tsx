@@ -7,14 +7,31 @@ export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
 
+  const [error, setError] = useState('')
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.name || !formData.email || !formData.message) return
     setLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 800))
+    setError('')
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || 'Failed to send message. Please try again.')
+        setLoading(false)
+        return
+      }
+      setSubmitted(true)
+      setFormData({ name: '', email: '', message: '' })
+    } catch {
+      setError('Network error. Please try again.')
+    }
     setLoading(false)
-    setSubmitted(true)
-    setFormData({ name: '', email: '', message: '' })
   }
 
   return (
@@ -76,6 +93,18 @@ export default function ContactPage() {
           className="mb-10 h-px w-full"
           style={{ background: 'linear-gradient(to right, transparent, rgba(251,146,60,0.4), transparent)' }}
         />
+
+        {error && !submitted && (
+          <div
+            className="mb-6 rounded-xl px-4 py-3 text-sm text-red-400 flex items-center gap-2"
+            style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}
+          >
+            <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            {error}
+          </div>
+        )}
 
         {submitted ? (
           <div
