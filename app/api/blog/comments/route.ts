@@ -4,6 +4,8 @@ import { writeClient } from '@/sanity/writeClient'
 
 export async function GET(req: NextRequest) {
   const slug = req.nextUrl.searchParams.get('slug')
+  const limit = Math.min(parseInt(req.nextUrl.searchParams.get('limit') ?? '20'), 50)
+  const before = req.nextUrl.searchParams.get('before') // cursor: createdAt of last item
   if (!slug) return NextResponse.json({ error: 'slug required' }, { status: 400 })
 
   try {
@@ -11,9 +13,25 @@ export async function GET(req: NextRequest) {
       `*[_type == "blog" && slug.current == $slug][0]{ comments }`,
       { slug }
     )
-    return NextResponse.json({ comments: (doc?.comments ?? []).slice(-50).reverse() })
+    let all = (doc?.comments ?? []).reverse() // newest-first
+
+    // Cursor-based pagination: filter comments older than the cursor
+    if (before) {
+      all = all.filter(c => c.createdAt < before)
+    }
+
+    const page = all.slice(0, limit)
+    const hasMore = all.length > limit
+    const nextCursor = hasMore ? page[page.length - 1]?.createdAt ?? null : null
+
+    return NextResponse.json({
+      comments: page,
+      total: doc?.comments?.length ?? 0,
+      hasMore,
+      nextCursor,
+    })
   } catch {
-    return NextResponse.json({ comments: [] })
+    return NextResponse.json({ comments: [], total: 0, hasMore: false, nextCursor: null })
   }
 }
 

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import md5 from 'md5'
+import ReactMarkdown from 'react-markdown'
 
 interface Comment {
   _key?: string
@@ -12,6 +13,7 @@ interface Comment {
   createdAt: string
   edited?: boolean
   parentId?: string
+  likes?: string[]
 }
 
 interface BlogCommentsProps {
@@ -38,6 +40,11 @@ function timeAgo(dateStr: string): string {
 
 export default function BlogComments({ slug }: BlogCommentsProps) {
   const [comments, setComments] = useState<Comment[]>([])
+  const [total, setTotal] = useState(0)
+  const [hasMore, setHasMore] = useState(false)
+  const [nextCursor, setNextCursor] = useState<string | null>(null)
+  const [loadingMore, setLoadingMore] = useState(false)
+
   const [author, setAuthor] = useState('')
   const [email, setEmail] = useState('')
   const [content, setContent] = useState('')
@@ -48,7 +55,7 @@ export default function BlogComments({ slug }: BlogCommentsProps) {
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest')
 
   // Reply state
-  const [replyTo, setReplyTo] = useState<string | null>(null) // _key of parent
+  const [replyTo, setReplyTo] = useState<string | null>(null)
   const [replyContent, setReplyContent] = useState('')
   const [replyLoading, setReplyLoading] = useState(false)
 
@@ -60,16 +67,57 @@ export default function BlogComments({ slug }: BlogCommentsProps) {
   // Delete state
   const [deletingKey, setDeletingKey] = useState<string | null>(null)
 
-  // Load comments
+  // Like state
+  const [likingKey, setLikingKey] = useState<string | null>(null)
+  const [likedKeys, setLikedKeys] = useState<Set<string>>(new Set())
+
+  // Infinite scroll observer
+  const loadMoreRef = useRef<HTMLDivElement>(null)
+
+  // Load initial comments
   useEffect(() => {
-    fetch(`/api/blog/comments?slug=${encodeURIComponent(slug)}`)
+    fetch(`/api/blog/comments?slug=${encodeURIComponent(slug)}&limit=20`)
       .then(r => r.json())
-      .then(data => setComments(data.comments ?? []))
+      .then(data => {
+        setComments(data.comments ?? [])
+        setTotal(data.total ?? 0)
+        setHasMore(data.hasMore ?? false)
+        setNextCursor(data.nextCursor ?? null)
+      })
       .catch(() => {})
       .finally(() => setFetching(false))
   }, [slug])
 
+  // Infinite scroll observer
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore || !nextCursor) return
+    setLoadingMore(true)
+    try {
+      const res = await fetch(
+        `/api/blog/comments?slug=${encodeURIComponent(slug)}&limit=20&before=${encodeURIComponent(nextCursor)}`
+      )
+      const data = await res.json()
+      setComments(prev => [...prev, ...(data.comments ?? [])])
+      setHasMore(data.hasMore ?? false)
+      setNextCursor(data.nextCursor ?? null)
+    } catch {}
+    setLoadingMore(false)
+  }, [slug, loadingMore, hasMore, nextCursor])
+
+  useEffect(() => {
+    const el = loadMoreRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      entries => { if (entries[0].isIntersecting) loadMore() },
+      { threshold: 0.1 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [loadMore])
+
   // Build threaded structure with useMemo
+  // NOTE: sort order only affects top-level display order, not pagination
+  // Pagination is always newest-first from the server
   const threaded = useMemo(() => {
     const topLevel = comments.filter(c => !c.parentId)
     const byParent = new Map<string, Comment[]>()
@@ -80,12 +128,11 @@ export default function BlogComments({ slug }: BlogCommentsProps) {
         byParent.set(c.parentId, arr)
       }
     }
-    // Sort top-level
+    // Client-side sort only for already-fetched comments
     topLevel.sort((a, b) => {
       if (sortOrder === 'oldest') return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     })
-    // Sort replies oldest-first (chronological)
     for (const arr of byParent.values()) {
       arr.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
     }
@@ -111,7 +158,10 @@ export default function BlogComments({ slug }: BlogCommentsProps) {
         setLoading(false)
         return
       }
-      if (data.comment) setComments(prev => [data.comment, ...prev])
+      if (data.comment) {
+        setComments(prev => [data.comment, ...prev])
+        setTotal(prev => prev + 1)
+      }
       setContent('')
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
@@ -141,7 +191,10 @@ export default function BlogComments({ slug }: BlogCommentsProps) {
         setReplyLoading(false)
         return
       }
-      if (data.comment) setComments(prev => [...prev, data.comment])
+      if (data.comment) {
+        setComments(prev => [...prev, data.comment])
+        setTotal(prev => prev + 1)
+      }
       setReplyContent('')
       setReplyTo(null)
     } catch {
@@ -193,13 +246,76 @@ export default function BlogComments({ slug }: BlogCommentsProps) {
         setDeletingKey(null)
         return
       }
-      // Remove the comment and its replies from state
       const keysToRemove = new Set(data.deletedKeys ?? [key])
       setComments(prev => prev.filter(c => !keysToRemove.has(c._key!)))
+      setTotal(prev => prev - keysToRemove.size)
     } catch {
       setError('Network error. Please try again.')
     }
     setDeletingKey(null)
+  }
+
+  // Toggle like on a comment
+  async function handleLike(key: string) {
+    if (likingKey) return
+    setLikingKey(key)
+    // Optimistic update
+    setLikedKeys(prev => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+    setComments(prev => prev.map(c => {
+      if (c._key !== key) return c
+      const current = c.likes?.length ?? 0
+      const wasLiked = likedKeys.has(key)
+      return { ...c, likes: Array(wasLiked ? current - 1 : current + 1) }
+    }))
+    try {
+      const res = await fetch(`/api/blog/comments/${key}/like`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        // Revert on failure
+        setLikedKeys(prev => {
+          const next = new Set(prev)
+          if (next.has(key)) next.delete(key)
+          else next.add(key)
+          return next
+        })
+        setComments(prev => prev.map(c => {
+          if (c._key !== key) return c
+          const current = c.likes?.length ?? 0
+          return { ...c, likes: Array(Math.max(0, current - 1)) }
+        }))
+        return
+      }
+      // Sync with server count
+      setComments(prev => prev.map(c =>
+        c._key === key ? { ...c, likes: Array(data.likes) } : c
+      ))
+    } catch {
+      setLikedKeys(prev => {
+        const next = new Set(prev)
+        if (next.has(key)) next.delete(key)
+        else next.add(key)
+        return next
+      })
+    }
+    setLikingKey(null)
+  }
+
+  // Render comment content with markdown
+  function renderContent(text: string) {
+    return (
+      <div className="prose prose-invert prose-sm max-w-none prose-p:text-white/60 prose-strong:text-white/80 prose-code:text-violet-300 prose-code:bg-white/5 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-a:text-violet-400 prose-a:no-underline hover:prose-a:underline">
+        <ReactMarkdown>{text}</ReactMarkdown>
+      </div>
+    )
   }
 
   // Render a single comment with its actions
@@ -208,6 +324,7 @@ export default function BlogComments({ slug }: BlogCommentsProps) {
     const replies = threaded.byParent.get(c._key!) ?? []
     const isEditing = editingKey === c._key
     const isReplying = replyTo === c._key
+    const likeCount = c.likes?.length ?? 0
 
     return (
       <div key={c._key ?? c._id} className={depth > 0 ? 'ml-6 sm:ml-10' : ''}>
@@ -220,7 +337,7 @@ export default function BlogComments({ slug }: BlogCommentsProps) {
               : '1px solid rgba(255,255,255,0.06)',
           }}
         >
-          {/* Header: avatar + author + time */}
+          {/* Header: avatar + author + time + actions */}
           <div className="flex items-center gap-3 mb-2">
             {avatarUrl ? (
               <img src={avatarUrl} alt={c.author} className="w-7 h-7 rounded-full" referrerPolicy="no-referrer" />
@@ -298,7 +415,25 @@ export default function BlogComments({ slug }: BlogCommentsProps) {
               </div>
             </div>
           ) : (
-            <p className="text-sm text-white/60 leading-relaxed whitespace-pre-wrap pl-10">{c.content}</p>
+            <div className="pl-10 text-sm text-white/60 leading-relaxed">
+              {renderContent(c.content)}
+            </div>
+          )}
+
+          {/* Like button */}
+          {!isEditing && (
+            <div className="pl-10 mt-2 flex items-center gap-3">
+              <button
+                onClick={() => handleLike(c._key!)}
+                disabled={likingKey === c._key}
+                className="flex items-center gap-1 text-[11px] text-white/30 hover:text-pink-400 transition-colors px-1.5 py-0.5 rounded disabled:opacity-40"
+              >
+                <svg className="w-3.5 h-3.5" fill={likedKeys.has(c._key!) ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                {likeCount > 0 && <span>{likeCount}</span>}
+              </button>
+            </div>
           )}
         </div>
 
@@ -365,9 +500,9 @@ export default function BlogComments({ slug }: BlogCommentsProps) {
         </div>
         <div className="flex-1">
           <p className="text-[11px] font-bold uppercase tracking-widest text-violet-500">Comments</p>
-          <h3 className="text-lg font-black text-white">{comments.length} {comments.length === 1 ? 'Comment' : 'Comments'}</h3>
+          <h3 className="text-lg font-black text-white">{total} {total === 1 ? 'Comment' : 'Comments'}</h3>
         </div>
-        {comments.length > 1 && (
+        {total > 1 && (
           <div className="flex items-center gap-1 text-[11px] font-medium" style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '2px' }}>
             <button
               onClick={() => setSortOrder('newest')}
@@ -414,17 +549,17 @@ export default function BlogComments({ slug }: BlogCommentsProps) {
           </div>
         </div>
         <div>
-          <label className="block text-[10px] font-bold uppercase tracking-widest text-white/35 mb-2">Your Comment</label>
+          <label className="block text-[10px] font-bold uppercase tracking-widest text-white/35 mb-2">Your Comment (supports **markdown**)</label>
           <textarea
-            required maxLength={1000} rows={3} value={content}
+            required maxLength={2000} rows={3} value={content}
             onChange={e => setContent(e.target.value)}
-            placeholder="Share your thoughts..."
-            className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 outline-none transition-all resize-none"
+            placeholder="Share your thoughts... **bold**, *italic*, `code`, [links](url)"
+            className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 outline-none transition-all resize-none font-mono"
             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
             onFocus={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.5)')}
             onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
           />
-          <p className="text-[10px] text-white/25 mt-1">{content.length}/1000</p>
+          <p className="text-[10px] text-white/25 mt-1">{content.length}/2000 — supports **bold**, *italic*, `code`, [links](url)</p>
         </div>
 
         {error && <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{error}</p>}
@@ -465,9 +600,30 @@ export default function BlogComments({ slug }: BlogCommentsProps) {
           <p className="text-white/30 text-sm">No comments yet. Be the first to share your thoughts!</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {threaded.topLevel.map(c => renderComment(c, 0))}
-        </div>
+        <>
+          <div className="space-y-3">
+            {threaded.topLevel.map(c => renderComment(c, 0))}
+          </div>
+
+          {/* Infinite scroll trigger */}
+          {hasMore && (
+            <div ref={loadMoreRef} className="flex justify-center py-6">
+              {loadingMore ? (
+                <div className="flex items-center gap-2 text-white/30 text-sm">
+                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Loading more comments...
+                </div>
+              ) : (
+                <button onClick={loadMore} className="text-sm text-violet-400 hover:text-violet-300 transition-colors font-medium">
+                  Load more comments
+                </button>
+              )}
+            </div>
+          )}
+        </>
       )}
     </section>
   )
