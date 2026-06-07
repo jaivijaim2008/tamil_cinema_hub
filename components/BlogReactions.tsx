@@ -31,15 +31,39 @@ export default function BlogReactions({ slug }: BlogReactionsProps) {
 
   async function react(type: 'like' | 'dislike') {
     if (loading) return
-    // If already voted this way, toggle off
-    if (userVote === type) return
 
+    const prevVote = userVote
+
+    // Toggle off: clicking the same vote removes it
+    if (prevVote === type) {
+      setLoading(true)
+      try {
+        // Send the vote type with no prev to indicate removal
+        // The API will handle: if prev matches type, it means toggle off
+        const res = await fetch('/api/blog/reaction', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug, type, action: 'remove' }),
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setLikes(data.likes)
+          setDislikes(data.dislikes)
+          setUserVote(null)
+          localStorage.removeItem(`blog-vote-${slug}`)
+        }
+      } catch {}
+      setLoading(false)
+      return
+    }
+
+    // Switch vote or new vote
     setLoading(true)
     try {
       const res = await fetch('/api/blog/reaction', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug, type }),
+        body: JSON.stringify({ slug, type, prev: prevVote }),
       })
       if (res.ok) {
         const data = await res.json()

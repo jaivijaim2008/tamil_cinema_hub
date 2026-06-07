@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { slug, type } = body
+  const { slug, type, prev, action } = body
   if (!slug || !['like', 'dislike'].includes(type)) {
     return NextResponse.json({ error: 'slug and type (like|dislike) required' }, { status: 400 })
   }
@@ -26,22 +26,38 @@ export async function POST(req: NextRequest) {
   rl.set(key, now)
 
   try {
-    const field = type === 'like' ? 'likes' : 'dislikes'
-
-    // Fetch document ID and current value in one query using projection
+    // Fetch document ID and current counts in one query
     const doc = await client.fetch<{ _id: string; likes: number | null; dislikes: number | null } | null>(
       `*[_type == "blog" && slug.current == $slug][0]{ _id, likes, dislikes }`,
       { slug }
     )
     if (!doc?._id) return NextResponse.json({ error: 'Blog not found' }, { status: 404 })
 
-    // Handle null/undefined fields from undeclared schema fields
-    const current = doc[field] ?? 0
+    const currentLikes = doc.likes ?? 0
+    const currentDislikes = doc.dislikes ?? 0
 
-    // Set to current + 1
+    let newLikes = currentLikes
+    let newDislikes = currentDislikes
+
+    if (action === 'remove') {
+      // Toggle off: decrement the current vote type
+      if (type === 'like') newLikes = Math.max(0, currentLikes - 1)
+      if (type === 'dislike') newDislikes = Math.max(0, currentDislikes - 1)
+    } else {
+      // If switching from one vote to another, decrement the old one
+      if (prev && prev !== type) {
+        if (prev === 'like') newLikes = Math.max(0, currentLikes - 1)
+        if (prev === 'dislike') newDislikes = Math.max(0, currentDislikes - 1)
+      }
+
+      // Increment the new vote
+      if (type === 'like') newLikes += 1
+      if (type === 'dislike') newDislikes += 1
+    }
+
     const result = await writeClient
       .patch(doc._id)
-      .set({ [field]: current + 1 })
+      .set({ likes: newLikes, dislikes: newDislikes })
       .commit({ returnDocuments: true })
 
     return NextResponse.json({
@@ -60,7 +76,6 @@ export async function GET(req: NextRequest) {
   if (!slug) return NextResponse.json({ error: 'slug required' }, { status: 400 })
 
   try {
-    // Use writeClient (useCdn: false) to avoid stale CDN cache reads
     const doc = await writeClient.fetch<{ likes: number; dislikes: number }>(
       `*[_type == "blog" && slug.current == $slug][0]{ likes, dislikes }`,
       { slug }
