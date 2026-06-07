@@ -6,8 +6,7 @@ import {postType} from './postType'
 import {authorType} from './authorType'
 import blog from '../schemas/blog.js'
 import movie from '../schemas/movie.js'
-import comment from '../schemas/comment.js'
 
 export const schema: { types: SchemaTypeDefinition[] } = {
-  types: [blockContentType, categoryType, postType, authorType, blog, movie, comment],
+  types: [blockContentType, categoryType, postType, authorType, blog, movie],
 }
