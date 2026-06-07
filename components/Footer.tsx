@@ -123,7 +123,7 @@ export default function Footer() {
           style={{ color: 'rgba(255,255,255,0.2)' }}
         >
           <p>&copy; {new Date().getFullYear()} TamilCinemaHub. All rights reserved.</p>
-          <p>Built with Next.js · Sanity CMS · Python AI</p>
+          <p>Made with ❤️ for Tamil cinema fans</p>
         </div>
 
       </div>

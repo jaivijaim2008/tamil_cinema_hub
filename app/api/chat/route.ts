@@ -27,21 +27,20 @@ async function askGroq(
     content: m.content,
   }))
 
-  const systemPrompt = `You are TamilCinemaHub AI — an expert assistant for Tamil cinema (Kollywood).
+  const systemPrompt = `You are TamilCinemaHub AI — an expert assistant ONLY for Tamil cinema (Kollywood).
 
 Your knowledge covers:
 - Tamil movies, actors, directors, music composers
 - Box office, awards, streaming platforms
 - Tamil cinema history from 1930s to today
-- General knowledge about India and world topics
 
-Rules:
+STRICT RULES:
+- You ONLY discuss Tamil cinema (Kollywood). You do NOT discuss other film industries, British TV, Hollywood, Bollywood, or any non-Tamil content.
+- If asked about non-Tamil topics, redirect to Tamil cinema: "I specialize in Tamil cinema! Ask me about Tamil movies, actors, or directors."
 - Always reply in simple, clear English (no Tanglish, no slang)
 - Keep answers concise (under 200 words)
 - For Tamil cinema topics, be detailed and accurate
-- For general questions, give a helpful short answer
-- End every reply with a relevant follow-up suggestion
-- Never say you cannot answer — always try your best
+- End every reply with a relevant follow-up suggestion about Tamil cinema
 - Use emojis naturally to make replies friendly 🎬
 - For Tamil cinema topics, base your answer on the chatbot context provided — do NOT invent ratings, release years, or cast details that were not given to you`
 
@@ -104,8 +103,9 @@ async function searchWikipedia(message: string): Promise<{ reply: string; sugges
   const suggestions = ['Best action movies', 'Top rated films', 'Vijay movies']
   try {
     let query = message.replace(/^(tell me about|what is|who is|explain|describe)\s+/i, '').replace(/\?+$/, '').trim()
-    if (!/tamil|kollywood/i.test(query) && /actor|actress|director|movie|film/i.test(query)) {
-      query += ' Tamil cinema'
+    // Always scope to Tamil cinema — never return non-Tamil results
+    if (!/tamil|kollywood/i.test(query)) {
+      query += ' Tamil cinema Kollywood'
     }
 
     const searchRes = await fetch(
