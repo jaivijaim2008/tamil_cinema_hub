@@ -119,7 +119,7 @@ export const moviesCountQuery =
 
 export const allGenresQuery = `*[_type == "movie"].genre[]`
 
-const BLOG_FIELDS = `_id, title, "slug": slug.current, author, publishedAt, category, mainImage, excerpt, tags, count(comments) as commentCount, likes`
+const BLOG_FIELDS = `_id, title, "slug": slug.current, author, publishedAt, category, mainImage, excerpt, tags`
 
 export const paginatedBlogsQuery = (start: number, end: number) =>
   `*[_type == "blog" && ($category == "" || $category == "All" || category == $category) && ($q == "" || title match $q || excerpt match $q || author match $q)] | order(publishedAt desc) [${start}...${end}] { ${BLOG_FIELDS} }`
