@@ -11,6 +11,7 @@ export interface Blog {
   mainImage?: any
   excerpt: string
   tags?: string[]
+  commentCount?: number
 }
 
 interface BlogCardProps {
@@ -123,6 +124,16 @@ export default function BlogCard({ blog }: BlogCardProps) {
           <p className="mt-2 text-xs text-white/40 line-clamp-3 leading-relaxed flex-1">
             {blog.excerpt}
           </p>
+
+          {/* Comment count */}
+          {blog.commentCount != null && blog.commentCount > 0 && (
+            <div className="mt-3 flex items-center gap-1.5 text-white/30">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              <span className="text-[11px] font-medium">{blog.commentCount} {blog.commentCount === 1 ? 'comment' : 'comments'}</span>
+            </div>
+          )}
 
           {/* Tags */}
           {blog.tags && blog.tags.length > 0 && (
