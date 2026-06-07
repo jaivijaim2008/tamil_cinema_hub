@@ -40,6 +40,7 @@ export default function TamilCinemaHubChatbot() {
   const [streamingText, setStreamingText] = useState<string | null>(null)
   const [streamingProvider, setStreamingProvider] = useState<string | undefined>()
   const streamRef = useRef({ full: '', idx: 0, timer: null as any, provider: undefined as string | undefined, suggestions: undefined as string[] | undefined })
+  const abortRef = useRef<AbortController | null>(null)
 
   // Load feedback from localStorage on mount
   useEffect(() => {
@@ -151,8 +152,32 @@ export default function TamilCinemaHubChatbot() {
     }
   }, [])
 
-  const sendMessage = useCallback(async () => {
-    const trimmed = input.trim()
+  /** Stop generation: abort fetch + kill stream */
+  const stopGeneration = useCallback(() => {
+    // Abort the fetch request if in flight
+    if (abortRef.current) {
+      abortRef.current.abort()
+      abortRef.current = null
+    }
+    // Kill the typewriter stream if running
+    const s = streamRef.current
+    if (s.timer) {
+      clearInterval(s.timer)
+      s.timer = null
+      // Commit whatever was typed so far
+      if (s.idx > 0) {
+        const committed = [...messagesRef.current, { role: 'assistant' as const, content: s.full.slice(0, s.idx), provider: s.provider, suggestions: s.suggestions }]
+        messagesRef.current = committed
+        setMessages(committed)
+      }
+      setStreamingText(null)
+      setStreamingProvider(undefined)
+    }
+    setIsLoading(false)
+  }, [])
+
+  const sendMessage = useCallback(async (override?: string) => {
+    const trimmed = (override ?? input).trim()
     if (!trimmed || isLoadingRef.current) return
 
     // If there's a stream in progress, finish it immediately
@@ -170,19 +195,24 @@ export default function TamilCinemaHubChatbot() {
       .filter((m, i) => !(i === 0 && m.role === 'assistant'))
       .slice(-20)
 
+    const controller = new AbortController()
+    abortRef.current = controller
+
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: apiMessages }),
+        signal: controller.signal,
       })
+
+      abortRef.current = null
 
       if (res.status === 429) {
         const data = await res.json()
         const waitSeconds = data.retryAfter || 30
         setRateLimitCountdown(waitSeconds)
         setIsLoading(false)
-        // Keep the user message, add rate limit warning below it
         const rateLimitMsg: Message = {
           role: 'system',
           content: `You're sending messages too fast. Please wait a moment before trying again.`,
@@ -200,7 +230,13 @@ export default function TamilCinemaHubChatbot() {
 
       // Start typewriter effect
       startStreaming(reply, data.provider, suggestions)
-    } catch {
+    } catch (err: any) {
+      abortRef.current = null
+      if (err?.name === 'AbortError') {
+        // User stopped generation
+        setIsLoading(false)
+        return
+      }
       startStreaming('All AI providers are currently busy. Please try again in a moment.')
     }
   }, [input, startStreaming, finishStream])
@@ -213,11 +249,8 @@ export default function TamilCinemaHubChatbot() {
   }
 
   function handleSuggestionClick(suggestion: string) {
-    setInput(suggestion)
-    // Small delay to let setInput take effect, then send
-    setTimeout(() => {
-      sendMessage()
-    }, 50)
+    // Use rAF to ensure state settles, then send with override
+    requestAnimationFrame(() => setTimeout(() => sendMessage(suggestion), 0))
   }
 
   function handleFeedback(index: number, type: 'up' | 'down') {
@@ -404,10 +437,22 @@ export default function TamilCinemaHubChatbot() {
                 <div className="w-6 h-6 rounded-full bg-violet-700 flex items-center justify-center flex-shrink-0 mr-2 mt-1">
                   <span className="text-white text-xs">🎬</span>
                 </div>
-                <div className="bg-white/8 border border-white/8 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1.5 items-center">
-                  <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce [animation-delay:0ms]" />
-                  <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce [animation-delay:150ms]" />
-                  <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce [animation-delay:300ms]" />
+                <div className="bg-white/8 border border-white/8 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-2 items-center">
+                  <div className="flex gap-1.5">
+                    <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce [animation-delay:0ms]" />
+                    <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce [animation-delay:150ms]" />
+                    <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce [animation-delay:300ms]" />
+                  </div>
+                  <button
+                    onClick={stopGeneration}
+                    className="ml-1 w-5 h-5 rounded-md bg-red-500/20 border border-red-500/40 hover:bg-red-500/40 flex items-center justify-center transition-colors"
+                    aria-label="Stop generating"
+                    title="Stop generating"
+                  >
+                    <svg className="w-2.5 h-2.5 text-red-400" viewBox="0 0 24 24" fill="currentColor">
+                      <rect x="4" y="4" width="16" height="16" rx="2" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             )}
@@ -423,12 +468,23 @@ export default function TamilCinemaHubChatbot() {
                     {renderMessageText(streamingText)}
                     <span className="inline-block w-0.5 h-4 bg-violet-400 ml-0.5 align-text-bottom animate-pulse" />
                   </div>
-                  <button
-                    onClick={finishStream}
-                    className="text-[10px] text-violet-400/60 hover:text-violet-300 mt-1 px-1 transition-colors"
-                  >
-                    skip ▸
-                  </button>
+                  <div className="flex items-center gap-2 mt-1">
+                    <button
+                      onClick={finishStream}
+                      className="text-[10px] text-violet-400/60 hover:text-violet-300 px-1 transition-colors"
+                    >
+                      skip ▸
+                    </button>
+                    <button
+                      onClick={stopGeneration}
+                      className="flex items-center gap-1 text-[10px] text-red-400/60 hover:text-red-300 px-1 transition-colors"
+                    >
+                      <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="4" y="4" width="16" height="16" rx="2" />
+                      </svg>
+                      stop
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -490,21 +546,34 @@ export default function TamilCinemaHubChatbot() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask about Tamil movies..."
+              placeholder={isLoading || streamingText ? 'Generating...' : 'Ask about Tamil movies...'}
               disabled={isLoading || rateLimitCountdown > 0}
               className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm outline-none focus:border-violet-500/60 focus:bg-white/8 disabled:opacity-50 text-white placeholder:text-gray-600 transition-all"
             />
-            <button
-              onClick={sendMessage}
-              disabled={isLoading || rateLimitCountdown > 0 || !input.trim()}
-              className="w-9 h-9 bg-gradient-to-br from-violet-600 to-indigo-700 hover:from-violet-500 hover:to-indigo-600 disabled:opacity-30 text-white rounded-xl flex items-center justify-center flex-shrink-0 transition-all active:scale-95 shadow-lg shadow-violet-900/50"
-              aria-label="Send message"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="22" y1="2" x2="11" y2="13" />
-                <polygon points="22 2 15 22 11 13 2 9 22 2" />
-              </svg>
-            </button>
+            {(isLoading || streamingText) ? (
+              <button
+                onClick={stopGeneration}
+                className="w-9 h-9 bg-gradient-to-br from-red-500 to-red-600 hover:from-red-400 hover:to-red-500 text-white rounded-xl flex items-center justify-center flex-shrink-0 transition-all active:scale-95 shadow-lg shadow-red-900/50 animate-pulse"
+                aria-label="Stop generating"
+                title="Stop generating"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="4" y="4" width="16" height="16" rx="3" />
+                </svg>
+              </button>
+            ) : (
+              <button
+                onClick={() => sendMessage()}
+                disabled={rateLimitCountdown > 0 || !input.trim()}
+                className="w-9 h-9 bg-gradient-to-br from-violet-600 to-indigo-700 hover:from-violet-500 hover:to-indigo-600 disabled:opacity-30 text-white rounded-xl flex items-center justify-center flex-shrink-0 transition-all active:scale-95 shadow-lg shadow-violet-900/50"
+                aria-label="Send message"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
+              </button>
+            )}
           </div>
 
         </div>
