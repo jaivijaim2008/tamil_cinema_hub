@@ -42,7 +42,8 @@ Rules:
 - For general questions, give a helpful short answer
 - End every reply with a relevant follow-up suggestion
 - Never say you cannot answer — always try your best
-- Use emojis naturally to make replies friendly 🎬`
+- Use emojis naturally to make replies friendly 🎬
+- For Tamil cinema topics, base your answer on the chatbot context provided — do NOT invent ratings, release years, or cast details that were not given to you`
 
   try {
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -343,9 +344,9 @@ function extractEntities(message: string): Entities {
   const rA = lower.match(/(?:above|over|more than|atleast|minimum)\s*(\d+(?:\.\d+)?)/i)
   const rB = lower.match(/(?:below|under|less than|maximum)\s*(\d+(?:\.\d+)?)/i)
   const rR = lower.match(/(?:between)\s*(\d+(?:\.\d+)?)\s*(?:and|to|-)\s*(\d+(?:\.\d+)?)/i)
-  if (rR) e.ratings = { min: parseFloat(rR[1]), max: parseFloat(rR[2]) }
-  else if (rA) e.ratings = { min: parseFloat(rA[1]), max: 10 }
-  else if (rB) e.ratings = { min: 0, max: parseFloat(rB[1]) }
+  if (rR) e.ratings = { min: Math.min(parseFloat(rR[1]), 5), max: Math.min(parseFloat(rR[2]), 5) }
+  else if (rA) e.ratings = { min: Math.min(parseFloat(rA[1]), 5), max: 5 }
+  else if (rB) e.ratings = { min: 0, max: Math.min(parseFloat(rB[1]), 5) }
 
   e.keywords = lower.replace(/[^\w\s]/g, ' ').split(/\s+/)
     .filter(t => t.length > 2 && !STOPWORDS.has(t)
@@ -478,7 +479,7 @@ function fmtList(movies: any[], heading: string): string {
   movies.forEach((m, i) => {
     const cast   = m.cast?.map((c: any) => c.name).filter(Boolean).join(', ') || 'N/A'
     const genres = m.genre?.join(', ') || 'N/A'
-    const rating = m.rating ? ` ⭐ ${m.rating}/10` : ''
+    const rating = m.rating ? ` ⭐ ${m.rating.toFixed(1)}/5` : ''
     const ott    = m.ottPlatform ? ` | 📺 ${m.ottPlatform}` : ''
     const poster = getPosterUrl(m)
     const img    = poster ? `[poster:${poster}]` : ''
@@ -497,7 +498,7 @@ function fmtDetail(m: any): string {
   const img    = poster ? `[poster:${poster}]` : ''
   let out = `${img}🎬 [${m.title}](/movies/${m.slug}) (${m.year})\n\n`
   out += `🎭 Director: ${m.director || 'N/A'}\n👥 Cast: ${cast}\n🏷️ Genre: ${genres}\n`
-  if (m.rating)      out += `⭐ Rating: ${m.rating}/10\n`
+  if (m.rating)      out += `⭐ Rating: ${m.rating.toFixed(1)}/5\n`
   if (m.ottPlatform) out += `📺 Streaming: ${m.ottPlatform}\n`
   if (m.synopsis)    out += `\n📝 ${m.synopsis}\n`
   out += `\n[View full details →](/movies/${m.slug})`
@@ -583,7 +584,7 @@ async function generateResponse(message: string, history: any[]): Promise<{ repl
   }
 
   if (intent === 'help') return {
-    reply: `📖 **What I can help with:**\n\n🎭 Actor films — "Vijay movies", "Dhanush films"\n🎬 Director works — "Lokesh Kanagaraj movies"\n🏷️ Genre — "action movies", "best thrillers"\n📅 Year — "best 2024 movies", "2020 to 2023 films"\n⭐ Rating — "movies above 8 rating"\n📺 Streaming — "movies on Netflix"\n🔄 Compare — "Vijay vs Ajith"\n🎯 Mood — "something funny", "something emotional"\n🌐 Anything else — I will use AI to answer!\n\nJust ask naturally — I understand plain English!`,
+    reply: `📖 **What I can help with:**\n\n🎭 Actor films — "Vijay movies", "Dhanush films"\n🎬 Director works — "Lokesh Kanagaraj movies"\n🏷️ Genre — "action movies", "best thrillers"\n📅 Year — "best 2024 movies", "2020 to 2023 films"\n⭐ Rating — "movies above 4 rating"\n📺 Streaming — "movies on Netflix"\n🔄 Compare — "Vijay vs Ajith"\n🎯 Mood — "something funny", "something emotional"\n🌐 Anything else — I will use AI to answer!\n\nJust ask naturally — I understand plain English!`,
     suggestions: ['Best thriller films', 'Vijay movies', 'Movies by Mani Ratnam'],
   }
 
@@ -612,7 +613,7 @@ async function generateResponse(message: string, history: any[]): Promise<{ repl
       if (!movies.length) return `No results found for ${label}.`
       let s = `── ${label} ──\n`
       movies.forEach(m => {
-        s += `• [${m.title}](/movies/${m.slug}) (${m.year})  ⭐ ${m.rating ?? 'N/A'}/10\n`
+        s += `• [${m.title}](/movies/${m.slug}) (${m.year})  ⭐ ${m.rating != null ? m.rating.toFixed(1) : 'N/A'}/5\n`
         if (m.director) s += `  Director: ${m.director}\n`
       })
       return s
@@ -717,7 +718,7 @@ async function generateResponse(message: string, history: any[]): Promise<{ repl
     const { min, max } = e.ratings
     const movies = await db.byRating(min, max, 7)
     if (movies.length) return {
-      reply: fmtList(movies, `⭐ Movies rated ${min}${max < 10 ? `–${max}` : '+'}:`),
+      reply: fmtList(movies, `⭐ Movies rated ${min}${max < 5 ? `–${max}` : '+'}:`),
       suggestions: buildSuggestions(e, movies),
     }
   }
