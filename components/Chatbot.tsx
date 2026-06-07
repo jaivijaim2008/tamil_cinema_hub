@@ -526,7 +526,7 @@ export default function TamilCinemaHubChatbot() {
             <div className="px-3 py-2 bg-[#080812] border-t border-white/5 flex gap-2 overflow-x-auto"
               style={{ scrollbarWidth: 'none' }}
             >
-              {['Best 2024 movies', 'Vijay movies', 'Recommend thriller'].map((suggestion) => (
+              {['Best 2026 movies', 'Vijay movies', 'Recommend thriller'].map((suggestion) => (
                 <button
                   key={suggestion}
                   onClick={() => {

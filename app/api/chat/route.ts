@@ -258,13 +258,19 @@ function levenshtein(a: string, b: string): number {
 }
 
 function fuzzyMatch(input: string, candidates: string[], threshold = 0.78): string | null {
-  const lower = input.toLowerCase().trim()
+  // Also handle common typos / Tanglish variants
+  const normalizations: [RegExp, string][] = [
+    [/th/g, 't'], [/ph/g, 'f'], [/ee/g, 'i'], [/oo/g, 'u'],
+    [/ai/g, 'a'], [/sh/g, 's'], [/zh/g, 'z'],
+  ]
+  let normalized = input.toLowerCase().trim()
+  for (const [pat, rep] of normalizations) normalized = normalized.replace(pat, rep)
   let best = { name: '', score: 0 }
   for (const c of candidates) {
-    if (c === lower || c.includes(lower) || lower.includes(c)) return c
-    const maxLen = Math.max(lower.length, c.length)
+    if (c === normalized || c.includes(normalized) || normalized.includes(c)) return c
+    const maxLen = Math.max(normalized.length, c.length)
     if (maxLen === 0) continue
-    const score = 1 - levenshtein(lower, c) / maxLen
+    const score = 1 - levenshtein(normalized, c) / maxLen
     if (score > best.score) best = { name: c, score }
   }
   return best.score >= threshold ? best.name : null
@@ -286,7 +292,10 @@ const STOPWORDS = new Set([
   'will', 'would', 'could', 'should', 'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by',
   'what', 'which', 'who', 'this', 'that', 'and', 'but', 'or', 'not', 'just', 'about',
   'movies', 'movie', 'film', 'films', 'watch', 'want', 'like', 'show', 'tell',
-  'find', 'get', 'some', 'any', 'more', 'please',
+  'find', 'get', 'some', 'any', 'more', 'please', 'also', 'than', 'then',
+  'can', 'you', 'me', 'ur', 'u', 'da', 'the', 'ok', 'yes', 'no', 'maybe',
+  'list', 'give', 'suggest', 'suggests', 'suggested', 'best', 'good', 'great',
+  'something', 'anything', 'everything', 'need', 'looking', 'search', 'searching',
 ])
 
 function extractEntities(message: string): Entities {
@@ -300,10 +309,10 @@ function extractEntities(message: string): Entities {
   }
   if (!e.actors.length) {
     const tokens = lower.replace(/[^\w\s]/g, ' ').split(/\s+/).filter(t => t.length > 1)
-    for (const t of tokens) { const m = fuzzyMatch(t, ACTORS, 0.82); if (m && !e.actors.includes(m)) e.actors.push(m) }
+    for (const t of tokens) { const m = fuzzyMatch(t, ACTORS, 0.75); if (m && !e.actors.includes(m)) e.actors.push(m) }
     for (let i = 0; i < tokens.length - 1; i++) {
       const b = `${tokens[i]} ${tokens[i + 1]}`
-      const m = fuzzyMatch(b, ACTORS, 0.80)
+      const m = fuzzyMatch(b, ACTORS, 0.72)
       if (m && !e.actors.includes(m)) e.actors.push(m)
     }
   }
@@ -311,9 +320,10 @@ function extractEntities(message: string): Entities {
   for (const d of DIRECTORS) if (lower.includes(d) && !e.directors.includes(d)) e.directors.push(d)
   if (!e.directors.length) {
     const tokens = lower.replace(/[^\w\s]/g, ' ').split(/\s+/).filter(t => t.length > 1)
+    for (const t of tokens) { const m = fuzzyMatch(t, DIRECTORS, 0.75); if (m && !e.directors.includes(m)) e.directors.push(m) }
     for (let i = 0; i < tokens.length - 1; i++) {
       const b = `${tokens[i]} ${tokens[i + 1]}`
-      const m = fuzzyMatch(b, DIRECTORS, 0.80)
+      const m = fuzzyMatch(b, DIRECTORS, 0.72)
       if (m && !e.directors.includes(m)) e.directors.push(m)
     }
   }
@@ -369,9 +379,9 @@ type IntentType =
 function classifyIntent(message: string, e: Entities): IntentType {
   const lower = message.toLowerCase().trim()
 
-  if (/^(hi|hello|hey|yo|sup|good\s*(morning|evening|night))\b/i.test(lower)) return 'greeting'
+  if (/^(hi|hello|hey|yo|sup|hii+|helo+|hai|vanakkam|namaste|good\s*(morning|evening|night)|welcome|start)\b/i.test(lower)) return 'greeting'
   if (/how (are you|r u|is it going)|what'?s up/i.test(lower)) return 'howru'
-  if (/\b(thanks?|thank you|great|nice one)\b/i.test(lower)) return 'thanks'
+  if (/\b(thanks?|thank you|great|nice one|thx|ty|tq|appreciate|awesome|nice|good)\b/i.test(lower)) return 'thanks'
   if (/\b(help|what can you|how to use|commands?|guide)\b/i.test(lower)) return 'help'
   if (/\bvs\.?|versus\b/i.test(lower) && (e.actors.length >= 2 || e.directors.length >= 2)) return 'comparison'
 
@@ -380,14 +390,14 @@ function classifyIntent(message: string, e: Entities): IntentType {
     genre: 0, year: 0, year_range: 0, ott: 0, rating_filter: 0, search: 0, unknown: 0,
   }
 
-  if (/\b(top|best|greatest|highest rated|must.?watch|masterpiece|goat)\b/i.test(lower)) scores.top_rated += 3
-  if (/\b(recent|new|latest|upcoming|just released)\b/i.test(lower)) scores.recent += 3
-  if (/\b(recommend|suggest|what should i watch|what'?s good)\b/i.test(lower)) scores.recommend += 2
-  if (/\b(direct(ed|or)|films? by|movies? by)\b/i.test(lower)) scores.director += 2
-  if (/\b(starring|featuring|cast|actor|actress|with)\b/i.test(lower)) scores.actor += 2
-  if (/\b(on|available on|streaming on|watch on|platform|ott)\b/i.test(lower) && e.otts.length) scores.ott += 3
-  if (/\b(rated|rating|score|above|below|imdb)\b/i.test(lower) && e.ratings) scores.rating_filter += 3
-  if (/\b(about|tell me|explain|describe|details|synopsis|story of|plot)\b/i.test(lower)) scores.search += 2
+  if (/\b(top|best|greatest|highest rated|must.?watch|masterpiece|goat|finest|finest|superb|excellent)\b/i.test(lower)) scores.top_rated += 3
+  if (/\b(recent|new|latest|upcoming|just released|just came out|newly released|fresh)\b/i.test(lower)) scores.recent += 3
+  if (/\b(recommend|suggest|what should i watch|what'?s good|can you suggest|give me|show me|looking for|find me|any good|something)\b/i.test(lower)) scores.recommend += 2
+  if (/\b(direct(ed|or|ed by)|films? by|movies? by|directors?)\b/i.test(lower)) scores.director += 2
+  if (/\b(starring|featuring|cast|actor|actress|with|acted by|played by|lead role)\b/i.test(lower)) scores.actor += 2
+  if (/\b(on|available on|streaming on|watch on|platform|ott|where can i watch|which app|on which platform)\b/i.test(lower) && e.otts.length) scores.ott += 3
+  if (/\b(rated|rating|score|above|below|imdb|out of|\/10|\/5)\b/i.test(lower) && e.ratings) scores.rating_filter += 3
+  if (/\b(about|tell me|explain|describe|details|synopsis|story of|plot|info|information|know about|what is|who is|overview)\b/i.test(lower)) scores.search += 2
 
   if (e.actors.length)    scores.actor += 3
   if (e.directors.length) scores.director += 3
@@ -524,7 +534,7 @@ function buildSuggestions(e: Entities, movies: any[]): string[] {
   if (e.directors.length) sugg.push(`${titleCase(e.directors[0])} filmography`)
   if (e.genres.length)    sugg.push(`Top ${e.genres[0].toLowerCase()} movies`)
   if (e.years.length)     sugg.push(`Top rated movies of ${e.years[0]}`)
-  const fallbacks = ['Top rated Tamil films', 'Recommend something', 'Latest 2025 movies', 'Best Tamil thrillers']
+  const fallbacks = ['Top rated Tamil films', 'Recommend something', 'Latest 2026 movies', 'Best Tamil thrillers']
   for (const f of fallbacks) { if (sugg.length >= 3) break; if (!sugg.includes(f)) sugg.push(f) }
   return sugg.slice(0, 3)
 }
@@ -571,7 +581,7 @@ async function generateResponse(message: string, history: any[]): Promise<{ repl
       `🤩 All good! Always excited to talk Tamil films. What are you looking for?`,
       `😎 Fantastic! Ready to explore Tamil cinema. What is on your mind?`,
     ]),
-    suggestions: ['Best 2024 movies', 'Recommend something', 'Vijay vs Ajith'],
+    suggestions: ['Best 2026 movies', 'Recommend something', 'Vijay vs Ajith'],
   }
 
   if (intent === 'thanks') return {
@@ -584,7 +594,7 @@ async function generateResponse(message: string, history: any[]): Promise<{ repl
   }
 
   if (intent === 'help') return {
-    reply: `📖 **What I can help with:**\n\n🎭 Actor films — "Vijay movies", "Dhanush films"\n🎬 Director works — "Lokesh Kanagaraj movies"\n🏷️ Genre — "action movies", "best thrillers"\n📅 Year — "best 2024 movies", "2020 to 2023 films"\n⭐ Rating — "movies above 4 rating"\n📺 Streaming — "movies on Netflix"\n🔄 Compare — "Vijay vs Ajith"\n🎯 Mood — "something funny", "something emotional"\n🌐 Anything else — I will use AI to answer!\n\nJust ask naturally — I understand plain English!`,
+    reply: `📖 **What I can help with:**\n\n🎭 Actor films — "Vijay movies", "Dhanush films"\n🎬 Director works — "Lokesh Kanagaraj movies"\n🏷️ Genre — "action movies", "best thrillers"\n📅 Year — "best 2026 movies", "2020 to 2023 films"\n⭐ Rating — "movies above 4 rating"\n📺 Streaming — "movies on Netflix"\n🔄 Compare — "Vijay vs Ajith"\n🎯 Mood — "something funny", "something emotional"\n🌐 Anything else — I will use AI to answer!\n\nJust ask naturally — I understand plain English!`,
     suggestions: ['Best thriller films', 'Vijay movies', 'Movies by Mani Ratnam'],
   }
 
@@ -840,7 +850,7 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     console.error('[TamilCinemaHub AI]', err?.message)
     return NextResponse.json({
-      reply: `Sorry, something went wrong! Please try again.\n\nTry: "Best action movies", "Vijay films", "Movies from 2024"`,
+      reply: `Sorry, something went wrong! Please try again.\n\nTry: "Best action movies", "Vijay films", "Movies from 2026"`,
       suggestions: ['Action movies', 'Vijay movies', 'Top rated films'],
       provider: 'TamilCinemaHub AI',
     }, { status: 200 })
