@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+function getResend() {
+  if (!process.env.RESEND_API_KEY) return null
+  return new Resend(process.env.RESEND_API_KEY)
+}
 
 export async function POST(req: NextRequest) {
   let body: any
@@ -38,7 +41,8 @@ export async function POST(req: NextRequest) {
   const cleanMessage = message.trim().slice(0, 2000)
 
   // If no RESEND_API_KEY, just log the message and return success
-  if (!process.env.RESEND_API_KEY) {
+  const resend = getResend()
+  if (!resend) {
     console.log(`[Contact Form] ${cleanName} <${cleanEmail}>: ${cleanMessage}`)
     return NextResponse.json({ ok: true, message: 'Message received!' })
   }
