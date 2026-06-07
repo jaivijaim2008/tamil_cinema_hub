@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { client } from '@/sanity/client'
+import { writeClient } from '@/sanity/writeClient'
 
 export async function POST(req: NextRequest) {
   let body: any
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest) {
     if (!docId) return NextResponse.json({ error: 'Blog not found' }, { status: 404 })
 
     // Initialize field to 0 if null/undefined (schema not deployed), then increment
-    const result = await client
+    const result = await writeClient
       .patch(docId)
       .setIfMissing({ [field]: 0 })
       .inc({ [field]: 1 })

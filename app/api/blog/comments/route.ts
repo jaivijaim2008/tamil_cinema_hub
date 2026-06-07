@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { client } from '@/sanity/client'
+import { writeClient } from '@/sanity/writeClient'
 
 export async function GET(req: NextRequest) {
   const slug = req.nextUrl.searchParams.get('slug')
@@ -59,7 +60,7 @@ export async function POST(req: NextRequest) {
       createdAt: new Date().toISOString(),
     }
 
-    const result = await client
+    const result = await writeClient
       .patch(docId)
       .setIfMissing({ comments: [] })
       .append('comments', [comment])
