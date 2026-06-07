@@ -3,106 +3,137 @@ import { client } from '@/sanity/client'
 import { urlFor } from '@/sanity/lib/image'
 
 // ─────────────────────────────────────────────────────────────
-// WIKIPEDIA SEARCH
+// GROQ AI FALLBACK (Free — no credit card needed)
+// Sign up at: https://console.groq.com
+// Add to .env.local: GROQ_API_KEY=your_key_here
 // ─────────────────────────────────────────────────────────────
 
-async function searchWikipedia(query: string) {
+async function askGroq(
+  message: string,
+  history: { role: string; content: string }[]
+): Promise<{ reply: string; suggestions: string[] }> {
+  const apiKey = process.env.GROQ_API_KEY
+  if (!apiKey) {
+    console.warn('[TamilCinemaHub] GROQ_API_KEY not set in .env.local')
+    return {
+      reply: `I could not find anything about that in my database. Try asking about:\n• A specific actor or director\n• A genre (action, thriller, comedy)\n• A year or streaming platform`,
+      suggestions: ['Best action movies', 'Top rated films', 'Vijay movies'],
+    }
+  }
+
+  // Build conversation history for context (last 6 messages)
+  const recentHistory = history.slice(-6).map(m => ({
+    role: m.role === 'assistant' ? 'assistant' : 'user',
+    content: m.content,
+  }))
+
+  const systemPrompt = `You are TamilCinemaHub AI — an expert assistant for Tamil cinema (Kollywood).
+
+Your knowledge covers:
+- Tamil movies, actors, directors, music composers
+- Box office, awards, streaming platforms
+- Tamil cinema history from 1930s to today
+- General knowledge about India and world topics
+
+Rules:
+- Always reply in simple, clear English (no Tanglish, no slang)
+- Keep answers concise (under 200 words)
+- For Tamil cinema topics, be detailed and accurate
+- For general questions, give a helpful short answer
+- End every reply with a relevant follow-up suggestion
+- Never say you cannot answer — always try your best
+- Use emojis naturally to make replies friendly 🎬`
+
   try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'llama3-8b-8192',   // Free model — 14,400 requests/day
+        max_tokens: 400,
+        temperature: 0.7,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...recentHistory,
+          { role: 'user', content: message },
+        ],
+      }),
+      signal: AbortSignal.timeout(8000),
+    })
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      console.error('[Groq Error]', res.status, err)
+      throw new Error(`Groq API error: ${res.status}`)
+    }
+
+    const data = await res.json()
+    const reply = data.choices?.[0]?.message?.content?.trim()
+    if (!reply) throw new Error('Empty response from Groq')
+
+    // Generate smart suggestions based on the question
+    const suggestions = buildGroqSuggestions(message)
+
+    return { reply: `🤖 ${reply}`, suggestions }
+  } catch (err: any) {
+    console.error('[TamilCinemaHub] Groq failed:', err?.message)
+    // Final fallback — Wikipedia only if Groq fails
+    return await searchWikipedia(message)
+  }
+}
+
+function buildGroqSuggestions(message: string): string[] {
+  const lower = message.toLowerCase()
+  if (/vijay|thalapathy/i.test(lower))    return ['Best Vijay movies', 'Vijay vs Ajith', 'Top rated films']
+  if (/ajith|thala/i.test(lower))         return ['Best Ajith movies', 'Vijay vs Ajith', 'Top rated films']
+  if (/rajini|superstar/i.test(lower))    return ['Best Rajini movies', 'Top rated films', 'Recommend something']
+  if (/action/i.test(lower))              return ['Best Tamil thrillers', 'Top rated films', 'Latest releases']
+  if (/director|director/i.test(lower))   return ['Lokesh Kanagaraj movies', 'Mani Ratnam films', 'Top rated films']
+  return ['Best action movies', 'Top rated films', 'Recommend something']
+}
+
+// ─────────────────────────────────────────────────────────────
+// WIKIPEDIA BACKUP (only used if Groq fails)
+// ─────────────────────────────────────────────────────────────
+
+async function searchWikipedia(message: string): Promise<{ reply: string; suggestions: string[] }> {
+  const suggestions = ['Best action movies', 'Top rated films', 'Vijay movies']
+  try {
+    let query = message.replace(/^(tell me about|what is|who is|explain|describe)\s+/i, '').replace(/\?+$/, '').trim()
+    if (!/tamil|kollywood/i.test(query) && /actor|actress|director|movie|film/i.test(query)) {
+      query += ' Tamil cinema'
+    }
+
     const searchRes = await fetch(
       `https://en.wikipedia.org/w/api.php?` +
-      new URLSearchParams({
-        action: 'query', list: 'search', srsearch: query,
-        srlimit: '3', format: 'json', origin: '*',
-      }),
+      new URLSearchParams({ action: 'query', list: 'search', srsearch: query, srlimit: '3', format: 'json', origin: '*' }),
       { headers: { 'User-Agent': 'TamilCinemaHub/1.0' }, signal: AbortSignal.timeout(5000) }
     )
     const searchData = await searchRes.json()
     const results = searchData?.query?.search
-    if (!results?.length) return null
+    if (!results?.length) return { reply: `I could not find anything about that. Try asking about Tamil movies, actors, or directors!`, suggestions }
 
-    const best = results.find((r: any) =>
-      /tamil|kollywood|india|film|cinema|actor|director|movie/i.test(r.snippet)
-    ) ?? results[0]
-
+    const best = results.find((r: any) => /tamil|kollywood|india|film|cinema|actor|director/i.test(r.snippet)) ?? results[0]
     const extractRes = await fetch(
       `https://en.wikipedia.org/w/api.php?` +
-      new URLSearchParams({
-        action: 'query', prop: 'extracts', exintro: 'true',
-        explaintext: 'true', exsentences: '5', titles: best.title,
-        format: 'json', origin: '*',
-      }),
+      new URLSearchParams({ action: 'query', prop: 'extracts', exintro: 'true', explaintext: 'true', exsentences: '4', titles: best.title, format: 'json', origin: '*' }),
       { headers: { 'User-Agent': 'TamilCinemaHub/1.0' }, signal: AbortSignal.timeout(5000) }
     )
     const extractData = await extractRes.json()
     const page = Object.values(extractData?.query?.pages ?? {})[0] as any
-    if (!page || page.missing || !page.extract || page.extract.length < 50) return null
-
-    return {
-      title:   page.title,
-      extract: page.extract.replace(/\n{2,}/g, '\n').trim().slice(0, 700),
-      url:     `https://en.wikipedia.org/wiki/${encodeURIComponent(page.title)}`,
+    if (!page || page.missing || !page.extract || page.extract.length < 50) {
+      return { reply: `I could not find enough information about that. Try asking about Tamil movies or actors!`, suggestions }
     }
-  } catch { return null }
-}
 
-// ─────────────────────────────────────────────────────────────
-// DUCKDUCKGO SEARCH
-// ─────────────────────────────────────────────────────────────
-
-async function searchDuckDuckGo(query: string) {
-  try {
-    const res = await fetch(
-      `https://api.duckduckgo.com/?` +
-      new URLSearchParams({ q: query, format: 'json', no_html: '1', skip_disambig: '1', no_redirect: '1' }),
-      { headers: { 'User-Agent': 'TamilCinemaHub/1.0' }, signal: AbortSignal.timeout(5000) }
-    )
-    const data = await res.json()
-    const answer = [data.Answer, data.AbstractText, data.Definition, data.RelatedTopics?.[0]?.Text]
-      .find((c): c is string => typeof c === 'string' && c.trim().length > 30)
-    if (!answer) return null
-    return { answer: answer.trim().slice(0, 500), url: data.AbstractURL || '' }
-  } catch { return null }
-}
-
-// ─────────────────────────────────────────────────────────────
-// WEB FALLBACK (Wikipedia + DuckDuckGo)
-// ─────────────────────────────────────────────────────────────
-
-async function searchFallback(message: string): Promise<{ reply: string; suggestions: string[] }> {
-  let query = message
-    .replace(/^(tell me about|what is|who is|explain|describe|info on)\s+/i, '')
-    .replace(/\?+$/, '').trim()
-
-  if (!/tamil|kollywood/i.test(query) &&
-      /actor|actress|director|movie|film|music|song|award/i.test(query)) {
-    query += ' Tamil cinema'
-  }
-
-  const [wiki, ddg] = await Promise.all([searchWikipedia(query), searchDuckDuckGo(query)])
-  const suggestions = ['Best action movies', 'Top rated films', 'Vijay movies']
-
-  if (wiki && ddg) {
     return {
-      reply: `🌐 Here is what I found:\n\n📖 **${wiki.title}**\n${wiki.extract}\n\n🔍 ${ddg.answer}\n\n[Read more on Wikipedia →](${wiki.url})`,
+      reply: `🌐 **${page.title}**\n\n${page.extract.replace(/\n{2,}/g, '\n').trim().slice(0, 600)}\n\n[Read more on Wikipedia →](https://en.wikipedia.org/wiki/${encodeURIComponent(page.title)})`,
       suggestions,
     }
-  }
-  if (wiki) {
-    return {
-      reply: `🌐 Found this on Wikipedia:\n\n📖 **${wiki.title}**\n${wiki.extract}\n\n[Read more →](${wiki.url})`,
-      suggestions,
-    }
-  }
-  if (ddg) {
-    return {
-      reply: `🔍 Here is a quick answer:\n\n${ddg.answer}${ddg.url ? `\n\n[Source →](${ddg.url})` : ''}`,
-      suggestions,
-    }
-  }
-
-  return {
-    reply: `I could not find anything about that. Try asking about:\n• A specific actor or director\n• A genre (action, thriller, comedy)\n• A year or streaming platform`,
-    suggestions,
+  } catch {
+    return { reply: `I could not find anything about that. Try asking about Tamil movies, actors, or directors!`, suggestions }
   }
 }
 
@@ -110,8 +141,6 @@ async function searchFallback(message: string): Promise<{ reply: string; suggest
 // KNOWLEDGE BASE
 // ═══════════════════════════════════════════════════════════════
 
-// FIX: Map of canonical actor names → exact Sanity cast name
-// This prevents "vijay" wildcard matching "Vijay Raghavendra", "Arun Vijay", etc.
 const ACTOR_CANONICAL: Record<string, string> = {
   'vijay':           'Vijay',
   'thalapathy':      'Vijay',
@@ -263,7 +292,7 @@ function extractEntities(message: string): Entities {
   const lower = message.toLowerCase()
   const e: Entities = { actors: [], directors: [], genres: [], years: [], yearRange: null, otts: [], ratings: null, keywords: [] }
 
-  // FIX: Match longer actor names first to avoid "vijay" stealing from "vijay sethupathi" or "arun vijay"
+  // Match longer actor names first to avoid "vijay" stealing "vijay sethupathi" / "arun vijay"
   const sortedActors = [...ACTORS].sort((a, b) => b.length - a.length)
   for (const a of sortedActors) {
     if (lower.includes(a) && !e.actors.includes(a)) e.actors.push(a)
@@ -278,7 +307,6 @@ function extractEntities(message: string): Entities {
     }
   }
 
-  // Directors
   for (const d of DIRECTORS) if (lower.includes(d) && !e.directors.includes(d)) e.directors.push(d)
   if (!e.directors.length) {
     const tokens = lower.replace(/[^\w\s]/g, ' ').split(/\s+/).filter(t => t.length > 1)
@@ -289,27 +317,22 @@ function extractEntities(message: string): Entities {
     }
   }
 
-  // Genres
   for (const [genre, kws] of Object.entries(GENRES))
     if (kws.some(k => lower.includes(k)) && !e.genres.includes(genre)) e.genres.push(genre)
 
-  // Mood to genre
   for (const [mood, genre] of Object.entries(MOOD_TO_GENRE))
     if (lower.includes(mood) && !e.genres.includes(genre)) e.genres.push(genre)
 
-  // Year range
   const rangeMatch = lower.match(/\b(20\d{2})\s*(?:to|-|–|and|till)\s*(20\d{2})\b/)
   if (rangeMatch) e.yearRange = [parseInt(rangeMatch[1]), parseInt(rangeMatch[2])]
   const lastN = lower.match(/last\s+(\d+)\s+years?/)
   if (lastN) e.yearRange = [new Date().getFullYear() - parseInt(lastN[1]), new Date().getFullYear()]
 
-  // Single years
   if (!e.yearRange) {
     const ym = lower.match(/\b(19[89]\d|20[0-2]\d)\b/g)
     if (ym) e.years = ym.map(Number)
   }
 
-  // OTT platforms
   for (const ott of OTT_PLATFORMS) {
     if (lower.includes(ott)) {
       const c = (ott === 'amazon' || ott === 'prime video') ? 'prime' : ott
@@ -317,7 +340,6 @@ function extractEntities(message: string): Entities {
     }
   }
 
-  // Ratings
   const rA = lower.match(/(?:above|over|more than|atleast|minimum)\s*(\d+(?:\.\d+)?)/i)
   const rB = lower.match(/(?:below|under|less than|maximum)\s*(\d+(?:\.\d+)?)/i)
   const rR = lower.match(/(?:between)\s*(\d+(?:\.\d+)?)\s*(?:and|to|-)\s*(\d+(?:\.\d+)?)/i)
@@ -325,7 +347,6 @@ function extractEntities(message: string): Entities {
   else if (rA) e.ratings = { min: parseFloat(rA[1]), max: 10 }
   else if (rB) e.ratings = { min: 0, max: parseFloat(rB[1]) }
 
-  // Keywords
   e.keywords = lower.replace(/[^\w\s]/g, ' ').split(/\s+/)
     .filter(t => t.length > 2 && !STOPWORDS.has(t)
       && !ACTORS.some(a => a.includes(t))
@@ -351,7 +372,6 @@ function classifyIntent(message: string, e: Entities): IntentType {
   if (/how (are you|r u|is it going)|what'?s up/i.test(lower)) return 'howru'
   if (/\b(thanks?|thank you|great|nice one)\b/i.test(lower)) return 'thanks'
   if (/\b(help|what can you|how to use|commands?|guide)\b/i.test(lower)) return 'help'
-
   if (/\bvs\.?|versus\b/i.test(lower) && (e.actors.length >= 2 || e.directors.length >= 2)) return 'comparison'
 
   const scores: Record<string, number> = {
@@ -377,14 +397,11 @@ function classifyIntent(message: string, e: Entities): IntentType {
   if (e.ratings)          scores.rating_filter += 2
   if (e.keywords.length)  scores.search += 1
 
-  // FIX: When an actor is detected, "top/best" means top movies BY that actor,
-  // not the global top-rated list — so boost actor and suppress top_rated
+  // When actor is detected, "top/best/latest" = top movies BY that actor
   if (e.actors.length && scores.top_rated > 0) {
     scores.actor += 3
     scores.top_rated = 0
   }
-
-  // FIX: Same logic for recent — "latest vijay movies" should hit actor, not recent
   if (e.actors.length && scores.recent > 0) {
     scores.actor += 2
     scores.recent = 0
@@ -405,23 +422,18 @@ function classifyIntent(message: string, e: Entities): IntentType {
 const F = `_id,title,titleTanglish,"slug":slug.current,year,director,cast[]{name},genre,rating,synopsis,ottPlatform,poster,posterUrl`
 
 const db = {
-  // FIX: byActor now uses exact canonical name match first, then falls back to wildcard.
-  // This stops "vijay" from matching "Vijay Raghavendra", "Arun Vijay", etc.
   byActor: async (actorKey: string, n = 6): Promise<any[]> => {
     const exactName = ACTOR_CANONICAL[actorKey.toLowerCase()] ?? actorKey
-    // Try exact match on cast name first
     const exact: any[] = await client.fetch(
       `*[_type=="movie" && count(cast[name == $name]) > 0]|order(rating desc, year desc)[0...${n}]{${F}}`,
       { name: exactName }
     )
     if (exact.length) return exact
-    // Fallback: wildcard (catches edge cases / data inconsistencies)
     return client.fetch(
       `*[_type=="movie" && cast[].name match $a]|order(year desc)[0...${n}]{${F}}`,
       { a: `*${exactName}*` }
     )
   },
-
   byActorGenre: async (actorKey: string, genre: string, n = 6): Promise<any[]> => {
     const exactName = ACTOR_CANONICAL[actorKey.toLowerCase()] ?? actorKey
     const exact: any[] = await client.fetch(
@@ -434,7 +446,6 @@ const db = {
       { a: `*${exactName}*`, genre }
     )
   },
-
   search:      (q: string, n = 6) => client.fetch(
     `*[_type=="movie"&&(title match $q||titleTanglish match $q||director match $q||cast[].name match $q)]|order(year desc)[0...${n}]{${F}}`,
     { q: `*${q}*` }
@@ -572,7 +583,7 @@ async function generateResponse(message: string, history: any[]): Promise<{ repl
   }
 
   if (intent === 'help') return {
-    reply: `📖 **What I can help with:**\n\n🎭 Actor films — "Vijay movies", "Dhanush films"\n🎬 Director works — "Lokesh Kanagaraj movies"\n🏷️ Genre — "action movies", "best thrillers"\n📅 Year — "best 2024 movies", "2020 to 2023 films"\n⭐ Rating — "movies above 8 rating"\n📺 Streaming — "movies on Netflix"\n🔄 Compare — "Vijay vs Ajith"\n🎯 Mood — "something funny", "something emotional"\n🌐 General questions — I will search Wikipedia and the web!\n\nJust ask naturally — I understand plain English!`,
+    reply: `📖 **What I can help with:**\n\n🎭 Actor films — "Vijay movies", "Dhanush films"\n🎬 Director works — "Lokesh Kanagaraj movies"\n🏷️ Genre — "action movies", "best thrillers"\n📅 Year — "best 2024 movies", "2020 to 2023 films"\n⭐ Rating — "movies above 8 rating"\n📺 Streaming — "movies on Netflix"\n🔄 Compare — "Vijay vs Ajith"\n🎯 Mood — "something funny", "something emotional"\n🌐 Anything else — I will use AI to answer!\n\nJust ask naturally — I understand plain English!`,
     suggestions: ['Best thriller films', 'Vijay movies', 'Movies by Mani Ratnam'],
   }
 
@@ -639,7 +650,6 @@ async function generateResponse(message: string, history: any[]): Promise<{ repl
       reply: fmtList(movies, pick([`🎭 Movies featuring ${at}:`, `🌟 ${at}'s filmography:`, `🎬 Top ${at} movies:`])),
       suggestions: buildSuggestions(e, movies),
     }
-    // Fallback to text search
     const s = await db.search(ACTOR_CANONICAL[actor] ?? actor, 5)
     if (s.length) return { reply: fmtList(s, `🔍 Results for "${at}":`), suggestions: buildSuggestions(e, s) }
   }
@@ -771,9 +781,10 @@ async function generateResponse(message: string, history: any[]): Promise<{ repl
     }
   }
 
-  // ── Web fallback (Wikipedia + DuckDuckGo) ──────────────────
-  console.log(`[TamilCinemaHub] No database result — searching the web for: "${message}"`)
-  return await searchFallback(message)
+  // ── Groq AI Fallback — answers ANYTHING ────────────────────
+  // Database had no match — hand off to Groq (free LLaMA AI)
+  console.log(`[TamilCinemaHub] No DB match — asking Groq AI: "${message}"`)
+  return await askGroq(message, history)
 }
 
 // ═══════════════════════════════════════════════════════════════
