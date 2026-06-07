@@ -642,137 +642,169 @@ async function generateResponse(message: string, history: any[]): Promise<{ repl
     const at = titleCase(ACTOR_CANONICAL[actor] ?? actor)
 
     if (e.genres.length) {
-      const movies = await db.byActorGenre(actor, e.genres[0], 6)
-      if (movies.length) return {
-        reply: fmtList(movies, pick([`🎭 ${at} in ${e.genres[0]}:`, `🔥 Best ${e.genres[0].toLowerCase()} films starring ${at}:`])),
-        suggestions: buildSuggestions(e, movies),
-      }
+      try {
+        const movies = await db.byActorGenre(actor, e.genres[0], 6)
+        if (movies?.length) return {
+          reply: fmtList(movies, pick([`🎭 ${at} in ${e.genres[0]}:`, `🔥 Best ${e.genres[0].toLowerCase()} films starring ${at}:`])),
+          suggestions: buildSuggestions(e, movies),
+        }
+      } catch {}
     }
     if (e.years.length) {
-      const all = await db.byActor(actor, 12)
-      const filtered = all.filter((m: any) => m.year === e.years[0])
-      if (filtered.length) return {
-        reply: fmtList(filtered, `🎭 ${at} films from ${e.years[0]}:`),
-        suggestions: buildSuggestions(e, filtered),
+      try {
+        const all = await db.byActor(actor, 12)
+        const filtered = (all ?? []).filter((m: any) => m.year === e.years[0])
+        if (filtered.length) return {
+          reply: fmtList(filtered, `🎭 ${at} films from ${e.years[0]}:`),
+          suggestions: buildSuggestions(e, filtered),
+        }
+      } catch {}
+    }
+    try {
+      const movies = await db.byActor(actor, 8)
+      if (movies?.length) return {
+        reply: fmtList(movies, pick([`🎭 Movies featuring ${at}:`, `🌟 ${at}'s filmography:`, `🎬 Top ${at} movies:`])),
+        suggestions: buildSuggestions(e, movies),
       }
-    }
-    const movies = await db.byActor(actor, 8)
-    if (movies.length) return {
-      reply: fmtList(movies, pick([`🎭 Movies featuring ${at}:`, `🌟 ${at}'s filmography:`, `🎬 Top ${at} movies:`])),
-      suggestions: buildSuggestions(e, movies),
-    }
-    const s = await db.search(ACTOR_CANONICAL[actor] ?? actor, 5)
-    if (s.length) return { reply: fmtList(s, `🔍 Results for "${at}":`), suggestions: buildSuggestions(e, s) }
+    } catch {}
+    try {
+      const s = await db.search(ACTOR_CANONICAL[actor] ?? actor, 5)
+      if (s?.length) return { reply: fmtList(s, `🔍 Results for "${at}":`), suggestions: buildSuggestions(e, s) }
+    } catch {}
   }
 
   // ── Director ────────────────────────────────────────────────
   if (intent === 'director' && e.directors.length) {
     const dir = e.directors[0]
     const dt = titleCase(dir)
-    const movies = await db.byDirector(dir, 7)
-    if (movies.length) return {
-      reply: fmtList(movies, pick([`🎬 Filmography of ${dt}:`, `🎥 ${dt}'s movies:`])),
-      suggestions: buildSuggestions(e, movies),
-    }
-    const s = await db.search(dir, 5)
-    if (s.length) return { reply: fmtList(s, `🔍 Results for "${dt}":`), suggestions: buildSuggestions(e, s) }
+    try {
+      const movies = await db.byDirector(dir, 7)
+      if (movies?.length) return {
+        reply: fmtList(movies, pick([`🎬 Filmography of ${dt}:`, `🎥 ${dt}'s movies:`])),
+        suggestions: buildSuggestions(e, movies),
+      }
+    } catch {}
+    try {
+      const s = await db.search(dir, 5)
+      if (s?.length) return { reply: fmtList(s, `🔍 Results for "${dt}":`), suggestions: buildSuggestions(e, s) }
+    } catch {}
   }
 
   // ── Genre ───────────────────────────────────────────────────
   if (intent === 'genre' && e.genres.length) {
     const genre = e.genres[0]
     if (e.years.length) {
-      const movies = await db.byGenreYear(genre, e.years[0], 6)
-      if (movies.length) return {
-        reply: fmtList(movies, `🎭 ${genre} movies from ${e.years[0]}:`),
+      try {
+        const movies = await db.byGenreYear(genre, e.years[0], 6)
+        if (movies?.length) return {
+          reply: fmtList(movies, `🎭 ${genre} movies from ${e.years[0]}:`),
+          suggestions: buildSuggestions(e, movies),
+        }
+      } catch {}
+    }
+    try {
+      const movies = await db.byGenre(genre, 7)
+      if (movies?.length) return {
+        reply: fmtList(movies, pick([`🏷️ Best ${genre} movies:`, `💥 Top ${genre} picks:`, `🎬 ${genre} films you should watch:`])),
         suggestions: buildSuggestions(e, movies),
       }
-    }
-    const movies = await db.byGenre(genre, 7)
-    if (movies.length) return {
-      reply: fmtList(movies, pick([`🏷️ Best ${genre} movies:`, `💥 Top ${genre} picks:`, `🎬 ${genre} films you should watch:`])),
-      suggestions: buildSuggestions(e, movies),
-    }
+    } catch {}
   }
 
   // ── Year range ──────────────────────────────────────────────
   if (intent === 'year_range' && e.yearRange) {
-    const [from, to] = e.yearRange
-    const movies = await db.byYearRange(from, to, 7)
-    if (movies.length) return {
-      reply: fmtList(movies, pick([`📅 Tamil movies from ${from} to ${to}:`, `🏆 Best of ${from}–${to}:`])),
-      suggestions: buildSuggestions(e, movies),
-    }
+    try {
+      const [from, to] = e.yearRange
+      const movies = await db.byYearRange(from, to, 7)
+      if (movies?.length) return {
+        reply: fmtList(movies, pick([`📅 Tamil movies from ${from} to ${to}:`, `🏆 Best of ${from}–${to}:`])),
+        suggestions: buildSuggestions(e, movies),
+      }
+    } catch {}
   }
 
   // ── Year ────────────────────────────────────────────────────
   if (intent === 'year' && e.years.length) {
-    const movies = await db.byYear(e.years[0], 7)
-    if (movies.length) return {
-      reply: fmtList(movies, pick([`📅 Tamil movies from ${e.years[0]}:`, `🏆 Best Tamil films of ${e.years[0]}:`])),
-      suggestions: buildSuggestions(e, movies),
-    }
+    try {
+      const movies = await db.byYear(e.years[0], 7)
+      if (movies?.length) return {
+        reply: fmtList(movies, pick([`📅 Tamil movies from ${e.years[0]}:`, `🏆 Best Tamil films of ${e.years[0]}:`])),
+        suggestions: buildSuggestions(e, movies),
+      }
+    } catch {}
   }
 
   // ── OTT ─────────────────────────────────────────────────────
   if (intent === 'ott' && e.otts.length) {
-    const movies = await db.byOTT(e.otts[0], 7)
-    if (movies.length) return {
-      reply: fmtList(movies, `📺 Tamil movies on ${titleCase(e.otts[0])}:`),
-      suggestions: buildSuggestions(e, movies),
-    }
+    try {
+      const movies = await db.byOTT(e.otts[0], 7)
+      if (movies?.length) return {
+        reply: fmtList(movies, `📺 Tamil movies on ${titleCase(e.otts[0])}:`),
+        suggestions: buildSuggestions(e, movies),
+      }
+    } catch {}
   }
 
   // ── Rating filter ───────────────────────────────────────────
   if (intent === 'rating_filter' && e.ratings) {
-    const { min, max } = e.ratings
-    const movies = await db.byRating(min, max, 7)
-    if (movies.length) return {
-      reply: fmtList(movies, `⭐ Movies rated ${min}${max < 5 ? `–${max}` : '+'}:`),
-      suggestions: buildSuggestions(e, movies),
-    }
+    try {
+      const { min, max } = e.ratings
+      const movies = await db.byRating(min, max, 7)
+      if (movies?.length) return {
+        reply: fmtList(movies, `⭐ Movies rated ${min}${max < 5 ? `–${max}` : '+'}:`),
+        suggestions: buildSuggestions(e, movies),
+      }
+    } catch {}
   }
 
   // ── Top rated ───────────────────────────────────────────────
   if (intent === 'top_rated') {
-    const movies = await db.topRated(8)
-    if (movies.length) return {
-      reply: fmtList(movies, pick([`🏆 Highest-rated Tamil movies:`, `🌟 The best of Tamil cinema:`, `💎 Tamil cinema masterpieces:`])),
-      suggestions: buildSuggestions(e, movies),
-    }
+    try {
+      const movies = await db.topRated(8)
+      if (movies?.length) return {
+        reply: fmtList(movies, pick([`🏆 Highest-rated Tamil movies:`, `🌟 The best of Tamil cinema:`, `💎 Tamil cinema masterpieces:`])),
+        suggestions: buildSuggestions(e, movies),
+      }
+    } catch {}
   }
 
   // ── Recent ──────────────────────────────────────────────────
   if (intent === 'recent') {
-    const movies = await db.recent(8)
-    if (movies.length) return {
-      reply: fmtList(movies, pick([`🆕 Latest Tamil releases:`, `🎬 Fresh from Tamil cinema:`, `📽️ What is new in Tamil cinema:`])),
-      suggestions: buildSuggestions(e, movies),
-    }
+    try {
+      const movies = await db.recent(8)
+      if (movies?.length) return {
+        reply: fmtList(movies, pick([`🆕 Latest Tamil releases:`, `🎬 Fresh from Tamil cinema:`, `📽️ What is new in Tamil cinema:`])),
+        suggestions: buildSuggestions(e, movies),
+      }
+    } catch {}
   }
 
   // ── Recommend ───────────────────────────────────────────────
   if (intent === 'recommend') {
-    const source = e.genres.length ? db.byGenre(e.genres[0], 6) : db.topRated(7)
-    const movies = await source
-    if (movies.length) return {
-      reply: fmtList(movies, pick([`✨ My top picks for you:`, `🎯 Handpicked for you:`, `🌟 You cannot go wrong with these:`])),
-      suggestions: buildSuggestions(e, movies),
-    }
+    try {
+      const source = e.genres.length ? db.byGenre(e.genres[0], 6) : db.topRated(7)
+      const movies = await source
+      if (movies?.length) return {
+        reply: fmtList(movies, pick([`✨ My top picks for you:`, `🎯 Handpicked for you:`, `🌟 You cannot go wrong with these:`])),
+        suggestions: buildSuggestions(e, movies),
+      }
+    } catch {}
   }
 
   // ── Search ──────────────────────────────────────────────────
   if (intent === 'search' || e.keywords.length) {
-    const q = e.keywords.join(' ') || message.trim()
-    const movies = await db.search(q, 6)
-    if (movies.length === 1) return {
-      reply: fmtDetail(movies[0]),
-      suggestions: [`More ${movies[0].genre?.[0] || 'similar'} movies`, `Movies by ${movies[0].director || 'this director'}`, 'Top rated films'],
-    }
-    if (movies.length > 1) return {
-      reply: fmtList(movies, pick([`🔍 Results for "${q}":`, `📽️ Found these for "${q}":`, `🎬 Matching movies for "${q}":`])),
-      suggestions: buildSuggestions(e, movies),
-    }
+    try {
+      const q = e.keywords.join(' ') || message.trim()
+      const movies = await db.search(q, 6)
+      if (movies?.length === 1) return {
+        reply: fmtDetail(movies[0]),
+        suggestions: [`More ${movies[0].genre?.[0] || 'similar'} movies`, `Movies by ${movies[0].director || 'this director'}`, 'Top rated films'],
+      }
+      if (movies && movies.length > 1) return {
+        reply: fmtList(movies, pick([`🔍 Results for "${q}":`, `📽️ Found these for "${q}":`, `🎬 Matching movies for "${q}":`])),
+        suggestions: buildSuggestions(e, movies),
+      }
+    } catch {}
   }
 
   // ── Context follow-up ("show more", "another one") ─────────
@@ -781,13 +813,17 @@ async function generateResponse(message: string, history: any[]): Promise<{ repl
     if (lastAI) {
       const ce = extractEntities(lastAI.content.slice(0, 500))
       if (ce.actors[0]) {
-        const m = await db.byActor(ce.actors[0], 6)
-        const label = titleCase(ACTOR_CANONICAL[ce.actors[0]] ?? ce.actors[0])
-        if (m.length) return { reply: fmtList(m, `🎭 More ${label} movies:`), suggestions: buildSuggestions(ce, m) }
+        try {
+          const m = await db.byActor(ce.actors[0], 6)
+          const label = titleCase(ACTOR_CANONICAL[ce.actors[0]] ?? ce.actors[0])
+          if (m?.length) return { reply: fmtList(m, `🎭 More ${label} movies:`), suggestions: buildSuggestions(ce, m) }
+        } catch {}
       }
       if (ce.genres[0]) {
-        const m = await db.byGenre(ce.genres[0], 6)
-        if (m.length) return { reply: fmtList(m, `🏷️ More ${ce.genres[0]} movies:`), suggestions: buildSuggestions(ce, m) }
+        try {
+          const m = await db.byGenre(ce.genres[0], 6)
+          if (m?.length) return { reply: fmtList(m, `🏷️ More ${ce.genres[0]} movies:`), suggestions: buildSuggestions(ce, m) }
+        } catch {}
       }
     }
   }
@@ -848,11 +884,17 @@ export async function POST(req: NextRequest) {
     const { reply, suggestions } = await generateResponse(lastMsg, history)
     return NextResponse.json({ reply, suggestions, provider: 'TamilCinemaHub AI' })
   } catch (err: any) {
-    console.error('[TamilCinemaHub AI]', err?.message)
-    return NextResponse.json({
-      reply: `Sorry, something went wrong! Please try again.\n\nTry: "Best action movies", "Vijay films", "Movies from 2026"`,
-      suggestions: ['Action movies', 'Vijay movies', 'Top rated films'],
-      provider: 'TamilCinemaHub AI',
-    }, { status: 200 })
+    console.error('[TamilCinemaHub AI]', err?.message, err?.stack)
+    // Fallback: try Groq AI directly so the user still gets a response
+    try {
+      const fallback = await askGroq(lastMsg, history)
+      return NextResponse.json({ ...fallback, provider: 'TamilCinemaHub AI' })
+    } catch {
+      return NextResponse.json({
+        reply: `Sorry, something went wrong! Please try again.\n\nTry: "Best action movies", "Vijay films", "Movies from 2026"`,
+        suggestions: ['Action movies', 'Vijay movies', 'Top rated films'],
+        provider: 'TamilCinemaHub AI',
+      }, { status: 200 })
+    }
   }
 }
