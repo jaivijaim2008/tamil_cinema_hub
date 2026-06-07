@@ -15,12 +15,16 @@ const LEGAL_LINKS = [
 export default function Footer() {
   return (
     <footer
+      className="relative overflow-hidden"
       style={{
-        background: 'rgba(0,0,0,0.4)',
+        background: 'rgba(0,0,0,0.5)',
         borderTop: '1px solid rgba(255,255,255,0.06)',
       }}
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14">
+      {/* Subtle gradient accent at top */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-500/30 to-transparent" />
+
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
 
         {/* Top grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
@@ -29,7 +33,7 @@ export default function Footer() {
           <div className="lg:col-span-2 space-y-5">
             <Link href="/" className="inline-flex items-center gap-2.5 group">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3"
                 style={{ background: 'linear-gradient(135deg, #7c3aed, #4c1d95)' }}
               >
                 🎬
@@ -80,7 +84,7 @@ export default function Footer() {
                 <li key={href}>
                   <Link
                     href={href}
-                    className="text-sm font-medium hover:text-white transition-colors"
+                    className="text-sm font-medium hover:text-white transition-all duration-300 hover:translate-x-1 inline-block"
                     style={{ color: 'rgba(255,255,255,0.45)' }}
                   >
                     {label}
@@ -100,7 +104,7 @@ export default function Footer() {
                 <li key={href}>
                   <Link
                     href={href}
-                    className="text-sm font-medium hover:text-white transition-colors"
+                    className="text-sm font-medium hover:text-white transition-all duration-300 hover:translate-x-1 inline-block"
                     style={{ color: 'rgba(255,255,255,0.45)' }}
                   >
                     {label}
@@ -125,7 +129,6 @@ export default function Footer() {
           <p>&copy; {new Date().getFullYear()} TamilCinemaHub. All rights reserved.</p>
           <p>Made with ❤️ for Tamil cinema fans</p>
         </div>
-
       </div>
     </footer>
   )
