@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { slug, author, content } = body
+  const { slug, author, email, content } = body
   if (!slug || !author?.trim() || !content?.trim()) {
     return NextResponse.json({ error: 'slug, author, and content required' }, { status: 400 })
   }
@@ -52,13 +52,14 @@ export async function POST(req: NextRequest) {
     if (!docId) return NextResponse.json({ error: 'Blog not found' }, { status: 404 })
 
     // Store comment inline on the blog doc as an array field
-    const comment = {
-      _type: 'comment' as const,
+    const comment: Record<string, any> = {
+      _type: 'comment',
       _key: Math.random().toString(36).slice(2, 10),
       author: cleanAuthor,
       content: cleanContent,
       createdAt: new Date().toISOString(),
     }
+    if (email?.trim()) comment.email = email.trim().slice(0, 200)
 
     const result = await writeClient
       .patch(docId)
@@ -68,7 +69,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      comment: { _id: comment._key, author: cleanAuthor, content: cleanContent, createdAt: comment.createdAt },
+      comment: { _id: comment._key, author: cleanAuthor, email: comment.email, content: cleanContent, createdAt: comment.createdAt },
     })
   } catch (err: any) {
     console.error('[Comments API]', err?.message)
