@@ -34,11 +34,16 @@ export async function POST(req: NextRequest) {
     )
     if (!docId) return NextResponse.json({ error: 'Blog not found' }, { status: 404 })
 
-    // Initialize field to 0 if null/undefined (schema not deployed), then increment
+    // Fetch current value (handle null from undeclared schema fields)
+    const current = await writeClient.fetch<number | null>(
+      `*[_type == "blog" && _id == $id][0}.${field}`,
+      { id: docId }
+    )
+
+    // Set to (current || 0) + 1 — handles null, undefined, and missing fields
     const result = await writeClient
       .patch(docId)
-      .setIfMissing({ [field]: 0 })
-      .inc({ [field]: 1 })
+      .set({ [field]: (current || 0) + 1 })
       .commit({ returnDocuments: true })
 
     return NextResponse.json({
