@@ -66,6 +66,11 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://tamilcinemahub.xyz',
   },
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
   // verification: { google: 'YOUR_GSC_VERIFICATION_CODE' },
   // ── Google Analytics (add your GA4 Measurement ID, e.g. G-XXXXXXXXXX) ──
   // analytics: { measurementId: 'YOUR_GA4_MEASUREMENT_ID' },
