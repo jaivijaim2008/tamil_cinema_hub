@@ -110,22 +110,64 @@ async function searchFallback(message: string): Promise<{ reply: string; suggest
 // KNOWLEDGE BASE
 // ═══════════════════════════════════════════════════════════════
 
-const ACTORS = [
-  'rajinikanth', 'rajini', 'superstar', 'thalaivar',
-  'kamal haasan', 'kamal', 'ulaganayagan',
-  'vijay', 'thalapathy', 'ilayathalapathy',
-  'ajith', 'thala', 'ajith kumar',
-  'dhanush', 'vikram', 'suriya', 'simbu', 'silambarasan',
-  'karthi', 'vishal', 'arya', 'jiiva', 'prashanth',
-  'nayanthara', 'samantha', 'trisha', 'anushka shetty',
-  'keerthy suresh', 'rashmika', 'pooja hegde', 'sai pallavi',
-  'prakash raj', 'vadivelu', 'vivek', 'soori', 'yogi babu',
-  'arvind swami', 'fahadh faasil', 'vijay sethupathi',
-  'madhavan', 'sj suryah', 'parthiban',
-  'kathir', 'atharva', 'gautham karthik',
-  'bobby simha', 'kishore', 'arun vijay',
-  'navin', 'nakul', 'jai', 'santhanam',
-]
+// FIX: Map of canonical actor names → exact Sanity cast name
+// This prevents "vijay" wildcard matching "Vijay Raghavendra", "Arun Vijay", etc.
+const ACTOR_CANONICAL: Record<string, string> = {
+  'vijay':           'Vijay',
+  'thalapathy':      'Vijay',
+  'ilayathalapathy': 'Vijay',
+  'rajinikanth':     'Rajinikanth',
+  'rajini':          'Rajinikanth',
+  'superstar':       'Rajinikanth',
+  'thalaivar':       'Rajinikanth',
+  'kamal haasan':    'Kamal Haasan',
+  'kamal':           'Kamal Haasan',
+  'ulaganayagan':    'Kamal Haasan',
+  'ajith':           'Ajith Kumar',
+  'thala':           'Ajith Kumar',
+  'ajith kumar':     'Ajith Kumar',
+  'dhanush':         'Dhanush',
+  'vikram':          'Vikram',
+  'suriya':          'Suriya',
+  'simbu':           'Simbu',
+  'silambarasan':    'Simbu',
+  'vijay sethupathi':'Vijay Sethupathi',
+  'karthi':          'Karthi',
+  'vishal':          'Vishal',
+  'arya':            'Arya',
+  'jiiva':           'Jiiva',
+  'prashanth':       'Prashanth',
+  'nayanthara':      'Nayanthara',
+  'samantha':        'Samantha',
+  'trisha':          'Trisha',
+  'anushka shetty':  'Anushka Shetty',
+  'keerthy suresh':  'Keerthy Suresh',
+  'rashmika':        'Rashmika Mandanna',
+  'pooja hegde':     'Pooja Hegde',
+  'sai pallavi':     'Sai Pallavi',
+  'prakash raj':     'Prakash Raj',
+  'vadivelu':        'Vadivelu',
+  'vivek':           'Vivek',
+  'soori':           'Soori',
+  'yogi babu':       'Yogi Babu',
+  'arvind swami':    'Arvind Swami',
+  'fahadh faasil':   'Fahadh Faasil',
+  'madhavan':        'Madhavan',
+  'sj suryah':       'SJ Suryah',
+  'parthiban':       'Parthiban',
+  'kathir':          'Kathir',
+  'atharva':         'Atharva',
+  'gautham karthik': 'Gautham Karthik',
+  'bobby simha':     'Bobby Simha',
+  'kishore':         'Kishore',
+  'arun vijay':      'Arun Vijay',
+  'navin':           'Navin',
+  'nakul':           'Nakul',
+  'jai':             'Jai',
+  'santhanam':       'Santhanam',
+}
+
+const ACTORS = Object.keys(ACTOR_CANONICAL)
 
 const DIRECTORS = [
   'mani ratnam', 'shankar', 'lokesh kanagaraj', 'selvaraghavan',
@@ -221,19 +263,30 @@ function extractEntities(message: string): Entities {
   const lower = message.toLowerCase()
   const e: Entities = { actors: [], directors: [], genres: [], years: [], yearRange: null, otts: [], ratings: null, keywords: [] }
 
-  // Actors
-  for (const a of ACTORS) if (lower.includes(a) && !e.actors.includes(a)) e.actors.push(a)
+  // FIX: Match longer actor names first to avoid "vijay" stealing from "vijay sethupathi" or "arun vijay"
+  const sortedActors = [...ACTORS].sort((a, b) => b.length - a.length)
+  for (const a of sortedActors) {
+    if (lower.includes(a) && !e.actors.includes(a)) e.actors.push(a)
+  }
   if (!e.actors.length) {
     const tokens = lower.replace(/[^\w\s]/g, ' ').split(/\s+/).filter(t => t.length > 1)
     for (const t of tokens) { const m = fuzzyMatch(t, ACTORS, 0.82); if (m && !e.actors.includes(m)) e.actors.push(m) }
-    for (let i = 0; i < tokens.length - 1; i++) { const b = `${tokens[i]} ${tokens[i + 1]}`; const m = fuzzyMatch(b, ACTORS, 0.80); if (m && !e.actors.includes(m)) e.actors.push(m) }
+    for (let i = 0; i < tokens.length - 1; i++) {
+      const b = `${tokens[i]} ${tokens[i + 1]}`
+      const m = fuzzyMatch(b, ACTORS, 0.80)
+      if (m && !e.actors.includes(m)) e.actors.push(m)
+    }
   }
 
   // Directors
   for (const d of DIRECTORS) if (lower.includes(d) && !e.directors.includes(d)) e.directors.push(d)
   if (!e.directors.length) {
     const tokens = lower.replace(/[^\w\s]/g, ' ').split(/\s+/).filter(t => t.length > 1)
-    for (let i = 0; i < tokens.length - 1; i++) { const b = `${tokens[i]} ${tokens[i + 1]}`; const m = fuzzyMatch(b, DIRECTORS, 0.80); if (m && !e.directors.includes(m)) e.directors.push(m) }
+    for (let i = 0; i < tokens.length - 1; i++) {
+      const b = `${tokens[i]} ${tokens[i + 1]}`
+      const m = fuzzyMatch(b, DIRECTORS, 0.80)
+      if (m && !e.directors.includes(m)) e.directors.push(m)
+    }
   }
 
   // Genres
@@ -324,6 +377,19 @@ function classifyIntent(message: string, e: Entities): IntentType {
   if (e.ratings)          scores.rating_filter += 2
   if (e.keywords.length)  scores.search += 1
 
+  // FIX: When an actor is detected, "top/best" means top movies BY that actor,
+  // not the global top-rated list — so boost actor and suppress top_rated
+  if (e.actors.length && scores.top_rated > 0) {
+    scores.actor += 3
+    scores.top_rated = 0
+  }
+
+  // FIX: Same logic for recent — "latest vijay movies" should hit actor, not recent
+  if (e.actors.length && scores.recent > 0) {
+    scores.actor += 2
+    scores.recent = 0
+  }
+
   if (scores.actor > 0 && scores.director > 0) {
     if (e.actors.length >= e.directors.length) scores.director = 0; else scores.actor = 0
   }
@@ -339,18 +405,49 @@ function classifyIntent(message: string, e: Entities): IntentType {
 const F = `_id,title,titleTanglish,"slug":slug.current,year,director,cast[]{name},genre,rating,synopsis,ottPlatform,poster,posterUrl`
 
 const db = {
-  search:       (q: string, n = 6) => client.fetch(`*[_type=="movie"&&(title match $q||titleTanglish match $q||director match $q||cast[].name match $q)]|order(year desc)[0...${n}]{${F}}`, { q: `*${q}*` }),
-  byGenre:      (g: string, n = 6) => client.fetch(`*[_type=="movie"&&$g in genre]|order(rating desc)[0...${n}]{${F}}`, { g }),
-  byYear:       (y: number, n = 6) => client.fetch(`*[_type=="movie"&&year==$y]|order(rating desc)[0...${n}]{${F}}`, { y }),
-  byYearRange:  (f: number, t: number, n = 6) => client.fetch(`*[_type=="movie"&&year>=$f&&year<=$t]|order(year desc)[0...${n}]{${F}}`, { f, t }),
-  byActor:      (a: string, n = 6) => client.fetch(`*[_type=="movie"&&cast[].name match $a]|order(year desc)[0...${n}]{${F}}`, { a: `*${a}*` }),
-  byDirector:   (d: string, n = 6) => client.fetch(`*[_type=="movie"&&director match $d]|order(year desc)[0...${n}]{${F}}`, { d: `*${d}*` }),
-  topRated:     (n = 6) => client.fetch(`*[_type=="movie"&&rating!=null]|order(rating desc)[0...${n}]{${F}}`),
-  recent:       (n = 6) => client.fetch(`*[_type=="movie"]|order(year desc)[0...${n}]{${F}}`),
-  byOTT:        (p: string, n = 6) => client.fetch(`*[_type=="movie"&&ottPlatform match $p]|order(year desc)[0...${n}]{${F}}`, { p: `*${p}*` }),
-  byRating:     (min: number, max: number, n = 6) => client.fetch(`*[_type=="movie"&&rating>=$min&&rating<=$max]|order(rating desc)[0...${n}]{${F}}`, { min, max }),
-  byActorGenre: (a: string, g: string, n = 6) => client.fetch(`*[_type=="movie"&&cast[].name match $a&&$g in genre]|order(year desc)[0...${n}]{${F}}`, { a: `*${a}*`, g }),
-  byGenreYear:  (g: string, y: number, n = 6) => client.fetch(`*[_type=="movie"&&$g in genre&&year==$y]|order(rating desc)[0...${n}]{${F}}`, { g, y }),
+  // FIX: byActor now uses exact canonical name match first, then falls back to wildcard.
+  // This stops "vijay" from matching "Vijay Raghavendra", "Arun Vijay", etc.
+  byActor: async (actorKey: string, n = 6): Promise<any[]> => {
+    const exactName = ACTOR_CANONICAL[actorKey.toLowerCase()] ?? actorKey
+    // Try exact match on cast name first
+    const exact: any[] = await client.fetch(
+      `*[_type=="movie" && count(cast[name == $name]) > 0]|order(rating desc, year desc)[0...${n}]{${F}}`,
+      { name: exactName }
+    )
+    if (exact.length) return exact
+    // Fallback: wildcard (catches edge cases / data inconsistencies)
+    return client.fetch(
+      `*[_type=="movie" && cast[].name match $a]|order(year desc)[0...${n}]{${F}}`,
+      { a: `*${exactName}*` }
+    )
+  },
+
+  byActorGenre: async (actorKey: string, genre: string, n = 6): Promise<any[]> => {
+    const exactName = ACTOR_CANONICAL[actorKey.toLowerCase()] ?? actorKey
+    const exact: any[] = await client.fetch(
+      `*[_type=="movie" && count(cast[name == $name]) > 0 && $genre in genre]|order(rating desc, year desc)[0...${n}]{${F}}`,
+      { name: exactName, genre }
+    )
+    if (exact.length) return exact
+    return client.fetch(
+      `*[_type=="movie" && cast[].name match $a && $genre in genre]|order(year desc)[0...${n}]{${F}}`,
+      { a: `*${exactName}*`, genre }
+    )
+  },
+
+  search:      (q: string, n = 6) => client.fetch(
+    `*[_type=="movie"&&(title match $q||titleTanglish match $q||director match $q||cast[].name match $q)]|order(year desc)[0...${n}]{${F}}`,
+    { q: `*${q}*` }
+  ),
+  byGenre:     (g: string, n = 6) => client.fetch(`*[_type=="movie"&&$g in genre]|order(rating desc)[0...${n}]{${F}}`, { g }),
+  byYear:      (y: number, n = 6) => client.fetch(`*[_type=="movie"&&year==$y]|order(rating desc)[0...${n}]{${F}}`, { y }),
+  byYearRange: (f: number, t: number, n = 6) => client.fetch(`*[_type=="movie"&&year>=$f&&year<=$t]|order(year desc)[0...${n}]{${F}}`, { f, t }),
+  byDirector:  (d: string, n = 6) => client.fetch(`*[_type=="movie"&&director match $d]|order(year desc)[0...${n}]{${F}}`, { d: `*${d}*` }),
+  topRated:    (n = 6) => client.fetch(`*[_type=="movie"&&rating!=null]|order(rating desc)[0...${n}]{${F}}`),
+  recent:      (n = 6) => client.fetch(`*[_type=="movie"]|order(year desc)[0...${n}]{${F}}`),
+  byOTT:       (p: string, n = 6) => client.fetch(`*[_type=="movie"&&ottPlatform match $p]|order(year desc)[0...${n}]{${F}}`, { p: `*${p}*` }),
+  byRating:    (min: number, max: number, n = 6) => client.fetch(`*[_type=="movie"&&rating>=$min&&rating<=$max]|order(rating desc)[0...${n}]{${F}}`, { min, max }),
+  byGenreYear: (g: string, y: number, n = 6) => client.fetch(`*[_type=="movie"&&$g in genre&&year==$y]|order(rating desc)[0...${n}]{${F}}`, { g, y }),
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -403,10 +500,10 @@ function titleCase(s: string): string {
 function buildSuggestions(e: Entities, movies: any[]): string[] {
   const sugg: string[] = []
   if (e.actors.length) {
-    const t = titleCase(e.actors[0])
+    const t = titleCase(ACTOR_CANONICAL[e.actors[0]] ?? e.actors[0])
     sugg.push(`Best ${t} movies`)
     const peers: Record<string, string> = {
-      vijay: 'Ajith', ajith: 'Vijay', dhanush: 'Vijay Sethupathi',
+      vijay: 'Ajith Kumar', ajith: 'Vijay', dhanush: 'Vijay Sethupathi',
       suriya: 'Vikram', rajinikanth: 'Kamal Haasan',
     }
     const peer = peers[e.actors[0]]
@@ -425,17 +522,17 @@ function buildSuggestions(e: Entities, movies: any[]): string[] {
 // ═══════════════════════════════════════════════════════════════
 
 const TRIVIA: Record<string, string> = {
-  'rajinikanth': `Rajinikanth (born 1950) is the undisputed Superstar of Tamil cinema. Known for his iconic style — sunglasses flick, coin toss, and memorable dialogue delivery. Blockbusters include *Baashha*, *Muthu*, *Padayappa*, *Enthiran*, *Kabali*, and *Jailer*. Awarded the Dadasaheb Phalke Award in 2021 and Padma Vibhushan in 2000.`,
-  'kamal haasan': `Kamal Haasan is considered India's most versatile actor — also a writer, director, and musician. Iconic films: *Nayakan*, *Thevar Magan*, *Vishwaroopam*, *Vikram*. Known for transformative performances spanning every genre.`,
-  'vijay': `Thalapathy Vijay is one of Tamil cinema's biggest box-office draws. Known for mass appeal, dance, and action. Blockbusters include *Theri*, *Mersal*, *Bigil*, *Master*, *Beast*, and *Leo*. Has worked with directors like Atlee, AR Murugadoss, and Lokesh Kanagaraj.`,
-  'ajith': `Ajith Kumar is loved for his humble personality and action films. Highlights: *Vaali*, *Mankatha*, *Veeram*, *Vedalam*, *Viswasam*, *Valimai*, *Thunivu*. Also a real racing driver who competed at Le Mans.`,
-  'dhanush': `Dhanush has won 3 National Awards — the most in Tamil cinema. Known for intense performances in *Aadukalam*, *Pudhupettai*, *Vada Chennai*, and *Karnan*. Also appeared in Bollywood (*Raanjhanaa*) and Hollywood (*The Gray Man*). His song "Kolaveri Di" went viral worldwide.`,
-  'vijay sethupathi': `Vijay Sethupathi (known as Makkal Selvan) is celebrated for his natural, grounded acting style. From indie hits like *Pizza* and *96* to mainstream blockbusters like *Vikram* and *Maharaja* — consistently outstanding.`,
-  'lokesh kanagaraj': `Lokesh Kanagaraj built the "Lokesh Cinematic Universe" — *Maanagaram*, *Kaithi*, *Master*, *Vikram*, and *Leo* are all interconnected. Known for precise action sequences, ensemble casts, and well-crafted screenplays.`,
-  'mani ratnam': `Mani Ratnam is arguably Tamil cinema's greatest director. Known for poetic visuals, nuanced characters, and iconic collaborations with AR Rahman. Masterworks: *Roja*, *Bombay*, *Dil Se*, *Alaipayuthey*, *Ponniyin Selvan*. Multiple National Award winner.`,
-  'shankar': `Shankar makes the biggest-budget Tamil films — social commentary wrapped in spectacle. Notable works: *Indian*, *Anniyan*, *Sivaji*, *Enthiran*, *2.0*, *Indian 2*. Known for his iconic collaborations with Rajinikanth and AR Rahman.`,
-  'ar rahman': `AR Rahman (born 1967 in Chennai) is India's most celebrated music composer. Oscar winner for *Slumdog Millionaire*. Tamil credits include *Roja*, *Bombay*, *Minsara Kanavu*, *Alaipayuthey*, *Rockstar*, and *Ponniyin Selvan*. Often called the Mozart of Madras.`,
-  'anirudh': `Anirudh Ravichander is the most popular music composer in current Tamil cinema. Breakthrough with *3* and the viral song "Why This Kolaveri Di". Hit films: *Vedalam*, *Kabali*, *Mersal*, *Bigil*, *Master*, *Beast*, *Leo*, *Jailer*, *Vettaiyan*.`,
+  'rajinikanth':    `Rajinikanth (born 1950) is the undisputed Superstar of Tamil cinema. Known for his iconic style — sunglasses flick, coin toss, and memorable dialogue delivery. Blockbusters include *Baashha*, *Muthu*, *Padayappa*, *Enthiran*, *Kabali*, and *Jailer*. Awarded the Dadasaheb Phalke Award in 2021 and Padma Vibhushan in 2000.`,
+  'kamal haasan':   `Kamal Haasan is considered India's most versatile actor — also a writer, director, and musician. Iconic films: *Nayakan*, *Thevar Magan*, *Vishwaroopam*, *Vikram*. Known for transformative performances spanning every genre.`,
+  'vijay':          `Thalapathy Vijay is one of Tamil cinema's biggest box-office draws. Known for mass appeal, dance, and action. Blockbusters include *Theri*, *Mersal*, *Bigil*, *Master*, *Beast*, and *Leo*. Has worked with directors like Atlee, AR Murugadoss, and Lokesh Kanagaraj.`,
+  'ajith':          `Ajith Kumar is loved for his humble personality and action films. Highlights: *Vaali*, *Mankatha*, *Veeram*, *Vedalam*, *Viswasam*, *Valimai*, *Thunivu*. Also a real racing driver who competed at Le Mans.`,
+  'dhanush':        `Dhanush has won 3 National Awards — the most in Tamil cinema. Known for intense performances in *Aadukalam*, *Pudhupettai*, *Vada Chennai*, and *Karnan*. Also appeared in Bollywood (*Raanjhanaa*) and Hollywood (*The Gray Man*). His song "Kolaveri Di" went viral worldwide.`,
+  'vijay sethupathi':`Vijay Sethupathi (known as Makkal Selvan) is celebrated for his natural, grounded acting style. From indie hits like *Pizza* and *96* to mainstream blockbusters like *Vikram* and *Maharaja* — consistently outstanding.`,
+  'lokesh kanagaraj':`Lokesh Kanagaraj built the "Lokesh Cinematic Universe" — *Maanagaram*, *Kaithi*, *Master*, *Vikram*, and *Leo* are all interconnected. Known for precise action sequences, ensemble casts, and well-crafted screenplays.`,
+  'mani ratnam':    `Mani Ratnam is arguably Tamil cinema's greatest director. Known for poetic visuals, nuanced characters, and iconic collaborations with AR Rahman. Masterworks: *Roja*, *Bombay*, *Dil Se*, *Alaipayuthey*, *Ponniyin Selvan*. Multiple National Award winner.`,
+  'shankar':        `Shankar makes the biggest-budget Tamil films — social commentary wrapped in spectacle. Notable works: *Indian*, *Anniyan*, *Sivaji*, *Enthiran*, *2.0*, *Indian 2*. Known for his iconic collaborations with Rajinikanth and AR Rahman.`,
+  'ar rahman':      `AR Rahman (born 1967 in Chennai) is India's most celebrated music composer. Oscar winner for *Slumdog Millionaire*. Tamil credits include *Roja*, *Bombay*, *Minsara Kanavu*, *Alaipayuthey*, *Rockstar*, and *Ponniyin Selvan*. Often called the Mozart of Madras.`,
+  'anirudh':        `Anirudh Ravichander is the most popular music composer in current Tamil cinema. Breakthrough with *3* and the viral song "Why This Kolaveri Di". Hit films: *Vedalam*, *Kabali*, *Mersal*, *Bigil*, *Master*, *Beast*, *Leo*, *Jailer*, *Vettaiyan*.`,
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -460,7 +557,7 @@ async function generateResponse(message: string, history: any[]): Promise<{ repl
     reply: pick([
       `😄 Doing great! Powered by pure Tamil cinema knowledge. What are we watching today?`,
       `🤩 All good! Always excited to talk Tamil films. What are you looking for?`,
-      `😎 Fantastic! Ready to explore Kollywood. What is on your mind?`,
+      `😎 Fantastic! Ready to explore Tamil cinema. What is on your mind?`,
     ]),
     suggestions: ['Best 2024 movies', 'Recommend something', 'Vijay vs Ajith'],
   }
@@ -484,50 +581,78 @@ async function generateResponse(message: string, history: any[]): Promise<{ repl
   if (triviaKey && /\b(who is|tell me about|career|debut|award|born|age|biography|about|info)\b/i.test(message)) {
     return {
       reply: `🎭 ${TRIVIA[triviaKey]}\n\nWould you like to see their movies?`,
-      suggestions: [`${titleCase(triviaKey)} movies`, 'Top rated films', 'Recommend something'],
+      suggestions: [`${titleCase(ACTOR_CANONICAL[triviaKey] ?? triviaKey)} movies`, 'Top rated films', 'Recommend something'],
     }
   }
 
   // ── Comparison ──────────────────────────────────────────────
   if (intent === 'comparison') {
-    const [n1, n2] = e.actors.length >= 2 ? [e.actors[0], e.actors[1]] : e.directors.length >= 2 ? [e.directors[0], e.directors[1]] : [e.actors[0] || '', e.directors[0] || '']
-    const [m1, m2] = await Promise.all([n1 ? db.search(n1, 4) : Promise.resolve([]), n2 ? db.search(n2, 4) : Promise.resolve([])])
-    const fmt = (name: string, movies: any[]) => {
-      if (!movies.length) return `No results found for ${name}.`
-      let s = `── ${titleCase(name)} ──\n`
-      movies.forEach(m => { s += `• [${m.title}](/movies/${m.slug}) (${m.year})  ⭐ ${m.rating ?? 'N/A'}/10\n`; if (m.director) s += `  Director: ${m.director}\n` })
+    const [n1, n2] = e.actors.length >= 2
+      ? [e.actors[0], e.actors[1]]
+      : e.directors.length >= 2
+        ? [e.directors[0], e.directors[1]]
+        : [e.actors[0] || '', e.directors[0] || '']
+    const [m1, m2] = await Promise.all([
+      n1 ? db.byActor(n1, 4) : Promise.resolve([]),
+      n2 ? db.byActor(n2, 4) : Promise.resolve([]),
+    ])
+    const fmt = (key: string, movies: any[]) => {
+      const label = titleCase(ACTOR_CANONICAL[key] ?? key)
+      if (!movies.length) return `No results found for ${label}.`
+      let s = `── ${label} ──\n`
+      movies.forEach(m => {
+        s += `• [${m.title}](/movies/${m.slug}) (${m.year})  ⭐ ${m.rating ?? 'N/A'}/10\n`
+        if (m.director) s += `  Director: ${m.director}\n`
+      })
       return s
     }
+    const l1 = titleCase(ACTOR_CANONICAL[n1] ?? n1)
+    const l2 = titleCase(ACTOR_CANONICAL[n2] ?? n2)
     return {
-      reply: `🔄 **${titleCase(n1)} vs ${titleCase(n2)}**\n\n${fmt(n1, m1)}\n\n${fmt(n2, m2)}\n\nWould you like to explore either filmography in more detail?`,
-      suggestions: [`${titleCase(n1)} best movies`, `${titleCase(n2)} best movies`, 'Top rated films'],
+      reply: `🔄 **${l1} vs ${l2}**\n\n${fmt(n1, m1)}\n\n${fmt(n2, m2)}\n\nWould you like to explore either filmography in more detail?`,
+      suggestions: [`${l1} best movies`, `${l2} best movies`, 'Top rated films'],
     }
   }
 
   // ── Actor ───────────────────────────────────────────────────
   if (intent === 'actor' && e.actors.length) {
     const actor = e.actors[0]
-    const at = titleCase(actor)
+    const at = titleCase(ACTOR_CANONICAL[actor] ?? actor)
+
     if (e.genres.length) {
       const movies = await db.byActorGenre(actor, e.genres[0], 6)
-      if (movies.length) return { reply: fmtList(movies, pick([`🎭 ${at} in ${e.genres[0]}:`, `🔥 Best ${e.genres[0].toLowerCase()} films starring ${at}:`])), suggestions: buildSuggestions(e, movies) }
+      if (movies.length) return {
+        reply: fmtList(movies, pick([`🎭 ${at} in ${e.genres[0]}:`, `🔥 Best ${e.genres[0].toLowerCase()} films starring ${at}:`])),
+        suggestions: buildSuggestions(e, movies),
+      }
     }
     if (e.years.length) {
-      const all = await db.byActor(actor, 10)
+      const all = await db.byActor(actor, 12)
       const filtered = all.filter((m: any) => m.year === e.years[0])
-      if (filtered.length) return { reply: fmtList(filtered, `🎭 ${at} films from ${e.years[0]}:`), suggestions: buildSuggestions(e, filtered) }
+      if (filtered.length) return {
+        reply: fmtList(filtered, `🎭 ${at} films from ${e.years[0]}:`),
+        suggestions: buildSuggestions(e, filtered),
+      }
     }
-    const movies = await db.byActor(actor, 7)
-    if (movies.length) return { reply: fmtList(movies, pick([`🎭 Movies featuring ${at}:`, `🌟 ${at}'s filmography:`, `🎬 ${at} movies:`])), suggestions: buildSuggestions(e, movies) }
-    const s = await db.search(actor, 5)
+    const movies = await db.byActor(actor, 8)
+    if (movies.length) return {
+      reply: fmtList(movies, pick([`🎭 Movies featuring ${at}:`, `🌟 ${at}'s filmography:`, `🎬 Top ${at} movies:`])),
+      suggestions: buildSuggestions(e, movies),
+    }
+    // Fallback to text search
+    const s = await db.search(ACTOR_CANONICAL[actor] ?? actor, 5)
     if (s.length) return { reply: fmtList(s, `🔍 Results for "${at}":`), suggestions: buildSuggestions(e, s) }
   }
 
   // ── Director ────────────────────────────────────────────────
   if (intent === 'director' && e.directors.length) {
-    const dir = e.directors[0]; const dt = titleCase(dir)
+    const dir = e.directors[0]
+    const dt = titleCase(dir)
     const movies = await db.byDirector(dir, 7)
-    if (movies.length) return { reply: fmtList(movies, pick([`🎬 Filmography of ${dt}:`, `🎥 ${dt}'s movies:`])), suggestions: buildSuggestions(e, movies) }
+    if (movies.length) return {
+      reply: fmtList(movies, pick([`🎬 Filmography of ${dt}:`, `🎥 ${dt}'s movies:`])),
+      suggestions: buildSuggestions(e, movies),
+    }
     const s = await db.search(dir, 5)
     if (s.length) return { reply: fmtList(s, `🔍 Results for "${dt}":`), suggestions: buildSuggestions(e, s) }
   }
@@ -537,76 +662,116 @@ async function generateResponse(message: string, history: any[]): Promise<{ repl
     const genre = e.genres[0]
     if (e.years.length) {
       const movies = await db.byGenreYear(genre, e.years[0], 6)
-      if (movies.length) return { reply: fmtList(movies, `🎭 ${genre} movies from ${e.years[0]}:`), suggestions: buildSuggestions(e, movies) }
+      if (movies.length) return {
+        reply: fmtList(movies, `🎭 ${genre} movies from ${e.years[0]}:`),
+        suggestions: buildSuggestions(e, movies),
+      }
     }
     const movies = await db.byGenre(genre, 7)
-    if (movies.length) return { reply: fmtList(movies, pick([`🏷️ Best ${genre} movies:`, `💥 Top ${genre} picks:`, `🎬 ${genre} films you should watch:`])), suggestions: buildSuggestions(e, movies) }
+    if (movies.length) return {
+      reply: fmtList(movies, pick([`🏷️ Best ${genre} movies:`, `💥 Top ${genre} picks:`, `🎬 ${genre} films you should watch:`])),
+      suggestions: buildSuggestions(e, movies),
+    }
   }
 
   // ── Year range ──────────────────────────────────────────────
   if (intent === 'year_range' && e.yearRange) {
     const [from, to] = e.yearRange
     const movies = await db.byYearRange(from, to, 7)
-    if (movies.length) return { reply: fmtList(movies, pick([`📅 Tamil movies from ${from} to ${to}:`, `🏆 Best of ${from}–${to}:`])), suggestions: buildSuggestions(e, movies) }
+    if (movies.length) return {
+      reply: fmtList(movies, pick([`📅 Tamil movies from ${from} to ${to}:`, `🏆 Best of ${from}–${to}:`])),
+      suggestions: buildSuggestions(e, movies),
+    }
   }
 
   // ── Year ────────────────────────────────────────────────────
   if (intent === 'year' && e.years.length) {
     const movies = await db.byYear(e.years[0], 7)
-    if (movies.length) return { reply: fmtList(movies, pick([`📅 Tamil movies from ${e.years[0]}:`, `🏆 Best Tamil films of ${e.years[0]}:`])), suggestions: buildSuggestions(e, movies) }
+    if (movies.length) return {
+      reply: fmtList(movies, pick([`📅 Tamil movies from ${e.years[0]}:`, `🏆 Best Tamil films of ${e.years[0]}:`])),
+      suggestions: buildSuggestions(e, movies),
+    }
   }
 
   // ── OTT ─────────────────────────────────────────────────────
   if (intent === 'ott' && e.otts.length) {
     const movies = await db.byOTT(e.otts[0], 7)
-    if (movies.length) return { reply: fmtList(movies, `📺 Tamil movies on ${titleCase(e.otts[0])}:`), suggestions: buildSuggestions(e, movies) }
+    if (movies.length) return {
+      reply: fmtList(movies, `📺 Tamil movies on ${titleCase(e.otts[0])}:`),
+      suggestions: buildSuggestions(e, movies),
+    }
   }
 
   // ── Rating filter ───────────────────────────────────────────
   if (intent === 'rating_filter' && e.ratings) {
     const { min, max } = e.ratings
     const movies = await db.byRating(min, max, 7)
-    if (movies.length) return { reply: fmtList(movies, `⭐ Movies rated ${min}${max < 10 ? `–${max}` : '+'}:`), suggestions: buildSuggestions(e, movies) }
+    if (movies.length) return {
+      reply: fmtList(movies, `⭐ Movies rated ${min}${max < 10 ? `–${max}` : '+'}:`),
+      suggestions: buildSuggestions(e, movies),
+    }
   }
 
   // ── Top rated ───────────────────────────────────────────────
   if (intent === 'top_rated') {
     const movies = await db.topRated(8)
-    if (movies.length) return { reply: fmtList(movies, pick([`🏆 Highest-rated Tamil movies:`, `🌟 The best of Tamil cinema:`, `💎 Tamil cinema masterpieces:`])), suggestions: buildSuggestions(e, movies) }
+    if (movies.length) return {
+      reply: fmtList(movies, pick([`🏆 Highest-rated Tamil movies:`, `🌟 The best of Tamil cinema:`, `💎 Tamil cinema masterpieces:`])),
+      suggestions: buildSuggestions(e, movies),
+    }
   }
 
   // ── Recent ──────────────────────────────────────────────────
   if (intent === 'recent') {
     const movies = await db.recent(8)
-    if (movies.length) return { reply: fmtList(movies, pick([`🆕 Latest Tamil releases:`, `🎬 Fresh from Tamil cinema:`, `📽️ What is new in Tamil cinema:`])), suggestions: buildSuggestions(e, movies) }
+    if (movies.length) return {
+      reply: fmtList(movies, pick([`🆕 Latest Tamil releases:`, `🎬 Fresh from Tamil cinema:`, `📽️ What is new in Tamil cinema:`])),
+      suggestions: buildSuggestions(e, movies),
+    }
   }
 
   // ── Recommend ───────────────────────────────────────────────
   if (intent === 'recommend') {
     const source = e.genres.length ? db.byGenre(e.genres[0], 6) : db.topRated(7)
     const movies = await source
-    if (movies.length) return { reply: fmtList(movies, pick([`✨ My top picks for you:`, `🎯 Handpicked for you:`, `🌟 You cannot go wrong with these:`])), suggestions: buildSuggestions(e, movies) }
+    if (movies.length) return {
+      reply: fmtList(movies, pick([`✨ My top picks for you:`, `🎯 Handpicked for you:`, `🌟 You cannot go wrong with these:`])),
+      suggestions: buildSuggestions(e, movies),
+    }
   }
 
   // ── Search ──────────────────────────────────────────────────
   if (intent === 'search' || e.keywords.length) {
     const q = e.keywords.join(' ') || message.trim()
     const movies = await db.search(q, 6)
-    if (movies.length === 1) return { reply: fmtDetail(movies[0]), suggestions: [`More ${movies[0].genre?.[0] || 'similar'} movies`, `Movies by ${movies[0].director || 'this director'}`, 'Top rated films'] }
-    if (movies.length > 1) return { reply: fmtList(movies, pick([`🔍 Results for "${q}":`, `📽️ Found these for "${q}":`, `🎬 Matching movies for "${q}":`])), suggestions: buildSuggestions(e, movies) }
+    if (movies.length === 1) return {
+      reply: fmtDetail(movies[0]),
+      suggestions: [`More ${movies[0].genre?.[0] || 'similar'} movies`, `Movies by ${movies[0].director || 'this director'}`, 'Top rated films'],
+    }
+    if (movies.length > 1) return {
+      reply: fmtList(movies, pick([`🔍 Results for "${q}":`, `📽️ Found these for "${q}":`, `🎬 Matching movies for "${q}":`])),
+      suggestions: buildSuggestions(e, movies),
+    }
   }
 
-  // ── Context follow-up ("show more") ────────────────────────
+  // ── Context follow-up ("show more", "another one") ─────────
   if (/\b(more|another|similar|else|other|next)\b/i.test(message) && history.length >= 2) {
     const lastAI = [...history].reverse().find(m => m.role === 'assistant')
     if (lastAI) {
       const ce = extractEntities(lastAI.content.slice(0, 500))
-      if (ce.actors[0]) { const m = await db.byActor(ce.actors[0], 6); if (m.length) return { reply: fmtList(m, `🎭 More ${titleCase(ce.actors[0])} movies:`), suggestions: buildSuggestions(ce, m) } }
-      if (ce.genres[0]) { const m = await db.byGenre(ce.genres[0], 6); if (m.length) return { reply: fmtList(m, `🏷️ More ${ce.genres[0]} movies:`), suggestions: buildSuggestions(ce, m) } }
+      if (ce.actors[0]) {
+        const m = await db.byActor(ce.actors[0], 6)
+        const label = titleCase(ACTOR_CANONICAL[ce.actors[0]] ?? ce.actors[0])
+        if (m.length) return { reply: fmtList(m, `🎭 More ${label} movies:`), suggestions: buildSuggestions(ce, m) }
+      }
+      if (ce.genres[0]) {
+        const m = await db.byGenre(ce.genres[0], 6)
+        if (m.length) return { reply: fmtList(m, `🏷️ More ${ce.genres[0]} movies:`), suggestions: buildSuggestions(ce, m) }
+      }
     }
   }
 
-  // ── Web fallback ────────────────────────────────────────────
+  // ── Web fallback (Wikipedia + DuckDuckGo) ──────────────────
   console.log(`[TamilCinemaHub] No database result — searching the web for: "${message}"`)
   return await searchFallback(message)
 }
@@ -620,7 +785,10 @@ const RL_MAP = new Map<string, { count: number; start: number }>()
 function checkRL(ip: string) {
   const WINDOW = 60_000, MAX = 30, now = Date.now()
   const entry = RL_MAP.get(ip)
-  if (!entry || now - entry.start > WINDOW) { RL_MAP.set(ip, { count: 1, start: now }); return { ok: true, retryAfter: 0 } }
+  if (!entry || now - entry.start > WINDOW) {
+    RL_MAP.set(ip, { count: 1, start: now })
+    return { ok: true, retryAfter: 0 }
+  }
   entry.count++
   if (entry.count > MAX) return { ok: false, retryAfter: Math.ceil((entry.start + WINDOW - now) / 1000) }
   return { ok: true, retryAfter: 0 }
@@ -642,7 +810,9 @@ export async function POST(req: NextRequest) {
   )
 
   let body: any
-  try { body = await req.json() } catch { return NextResponse.json({ error: 'Invalid JSON body.' }, { status: 400 }) }
+  try { body = await req.json() } catch {
+    return NextResponse.json({ error: 'Invalid JSON body.' }, { status: 400 })
+  }
 
   const { messages = [] } = body
   if (!Array.isArray(messages) || !messages.length) {
