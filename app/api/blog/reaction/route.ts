@@ -57,7 +57,8 @@ export async function GET(req: NextRequest) {
   if (!slug) return NextResponse.json({ error: 'slug required' }, { status: 400 })
 
   try {
-    const doc = await client.fetch<{ likes: number; dislikes: number }>(
+    // Use writeClient (useCdn: false) to avoid stale CDN cache reads
+    const doc = await writeClient.fetch<{ likes: number; dislikes: number }>(
       `*[_type == "blog" && slug.current == $slug][0]{ likes, dislikes }`,
       { slug }
     )

@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
   try {
     await resend.emails.send({
       from: 'TamilCinemaHub <onboarding@resend.dev>',
-      to: 'tamilcinemahub@gmail.com',
+      to: 'jaitnea@gmail.com',
       replyTo: cleanEmail,
       subject: `📩 Contact: ${cleanName} — TamilCinemaHub`,
       html: `

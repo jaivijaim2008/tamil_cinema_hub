@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   if (!slug) return NextResponse.json({ error: 'slug required' }, { status: 400 })
 
   try {
-    const doc = await client.fetch<{ comments?: any[] }>(
+    const doc = await writeClient.fetch<{ comments?: any[] }>(
       `*[_type == "blog" && slug.current == $slug][0]{ comments }`,
       { slug }
     )
