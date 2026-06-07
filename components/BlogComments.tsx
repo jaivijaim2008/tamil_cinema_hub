@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 
 interface Comment {
-  _id: string
+  _key?: string
+  _id?: string
   author: string
   content: string
   createdAt: string
@@ -176,7 +177,7 @@ export default function BlogComments({ slug }: BlogCommentsProps) {
         <div className="space-y-3">
           {comments.map((c) => (
             <div
-              key={c._id}
+              key={c._key ?? c._id}
               className="rounded-xl p-4 transition-colors"
               style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
             >

@@ -26,16 +26,17 @@ export async function POST(req: NextRequest) {
 
   try {
     const field = type === 'like' ? 'likes' : 'dislikes'
-    // Fetch the document ID first
-    const doc = await client.fetch<{ _id: string }>(
+    // Fetch the document ID — GROQ returns the ID as a plain string
+    const docId = await client.fetch<string | null>(
       `*[_type == "blog" && slug.current == $slug][0]._id`,
       { slug }
     )
-    if (!doc?._id) return NextResponse.json({ error: 'Blog not found' }, { status: 404 })
+    if (!docId) return NextResponse.json({ error: 'Blog not found' }, { status: 404 })
 
-    // Increment the field by 1
+    // Initialize field to 0 if null/undefined (schema not deployed), then increment
     const result = await client
-      .patch(doc._id)
+      .patch(docId)
+      .setIfMissing({ [field]: 0 })
       .inc({ [field]: 1 })
       .commit({ returnDocuments: true })
 

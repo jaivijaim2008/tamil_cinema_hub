@@ -6,13 +6,11 @@ export async function GET(req: NextRequest) {
   if (!slug) return NextResponse.json({ error: 'slug required' }, { status: 400 })
 
   try {
-    const comments = await client.fetch(
-      `*[_type == "comment" && blogSlug == $slug] | order(createdAt desc) [0...50] {
-        _id, author, content, createdAt
-      }`,
+    const doc = await client.fetch<{ comments?: any[] }>(
+      `*[_type == "blog" && slug.current == $slug][0]{ comments }`,
       { slug }
     )
-    return NextResponse.json({ comments })
+    return NextResponse.json({ comments: (doc?.comments ?? []).slice(-50).reverse() })
   } catch {
     return NextResponse.json({ comments: [] })
   }
@@ -45,17 +43,31 @@ export async function POST(req: NextRequest) {
   rl.set(ip, now)
 
   try {
-    const doc = await client.create({
-      _type: 'comment',
-      blogSlug: slug,
+    // Find the blog document
+    const docId = await client.fetch<string | null>(
+      `*[_type == "blog" && slug.current == $slug][0]._id`,
+      { slug }
+    )
+    if (!docId) return NextResponse.json({ error: 'Blog not found' }, { status: 404 })
+
+    // Store comment inline on the blog doc as an array field
+    const comment = {
+      _type: 'comment' as const,
+      _key: Math.random().toString(36).slice(2, 10),
       author: cleanAuthor,
       content: cleanContent,
       createdAt: new Date().toISOString(),
-    })
+    }
+
+    const result = await client
+      .patch(docId)
+      .setIfMissing({ comments: [] })
+      .append('comments', [comment])
+      .commit({ returnDocuments: true })
 
     return NextResponse.json({
       ok: true,
-      comment: { _id: doc._id, author: cleanAuthor, content: cleanContent, createdAt: doc.createdAt },
+      comment: { _id: comment._key, author: cleanAuthor, content: cleanContent, createdAt: comment.createdAt },
     })
   } catch (err: any) {
     console.error('[Comments API]', err?.message)
