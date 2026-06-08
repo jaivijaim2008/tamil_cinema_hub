@@ -61,7 +61,7 @@ export default function PrivacyPolicyPage() {
   return (
     <main
       className="min-h-screen"
-      style={{ background: '#07070f', fontFamily: "'Outfit', sans-serif" }}
+      style={{ background: 'var(--ink)', fontFamily: "'DM Sans', sans-serif" }}
     >
       {/* ── Hero ── */}
       <div className="relative overflow-hidden">
