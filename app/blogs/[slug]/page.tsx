@@ -274,7 +274,7 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
               </Link>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+            <div className="related-blog-grid">
               {related.map((rel) => {
                 const relCat = CATEGORY_CONFIG[rel.category] ?? cat
                 const relImg = rel.mainImage ? urlFor(rel.mainImage).width(500).height(280).quality(85).fit('max').url() : null

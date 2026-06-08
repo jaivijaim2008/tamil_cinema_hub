@@ -181,9 +181,9 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
             Back to Movies
           </Link>
 
-          <div style={{ display: 'flex', flexDirection: 'row', gap: 32, alignItems: 'flex-start' }}>
+          <div className="movie-header-row">
             {/* Poster */}
-            <div style={{ width: 208, flexShrink: 0 }}>
+            <div className="movie-poster-wrap">
               <div style={{ borderRadius: 16, overflow: 'hidden', aspectRatio: '2/3', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.06)' }}>
                 {posterUrl ? (
                   <img src={posterUrl} alt={movie.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -198,7 +198,7 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
             </div>
 
             {/* Title & meta */}
-            <div style={{ flex: 1, minWidth: 0, paddingTop: 48 }}>
+            <div className="movie-info-col">
               <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 800, color: 'rgba(255,255,255,0.92)', lineHeight: 1, letterSpacing: '-0.02em' }}>
                 {movie.title}
               </h1>
@@ -229,7 +229,7 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
       </div>
 
       {/* Main Content */}
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '48px 24px', display: 'grid', gridTemplateColumns: '1fr 340px', gap: 40 }}>
+      <div className="movie-detail-grid" style={{ maxWidth: 1280, margin: '0 auto', padding: '48px 24px' }}>
 
         {/* Left Column */}
         <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 40 }}>
@@ -270,7 +270,7 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
                 </span>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+              <div className="cast-grid">
                 {movie.cast.map((actor, idx) => {
                   const name = getCastName(actor)
                   const character = getCastCharacter(actor)

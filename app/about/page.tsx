@@ -40,7 +40,7 @@ export default function AboutPage() {
       {/* Content */}
       <div style={{ maxWidth: 768, margin: '0 auto', padding: '64px 24px', display: 'flex', flexDirection: 'column', gap: 64 }}>
         {/* Mission */}
-        <section style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 32, alignItems: 'flex-start' }}>
+        <section className="about-section-grid">
           <div>
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', marginBottom: 8, color: 'var(--rose-light)', fontFamily: "'Syne', sans-serif" }}>Our Mission</p>
             <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800, lineHeight: 1.2, color: 'rgba(255,255,255,0.92)' }}>Why we built this</h2>
@@ -58,7 +58,7 @@ export default function AboutPage() {
         <div style={{ height: 1, width: '100%', background: 'rgba(255,255,255,0.06)' }} />
 
         {/* Tech */}
-        <section style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 32, alignItems: 'flex-start' }}>
+        <section className="about-section-grid">
           <div>
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', marginBottom: 8, color: 'var(--rose-light)', fontFamily: "'Syne', sans-serif" }}>Under the Hood</p>
             <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800, lineHeight: 1.2, color: 'rgba(255,255,255,0.92)' }}>How it works</h2>
@@ -76,7 +76,7 @@ export default function AboutPage() {
         <div style={{ height: 1, width: '100%', background: 'rgba(255,255,255,0.06)' }} />
 
         {/* Operations */}
-        <section style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 32, alignItems: 'flex-start' }}>
+        <section className="about-section-grid">
           <div>
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', marginBottom: 8, color: 'var(--rose-light)', fontFamily: "'Syne', sans-serif" }}>Operations</p>
             <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800, lineHeight: 1.2, color: 'rgba(255,255,255,0.92)' }}>Keeping the lights on</h2>
