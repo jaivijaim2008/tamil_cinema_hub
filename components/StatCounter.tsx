@@ -26,7 +26,6 @@ export default function StatCounter({ end, suffix = '', prefix = '', duration = 
           const animate = (currentTime: number) => {
             const elapsed = currentTime - startTime
             const progress = Math.min(elapsed / duration, 1)
-            // Ease-out cubic
             const eased = 1 - Math.pow(1 - progress, 3)
             setCount(Math.round(eased * end))
             if (progress < 1) requestAnimationFrame(animate)
@@ -42,8 +41,15 @@ export default function StatCounter({ end, suffix = '', prefix = '', duration = 
   }, [end, duration])
 
   return (
-    <span ref={ref}>
-      {prefix}{count.toLocaleString()}{suffix}
+    <span
+      ref={ref}
+      style={{
+        fontVariantNumeric: 'lining-nums',
+        fontFeatureSettings: '"tnum", "lnum"',
+        fontFamily: "'Syne', sans-serif",
+      }}
+    >
+      {prefix}{count.toLocaleString('en-US')}{suffix}
     </span>
   )
 }
