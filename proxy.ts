@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 // ═══════════════════════════════════════════════════════════════
-// SECURITY MIDDLEWARE
+// SECURITY PROXY
 // Adds security headers to all responses and protects API routes
 // ═══════════════════════════════════════════════════════════════
 
@@ -15,18 +15,11 @@ function getSecurityHeaders(request: NextRequest): Record<string, string> {
   const isSecure = request.nextUrl.protocol === 'https:'
 
   const headers: Record<string, string> = {
-    // Prevent MIME sniffing
     'X-Content-Type-Options': 'nosniff',
-    // Prevent clickjacking
     'X-Frame-Options': 'DENY',
-    // XSS protection (legacy browsers)
     'X-XSS-Protection': '1; mode=block',
-    // Control referrer information
     'Referrer-Policy': 'strict-origin-when-cross-origin',
-    // Restrict browser features
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), interest-cohort=(), browsing-topics=()',
-
-    // Content Security Policy
     'Content-Security-Policy': [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://adservice.google.com https://www.googletagservices.com https://googleads.g.doubleclick.net",
@@ -42,7 +35,6 @@ function getSecurityHeaders(request: NextRequest): Record<string, string> {
     ].join('; '),
   }
 
-  // HSTS only on HTTPS
   if (isSecure) {
     headers['Strict-Transport-Security'] = 'max-age=63072000; includeSubDomains; preload'
   }
@@ -50,9 +42,6 @@ function getSecurityHeaders(request: NextRequest): Record<string, string> {
   return headers
 }
 
-// Simple in-memory rate limiter for API routes
-// Note: In serverless, each instance has its own state, but this still
-// provides per-request protection and works in single-instance deployments.
 const rateLimitMap = new Map<string, { count: number; start: number }>()
 
 function checkGlobalRateLimit(
@@ -80,7 +69,6 @@ function checkGlobalRateLimit(
   return { ok: true, retryAfter: 0 }
 }
 
-// Cleanup old entries every 5 minutes
 const CLEANUP_INTERVAL = 5 * 60 * 1000
 let lastCleanup = Date.now()
 
@@ -89,14 +77,12 @@ function cleanupRateLimitMap() {
   if (now - lastCleanup < CLEANUP_INTERVAL) return
   lastCleanup = now
   for (const [key, entry] of rateLimitMap) {
-    // Remove entries older than 10 minutes
     if (now - entry.start > 10 * 60 * 1000) {
       rateLimitMap.delete(key)
     }
   }
 }
 
-// Block suspicious paths
 const BLOCKED_PATHS = [
   '/wp-admin',
   '/wp-login',
@@ -111,17 +97,16 @@ const BLOCKED_PATHS = [
   '/server-status',
 ]
 
-export function middleware(request: NextRequest) {
+// ↓ Only change: function renamed from `middleware` to `proxy`
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   const response = NextResponse.next()
 
-  // ── Security Headers ───────────────────────────────────────
   const securityHeaders = getSecurityHeaders(request)
   for (const [key, value] of Object.entries(securityHeaders)) {
     response.headers.set(key, value)
   }
 
-  // ── Block suspicious paths ──────────────────────────────────
   const lowerPath = pathname.toLowerCase()
   for (const blocked of BLOCKED_PATHS) {
     if (lowerPath.startsWith(blocked)) {
@@ -129,14 +114,12 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // ── API route protection ────────────────────────────────────
   if (pathname.startsWith('/api/')) {
     const ip =
       request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
       request.headers.get('x-real-ip') ||
       'unknown'
 
-    // Rate limit: general API - 60 req/min per IP
     cleanupRateLimitMap()
     const { ok, retryAfter } = checkGlobalRateLimit(ip, 'api', 60, 60_000)
     if (!ok) {
@@ -152,7 +135,6 @@ export function middleware(request: NextRequest) {
       )
     }
 
-    // Rate limit: chat API - 20 req/min per IP (more expensive)
     if (pathname.startsWith('/api/chat')) {
       const chatRL = checkGlobalRateLimit(ip, 'chat', 20, 60_000)
       if (!chatRL.ok) {
@@ -169,7 +151,6 @@ export function middleware(request: NextRequest) {
       }
     }
 
-    // Rate limit: contact form - 3 req/5min per IP
     if (pathname === '/api/contact' && request.method === 'POST') {
       const contactRL = checkGlobalRateLimit(ip, 'contact', 3, 300_000)
       if (!contactRL.ok) {
@@ -186,7 +167,6 @@ export function middleware(request: NextRequest) {
       }
     }
 
-    // CORS headers for API routes
     const origin = request.headers.get('origin')
     const allowedOrigin = ALLOWED_ORIGINS.includes(origin || '') ? origin : ALLOWED_ORIGINS[0]
     response.headers.set('Access-Control-Allow-Origin', allowedOrigin!)
@@ -194,7 +174,6 @@ export function middleware(request: NextRequest) {
     response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
     response.headers.set('Access-Control-Max-Age', '86400')
 
-    // Handle preflight
     if (request.method === 'OPTIONS') {
       return new NextResponse(null, {
         status: 204,
@@ -208,14 +187,11 @@ export function middleware(request: NextRequest) {
       })
     }
 
-    // Block debug endpoints in production
     if (request.nextUrl.searchParams.get('debug') === '1' && process.env.NODE_ENV === 'production') {
       return NextResponse.json({ error: 'Debug mode not available in production' }, { status: 403 })
     }
 
-    // Block health endpoint from external access in production
     if (pathname === '/api/health' && process.env.NODE_ENV === 'production') {
-      // Allow only internal health checks
       const userAgent = request.headers.get('user-agent') || ''
       if (!userAgent.includes('UptimeRobot') && !userAgent.includes('healthcheck')) {
         return NextResponse.json({ status: 'ok' }, { status: 200 })
@@ -223,7 +199,6 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // ── Block direct access to Sanity Studio in production ──────
   if (pathname.startsWith('/studio') && process.env.NODE_ENV === 'production') {
     return NextResponse.json({ error: 'Not Found' }, { status: 404 })
   }
@@ -233,7 +208,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Match all paths except static files and Next.js internals
     '/((?!_next/static|_next/image|favicon.ico|opengraph-image).*)',
   ],
 }
