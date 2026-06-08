@@ -1,7 +1,7 @@
 // app/blogs/loading.tsx — Blogs list skeleton
 export default function BlogsLoading() {
   return (
-    <main className="min-h-screen animate-pulse" style={{ background: '#07070f' }}>
+    <main className="min-h-screen animate-pulse" style={{ background: 'var(--ink)' }}>
       {/* Hero */}
       <div className="relative h-48 overflow-hidden" style={{ background: 'rgba(255,255,255,0.02)' }}>
         <div className="absolute inset-0 flex flex-col justify-end px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pb-10">
