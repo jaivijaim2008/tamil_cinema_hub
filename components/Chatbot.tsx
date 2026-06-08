@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
@@ -211,7 +210,7 @@ export default function TamilCinemaHubChatbot() {
 
           {/* ── Messages ── */}
           <div
-            className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
+            className="overflow-y-auto px-4 py-4 space-y-4 flex-1 flex flex-col justify-start"
             style={{ background: '#0f1117', scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.08) transparent' }}
           >
             {messages.map((msg, index) => (
