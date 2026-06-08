@@ -233,7 +233,7 @@ export default function BlogComments({ slug }: BlogCommentsProps) {
               <span className="text-[10px] ml-2" style={{ color: 'rgba(255,255,255,0.3)' }}>{timeAgo(c.createdAt)}</span>
               {c.edited && <span className="text-[10px] ml-1" style={{ color: 'rgba(255,255,255,0.2)' }}>(edited)</span>}
             </div>
-            <div className="flex items-center gap-1 opacity-0 group-hover/comment:opacity-100 transition-opacity">
+            <div className="comment-actions flex items-center gap-1 opacity-0 group-hover/comment:opacity-100 transition-opacity">
               {!isEditing && <button onClick={() => { setReplyTo(c._key!); setReplyContent(''); setEditingKey(null) }} className="text-[10px] hover:text-[#D4291A] transition-colors px-1.5 py-0.5 rounded">Reply</button>}
               {!isEditing && <button onClick={() => { setEditingKey(c._key!); setEditContent(c.content); setReplyTo(null) }} className="text-[10px] hover:text-blue-400 transition-colors px-1.5 py-0.5 rounded">Edit</button>}
               <button onClick={() => handleDelete(c._key!)} disabled={deletingKey === c._key} className="text-[10px] hover:text-red-400 transition-colors px-1.5 py-0.5 rounded disabled:opacity-40">{deletingKey === c._key ? '...' : 'Delete'}</button>

@@ -618,6 +618,8 @@ body::before {
 @media (hover: none) {
   .movie-card-dark:active, .blog-card-dark:active { transform: scale(0.96); transition: transform 0.1s ease; }
   .btn-hero-primary:active, .btn-hero-secondary:active, .btn-cta-dark:active { transform: scale(0.96); }
+  /* Make comment action buttons always visible on touch (no hover) */
+  .comment-actions { opacity: 1 !important; }
 }
 @media (prefers-reduced-motion: reduce) {
   .marquee-track { animation: none; }
@@ -635,7 +637,7 @@ body::before {
   /* Hero */
   .hero-section { grid-template-columns: 1fr; min-height: auto; padding: 100px 16px 40px; gap: 32px; }
   .hero-title .line { font-size: clamp(36px, 10vw, 48px); }
-  .hero-visual { max-width: 280px; height: 280px; margin: 0 auto; }
+  .hero-visual { max-width: 280px; height: 280px; margin: 0 auto; overflow: hidden; }
   .hero-visual .ring-outer { width: 220px; height: 220px; }
   .hero-visual .ring-inner { width: 140px; height: 140px; }
   .poster-card-1 { width: 80px; height: 120px; transform: rotate(-10deg) translate(-55px, 15px); }
@@ -703,7 +705,7 @@ body::before {
 
 @media (max-width: 480px) {
   .hero-title .line { font-size: clamp(28px, 9vw, 40px); }
-  .hero-visual { max-width: 220px; height: 220px; }
+  .hero-visual { max-width: 220px; height: 220px; overflow: hidden; }
   .hero-visual .ring-outer { width: 180px; height: 180px; }
   .hero-visual .ring-inner { width: 110px; height: 110px; }
   .poster-card-1 { width: 65px; height: 98px; transform: rotate(-10deg) translate(-45px, 12px); }
