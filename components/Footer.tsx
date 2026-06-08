@@ -9,11 +9,7 @@ export default function Footer() {
             <span className="tamil">Tamil</span>CinemaHub
           </div>
           <p className="footer-tagline-dark">The ultimate destination for Tamil cinema lovers — reviews, news, and AI-powered recommendations.</p>
-          <div className="footer-socials-dark">
-            <a className="footer-social-icon-dark ig" href="#">📷</a>
-            <a className="footer-social-icon-dark yt" href="#">▶</a>
-            <a className="footer-social-icon-dark fb" href="#">f</a>
-          </div>
+
         </div>
         <div className="footer-col-dark">
           <div className="footer-col-label-dark">Explore</div>
@@ -31,7 +27,6 @@ export default function Footer() {
         </div>
         <div className="footer-col-dark">
           <div className="footer-col-label-dark">Get in Touch</div>
-          <a href="mailto:hello@tamilcinemahub.com">hello@tamilcinemahub.com</a>
           <a href="#">Chat with AI</a>
           <a href="#">Suggest a Movie</a>
         </div>
