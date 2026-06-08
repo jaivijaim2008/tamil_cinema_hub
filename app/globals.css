@@ -597,6 +597,45 @@ body::before {
 .footer-bottom-dark .heart:hover { color: var(--crimson); transform: scale(1.2); }
 
 /* ═══════════════════════════════════════════════════════════════
+   SUBTLE ANIMATIONS (lightweight, GPU-composited, hover/one-shot)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Live dot pulse — tiny element, opacity+scale only */
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.8); }
+}
+.live-dot { animation: livePulse 2s ease-in-out infinite; }
+
+/* AI button dot pulse */
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.7); }
+}
+.nav-ai-btn::before { animation: dotPulse 2s ease-in-out infinite; }
+
+/* Hero entrance — CSS-only one-shot fade+slide up */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.hero-eyebrow { animation: fadeUp 0.6s ease-out both; animation-delay: 0.1s; }
+.hero-title .line-1 { animation: fadeUp 0.6s ease-out both; animation-delay: 0.2s; }
+.hero-title .line-2 { animation: fadeUp 0.6s ease-out both; animation-delay: 0.3s; }
+.hero-title .line-3 { animation: fadeUp 0.6s ease-out both; animation-delay: 0.4s; }
+.hero-subtitle { animation: fadeUp 0.6s ease-out both; animation-delay: 0.5s; }
+.hero-buttons { animation: fadeUp 0.6s ease-out both; animation-delay: 0.6s; }
+.hero-stats { animation: fadeUp 0.6s ease-out both; animation-delay: 0.7s; }
+.hero-visual { animation: fadeUp 0.8s ease-out both; animation-delay: 0.3s; }
+
+/* Marquee gradient shimmer */
+@keyframes bgShift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+.marquee-wrap { animation: bgShift 8s linear infinite; }
+
+/* ═══════════════════════════════════════════════════════════════
    SCROLL REVEAL
    ═══════════════════════════════════════════════════════════════ */
 .reveal-up { opacity: 0; transform: translateY(32px); transition: opacity 0.6s ease, transform 0.6s ease; }
@@ -622,8 +661,16 @@ body::before {
   .comment-actions { opacity: 1 !important; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .marquee-track { animation: none; }
+  .marquee-track, .marquee-wrap, .live-dot, .nav-ai-btn::before,
+  .hero-eyebrow, .hero-title .line-1, .hero-title .line-2, .hero-title .line-3,
+  .hero-subtitle, .hero-buttons, .hero-stats, .hero-visual {
+    animation: none !important;
+  }
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  .hero-eyebrow, .hero-title .line-1, .hero-title .line-2, .hero-title .line-3,
+  .hero-subtitle, .hero-buttons, .hero-stats, .hero-visual {
+    opacity: 1 !important; transform: none !important;
+  }
 }
 @media (max-width: 768px) {
   /* Navbar */
