@@ -27,36 +27,51 @@ export default function BlogReactions({ slug }: BlogReactionsProps) {
   async function react(type: 'like' | 'dislike') {
     if (loading) return
     const prevVote = userVote
+    setLoading(true)
 
+    // Optimistic UI: update state immediately for instant feedback
     if (prevVote === type) {
-      setLoading(true)
-      try {
-        const res = await fetch('/api/blog/reaction', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ slug, type, action: 'remove' }),
-        })
-        if (res.ok) {
-          const data = await res.json()
-          setLikes(data.likes); setDislikes(data.dislikes); setUserVote(null)
-          localStorage.removeItem(`blog-vote-${slug}`)
-        }
-      } catch {}
-      setLoading(false)
-      return
+      if (type === 'like') setLikes(l => Math.max(0, l - 1))
+      else setDislikes(d => Math.max(0, d - 1))
+      setUserVote(null)
+      localStorage.removeItem(`blog-vote-${slug}`)
+    } else {
+      if (prevVote === 'like') setLikes(l => Math.max(0, l - 1))
+      if (prevVote === 'dislike') setDislikes(d => Math.max(0, d - 1))
+      if (type === 'like') setLikes(l => l + 1)
+      if (type === 'dislike') setDislikes(d => d + 1)
+      setUserVote(type)
+      localStorage.setItem(`blog-vote-${slug}`, type)
     }
 
-    setLoading(true)
+    // Revert optimistic update back to previous state
+    function revert() {
+      if (prevVote === 'like') setLikes(l => l + 1)
+      else if (type === 'like') setLikes(l => Math.max(0, l - 1))
+      if (prevVote === 'dislike') setDislikes(d => d + 1)
+      else if (type === 'dislike') setDislikes(d => Math.max(0, d - 1))
+      setUserVote(prevVote)
+      if (prevVote) localStorage.setItem(`blog-vote-${slug}`, prevVote)
+      else localStorage.removeItem(`blog-vote-${slug}`)
+    }
+
+    // Sync with server in background
     try {
+      const action = prevVote === type ? 'remove' : undefined
       const res = await fetch('/api/blog/reaction', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug, type, prev: prevVote }),
+        body: JSON.stringify({ slug, type, prev: prevVote, action }),
       })
       if (res.ok) {
         const data = await res.json()
-        setLikes(data.likes); setDislikes(data.dislikes); setUserVote(type)
-        localStorage.setItem(`blog-vote-${slug}`, type)
+        setLikes(data.likes)
+        setDislikes(data.dislikes)
+      } else {
+        revert()
       }
-    } catch {}
+    } catch {
+      revert()
+    }
     setLoading(false)
   }
 
