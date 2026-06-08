@@ -7,6 +7,7 @@ export const metadata: Metadata = {
     title: 'Contact Us — TamilCinemaHub',
     description: 'Get in touch with TamilCinemaHub. Have questions, movie suggestions, or feedback about Tamil cinema?',
     type: 'website',
+    url: 'https://tamilcinemahub.xyz/contact',
     images: [
       {
         url: 'https://tamilcinemahub.xyz/opengraph-image',

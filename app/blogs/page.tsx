@@ -27,6 +27,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
       title,
       description: 'Tamil movie reviews, top lists, actor spotlights, and cinema news — all in one place.',
       type: 'website',
+      url: 'https://tamilcinemahub.xyz/blogs',
       images: [{ url: 'https://tamilcinemahub.xyz/opengraph-image', width: 1200, height: 630, alt: 'TamilCinemaHub Reviews & Blogs' }],
     },
     twitter: {
