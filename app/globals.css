@@ -348,7 +348,7 @@ body::before {
 .stats-inner-pill { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 960px; margin: 0 auto; padding: 0 40px; }
 .stat-card {
   border-radius: 20px; padding: 36px 40px; text-align: center;
-  position: relative; overflow: hidden; transition: transform 0.35s, box-shadow 0.35s;
+  position: relative; overflow: visible; transition: transform 0.35s, box-shadow 0.35s;
 }
 .stat-card:hover { transform: translateY(-6px); }
 .stat-card-1 { background: linear-gradient(145deg, rgba(212,41,26,0.12), rgba(255,77,28,0.06)); border: 1px solid rgba(212,41,26,0.25); box-shadow: 0 0 40px rgba(212,41,26,0.15); }
@@ -356,7 +356,9 @@ body::before {
 .stat-card-3 { background: linear-gradient(145deg, rgba(13,148,136,0.12), rgba(45,212,191,0.06)); border: 1px solid rgba(13,148,136,0.25); box-shadow: 0 0 40px rgba(13,148,136,0.12); }
 .stat-number {
   font-family: 'Syne', sans-serif; font-size: 52px; font-weight: 800;
-  line-height: 1; margin-bottom: 8px; display: block;
+  line-height: 1.1; margin-bottom: 8px; display: block;
+  font-variant-numeric: lining-nums; font-feature-settings: "tnum", "lnum";
+  padding-bottom: 4px;
 }
 .stat-card-1 .stat-number { color: transparent; background: linear-gradient(135deg, var(--vermillion), var(--gold)); -webkit-background-clip: text; background-clip: text; }
 .stat-card-2 .stat-number { color: transparent; background: linear-gradient(135deg, var(--violet-light), var(--teal-light)); -webkit-background-clip: text; background-clip: text; }
