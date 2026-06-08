@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import { PortableText } from '@portabletext/react'
@@ -125,7 +126,7 @@ const ptComponents = {
       if (!url) return null
       return (
         <figure style={{ margin: '32px auto', maxWidth: '85%', overflow: 'hidden', borderRadius: 12 }}>
-          <img src={url} alt={value.alt || ''} style={{ width: '100%', objectFit: 'cover', borderRadius: 8 }} loading="lazy" />
+          <Image src={url} alt={value.alt || ''} width={900} height={506} style={{ width: '100%', height: 'auto', objectFit: 'cover', borderRadius: 8 }} />
           {value.caption && (
             <figcaption style={{ marginTop: 8, textAlign: 'center', fontSize: 13, color: 'rgba(255,255,255,0.35)' }}>{value.caption}</figcaption>
           )}
@@ -182,7 +183,7 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
         {coverUrl && (
           <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 24px 0' }}>
             <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 16, aspectRatio: '21/9' }}>
-              <img src={coverUrl} alt={blog.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="eager" />
+              <Image src={coverUrl} alt={blog.title} width={960} height={411} style={{ width: '100%', height: '100%', objectFit: 'cover' }} priority />
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, var(--ink) 0%, transparent 45%)' }} />
             </div>
           </div>
@@ -283,7 +284,7 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
                   <Link key={rel._id} href={`/blogs/${rel.slug}`} style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', borderRadius: 16, transition: 'all 0.3s', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', textDecoration: 'none', color: 'inherit' }}>
                     <div style={{ position: 'relative', aspectRatio: '16/9', overflow: 'hidden' }}>
                       {relImg ? (
-                        <img src={relImg} alt={rel.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s' }} />
+                        <Image src={relImg} alt={rel.title} width={500} height={280} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s' }} />
                       ) : (
                         <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: relCat.bg }}>
                           <span style={{ fontSize: 32, opacity: 0.2 }}>📰</span>

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import { Suspense } from 'react'
@@ -186,7 +187,7 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
             <div className="movie-poster-wrap">
               <div style={{ borderRadius: 16, overflow: 'hidden', aspectRatio: '2/3', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.06)' }}>
                 {posterUrl ? (
-                  <img src={posterUrl} alt={movie.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <Image src={posterUrl} alt={movie.title} width={208} height={312} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
                   <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24, textAlign: 'center', background: 'rgba(255,255,255,0.04)' }}>
                     <span style={{ fontSize: 40, marginBottom: 12 }}>🎬</span>
@@ -280,7 +281,7 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
                     <div key={idx} style={{ borderRadius: 12, overflow: 'hidden', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', transition: 'all 0.3s' }}>
                       <div style={{ position: 'relative', aspectRatio: '1/1', overflow: 'hidden' }}>
                         {photo ? (
-                          <img src={photo} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', transition: 'transform 0.5s' }} />
+                          <Image src={photo} alt={name} width={300} height={300} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', transition: 'transform 0.5s' }} />
                         ) : (
                           <CastPhoto photo={null} name={name} initial={initial} />
                         )}

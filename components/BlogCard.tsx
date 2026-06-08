@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { urlFor } from '../sanity/lib/image'
 import TiltCard from './TiltCard'
 
@@ -52,7 +53,7 @@ export default function BlogCard({ blog, index = 0 }: BlogCardProps) {
       <Link href={`/blogs/${blog.slug}`} style={{ display: 'block', height: '100%' }}>
         {imageUrl ? (
           <div className="blog-card-image-dark">
-            <img src={imageUrl} alt={blog.title} loading="lazy" />
+            <Image src={imageUrl} alt={blog.title} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" style={{ objectFit: 'cover' }} />
             <span className={`blog-category-tag-dark ${tagClass}`}>{blog.category}</span>
           </div>
         ) : (

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import Image from 'next/image'
 import md5 from 'md5'
 import ReactMarkdown from 'react-markdown'
 
@@ -221,7 +222,7 @@ export default function BlogComments({ slug }: BlogCommentsProps) {
         <div className="rounded-xl p-4 transition-colors group/comment" style={{ background: depth > 0 ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
           <div className="flex items-center gap-3 mb-2">
             {avatarUrl ? (
-              <img src={avatarUrl} alt={c.author} className="w-7 h-7 rounded-full" referrerPolicy="no-referrer" />
+              <Image src={avatarUrl} alt={c.author} width={28} height={28} className="rounded-full" referrerPolicy="no-referrer" unoptimized />
             ) : (
               <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-[#D4291A]" style={{ background: 'rgba(212,41,26,0.12)' }}>
                 {c.author.charAt(0).toUpperCase()}

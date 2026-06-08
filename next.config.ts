@@ -44,6 +44,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'image.tmdb.org',
       },
+      {
+        protocol: 'https',
+        hostname: 'www.gravatar.com',
+      },
     ],
     // Limit image optimization to prevent abuse
     minimumCacheTTL: 60 * 60, // 1 hour

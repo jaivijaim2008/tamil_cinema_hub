@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 
 type Message = {
   role: 'user' | 'assistant' | 'system'
@@ -133,7 +134,7 @@ export default function TamilCinemaHubChatbot() {
     while ((m = r.exec(text)) !== null) {
       if (m.index > li) parts.push(text.slice(li, m.index))
       if (m[1] !== undefined) {
-        parts.push(<img key={`p-${m.index}`} src={m[1]} alt="Poster" className="inline-block w-12 h-[72px] object-cover rounded-md mr-2 mb-1 align-middle shadow-sm border border-white/10" loading="lazy" />)
+        parts.push(<span key={`p-${m.index}`} className="inline-block w-12 h-[72px] relative rounded-md mr-2 mb-1 align-middle shadow-sm border border-white/10 overflow-hidden"><Image src={m[1]} alt="Poster" fill sizes="48px" style={{ objectFit: 'cover' }} unoptimized /></span>)
       } else {
         const linkMatch = m[2]?.match(/\[([^\]]+)\]\(([^)]+)\)/)
         if (linkMatch) {

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { urlFor } from '../sanity/lib/image'
 import TiltCard from './TiltCard'
 
@@ -44,7 +45,7 @@ export default function MovieCard({ movie, index = 0 }: MovieCardProps) {
       <Link href={`/movies/${movie.slug}`} style={{ display: 'block', height: '100%' }}>
         {imageUrl ? (
           <div className="movie-card-image-dark">
-            <img src={imageUrl} alt={movie.title} loading="lazy" />
+            <Image src={imageUrl} alt={movie.title} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw" style={{ objectFit: 'cover' }} />
             {movie.genre?.[0] && <span className="genre-badge-dark">{movie.genre[0]}</span>}
             {movie.ottPlatform && <span className="ott-badge-dark">{movie.ottPlatform}</span>}
             <div className="poster-gradient-overlay-dark" />
