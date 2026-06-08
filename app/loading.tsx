@@ -1,81 +1,79 @@
 export default function HomeLoading() {
+  const card = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }
+  const bar = { background: 'rgba(255,255,255,0.06)' }
+
   return (
-    <main className="min-h-screen animate-pulse" style={{ background: '#F7F7F5' }}>
+    <main style={{ minHeight: '100vh', background: 'var(--ink)' }}>
       {/* Hero skeleton */}
-      <div className="relative overflow-hidden py-28" style={{ background: '#FFFFFF' }}>
-        <div className="mx-auto max-w-[1280px] px-6 grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div className="space-y-4">
-            <div className="h-3 w-32 rounded" style={{ background: '#F2F1EE' }} />
-            <div className="h-14 w-3/4 rounded-lg" style={{ background: '#F2F1EE' }} />
-            <div className="h-14 w-1/2 rounded-lg" style={{ background: '#F2F1EE' }} />
-            <div className="h-5 w-full max-w-sm rounded" style={{ background: '#F2F1EE' }} />
-            <div className="h-5 w-3/4 max-w-sm rounded" style={{ background: '#F2F1EE' }} />
-            <div className="flex gap-3 pt-4">
-              <div className="h-12 w-44 rounded-md" style={{ background: '#F2F1EE' }} />
-              <div className="h-12 w-36 rounded-md" style={{ background: '#F2F1EE' }} />
-            </div>
-            <div className="flex gap-2 pt-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-8 w-24 rounded-full" style={{ background: '#F2F1EE' }} />
-              ))}
-            </div>
+      <div style={{ padding: '120px 24px 60px', maxWidth: 1280, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, alignItems: 'center' }}>
+        <div>
+          <div style={{ ...bar, height: 12, width: 128, borderRadius: 100, marginBottom: 20 }} />
+          <div style={{ ...bar, height: 56, width: '75%', borderRadius: 8, marginBottom: 12 }} />
+          <div style={{ ...bar, height: 56, width: '50%', borderRadius: 8, marginBottom: 12 }} />
+          <div style={{ ...bar, height: 56, width: '40%', borderRadius: 8, marginBottom: 20 }} />
+          <div style={{ ...bar, height: 20, width: '80%', borderRadius: 4, marginBottom: 8 }} />
+          <div style={{ ...bar, height: 20, width: '60%', borderRadius: 4, marginBottom: 32 }} />
+          <div style={{ display: 'flex', gap: 16 }}>
+            <div style={{ ...bar, height: 48, width: 176, borderRadius: 12 }} />
+            <div style={{ height: 48, width: 144, borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }} />
           </div>
-          <div className="hidden lg:flex items-center justify-center">
-            <div className="relative w-72 h-96">
-              <div className="absolute top-0 left-0 w-44 h-64 rounded-xl" style={{ background: '#F2F1EE', transform: 'rotate(-4deg)' }} />
-              <div className="absolute top-8 left-20 w-44 h-64 rounded-xl" style={{ background: '#E8E7E3', transform: 'rotate(2deg)' }} />
-              <div className="absolute top-16 left-10 w-44 h-64 rounded-xl" style={{ background: '#FFF5F5', transform: 'rotate(6deg)' }} />
-            </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 400 }}>
+          <div style={{ position: 'relative', width: 288, height: 384 }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, width: 176, height: 256, borderRadius: 16, ...card, transform: 'rotate(-4deg)' }} />
+            <div style={{ position: 'absolute', top: 32, left: 80, width: 176, height: 256, borderRadius: 16, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', transform: 'rotate(2deg)' }} />
+            <div style={{ position: 'absolute', top: 64, left: 40, width: 176, height: 256, borderRadius: 16, ...card, transform: 'rotate(6deg)' }} />
           </div>
         </div>
       </div>
-      <div style={{ background: '#F2F1EE', borderTop: '1px solid #E8E7E3', borderBottom: '1px solid #E8E7E3' }}>
-        <div className="mx-auto max-w-[1280px] px-6 py-10 flex items-center justify-center gap-16">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="text-center space-y-2">
-              <div className="h-10 w-20 mx-auto rounded" style={{ background: '#E8E7E3' }} />
-              <div className="h-3 w-24 mx-auto rounded" style={{ background: '#E8E7E3' }} />
+
+      {/* Stats skeleton */}
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '40px 24px' }}>
+        <div style={{ maxWidth: 960, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, textAlign: 'center' }}>
+          {[1,2,3].map(i => (
+            <div key={i} style={{ padding: '24px 16px' }}>
+              <div style={{ ...bar, height: 40, width: 80, borderRadius: 8, margin: '0 auto 12px' }} />
+              <div style={{ ...bar, height: 12, width: 96, borderRadius: 4, margin: '0 auto' }} />
             </div>
           ))}
         </div>
       </div>
-      <section className="mx-auto max-w-[1280px] px-6 py-20">
-        <div className="flex items-end justify-between mb-8">
-          <div>
-            <div className="h-2.5 w-20 rounded mb-2" style={{ background: '#F2F1EE' }} />
-            <div className="h-7 w-44 rounded-lg" style={{ background: '#F2F1EE' }} />
-          </div>
-          <div className="h-4 w-32 rounded" style={{ background: '#F2F1EE' }} />
+
+      {/* Movies skeleton */}
+      <section style={{ maxWidth: 1280, margin: '0 auto', padding: '80px 24px' }}>
+        <div style={{ marginBottom: 36 }}>
+          <div style={{ ...bar, height: 10, width: 80, borderRadius: 100, marginBottom: 12 }} />
+          <div style={{ ...bar, height: 28, width: 176, borderRadius: 8, marginBottom: 12 }} />
+          <div style={{ height: 2, width: 60, borderRadius: 2, background: 'linear-gradient(90deg, var(--crimson), transparent)' }} />
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
+        <div className="movies-grid-pill">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="rounded-xl overflow-hidden" style={{ background: '#FFFFFF', border: '1px solid #E8E7E3' }}>
-              <div className="aspect-[2/3] w-full" style={{ background: '#F2F1EE' }} />
-              <div className="p-3 space-y-2">
-                <div className="h-3.5 w-4/5 rounded" style={{ background: '#F2F1EE' }} />
-                <div className="h-3 w-1/2 rounded" style={{ background: '#F2F1EE' }} />
+            <div key={i} style={{ borderRadius: 16, overflow: 'hidden', ...card }}>
+              <div style={{ aspectRatio: '2/3', width: '100%', background: 'rgba(255,255,255,0.05)' }} />
+              <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div style={{ ...bar, height: 12, width: '80%', borderRadius: 4 }} />
+                <div style={{ ...bar, height: 12, width: '50%', borderRadius: 4 }} />
               </div>
             </div>
           ))}
         </div>
       </section>
-      <section className="mx-auto max-w-[1280px] px-6 py-8 pb-24">
-        <div className="flex items-end justify-between mb-8">
-          <div>
-            <div className="h-2.5 w-20 rounded mb-2" style={{ background: '#F2F1EE' }} />
-            <div className="h-7 w-44 rounded-lg" style={{ background: '#F2F1EE' }} />
-          </div>
-          <div className="h-4 w-32 rounded" style={{ background: '#F2F1EE' }} />
+
+      {/* Blogs skeleton */}
+      <section style={{ maxWidth: 1280, margin: '0 auto', padding: '32px 24px 96px' }}>
+        <div style={{ marginBottom: 36 }}>
+          <div style={{ ...bar, height: 10, width: 80, borderRadius: 100, marginBottom: 12 }} />
+          <div style={{ ...bar, height: 28, width: 176, borderRadius: 8, marginBottom: 12 }} />
+          <div style={{ height: 2, width: 60, borderRadius: 2, background: 'linear-gradient(90deg, var(--teal), transparent)' }} />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="blogs-grid-pill">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="rounded-xl overflow-hidden" style={{ background: '#FFFFFF', border: '1px solid #E8E7E3' }}>
-              <div className="aspect-[16/9] w-full" style={{ background: '#F2F1EE' }} />
-              <div className="p-5 space-y-3">
-                <div className="h-3 w-1/3 rounded-full" style={{ background: '#F2F1EE' }} />
-                <div className="h-4 w-full rounded" style={{ background: '#F2F1EE' }} />
-                <div className="h-4 w-3/4 rounded" style={{ background: '#F2F1EE' }} />
-                <div className="h-3 w-full rounded" style={{ background: '#F2F1EE' }} />
+            <div key={i} style={{ borderRadius: 16, overflow: 'hidden', ...card, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ aspectRatio: '16/9', width: '100%', background: 'rgba(255,255,255,0.05)' }} />
+              <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
+                <div style={{ ...bar, height: 10, width: '25%', borderRadius: 100 }} />
+                <div style={{ ...bar, height: 18, width: '90%', borderRadius: 4 }} />
+                <div style={{ ...bar, height: 14, width: '60%', borderRadius: 4 }} />
               </div>
             </div>
           ))}

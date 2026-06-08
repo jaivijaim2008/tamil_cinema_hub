@@ -27,14 +27,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
       title,
       description: 'Browse and search Tamil movies from 2000 to 2026. Ratings, cast, reviews, and OTT availability.',
       type: 'website',
-      images: [
-        {
-          url: 'https://tamilcinemahub.xyz/opengraph-image',
-          width: 1200,
-          height: 630,
-          alt: 'TamilCinemaHub Movies Database',
-        },
-      ],
+      images: [{ url: 'https://tamilcinemahub.xyz/opengraph-image', width: 1200, height: 630, alt: 'TamilCinemaHub Movies Database' }],
     },
     twitter: {
       card: 'summary_large_image' as const,
@@ -42,9 +35,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
       description: 'Browse and search Tamil movies from 2000 to 2026. Ratings, cast, reviews, and OTT availability.',
       images: ['https://tamilcinemahub.xyz/opengraph-image'],
     },
-    alternates: {
-      canonical: 'https://tamilcinemahub.xyz/movies',
-    },
+    alternates: { canonical: 'https://tamilcinemahub.xyz/movies' },
   }
 }
 
@@ -61,78 +52,59 @@ export default async function MoviesPage({ searchParams }: { searchParams: Promi
   const start = (page - 1) * PAGE_SIZE
   const end = start + PAGE_SIZE
 
-  const filteredCountQ = moviesCountQuery
-  const totalCountQ = `count(*[_type == "movie"])`
-
   const [movies, filteredCount, totalMovieCount, allGenres] = await Promise.all([
     client.fetch<Movie[]>(paginatedMoviesQuery(start, end), { genre, q: searchQ }).catch(() => []),
-    client.fetch<number>(filteredCountQ, { genre, q: searchQ }).catch(() => 0),
-    client.fetch<number>(totalCountQ).catch(() => 0),
+    client.fetch<number>(moviesCountQuery, { genre, q: searchQ }).catch(() => 0),
+    client.fetch<number>(`count(*[_type == "movie"])`).catch(() => 0),
     client.fetch<string[]>(allGenresQuery).catch(() => []),
   ])
-  const totalCount = filteredCount
 
   const genres = ['All', ...Array.from(new Set(allGenres ?? [])).sort()]
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE)
+  const totalPages = Math.ceil(filteredCount / PAGE_SIZE)
   const safePage = Math.min(page, totalPages || 1)
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: '#F7F7F5' }}>
-
-      {/* ── PAGE HEADER ─────────────────────────────────────────────── */}
-      <section style={{ background: '#FFFFFF', borderBottom: '1px solid #E8E7E3' }}>
-        <div className="mx-auto max-w-[1280px] px-6 py-12">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] mb-2" style={{ color: '#D4291A' }}>
+    <div style={{ background: 'var(--ink)', minHeight: '100vh', paddingBottom: 96 }}>
+      {/* Page Header */}
+      <section style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '48px 0' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--rose-light)', marginBottom: 8, fontFamily: "'Syne', sans-serif" }}>
             TamilCinemaHub
           </p>
-          <h1
-            className="text-4xl sm:text-5xl font-bold tracking-tight mb-3"
-            style={{ fontFamily: "'Fraunces', serif", color: '#111111' }}
-          >
+          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 800, color: 'rgba(255,255,255,0.92)', marginBottom: 8, lineHeight: 1.1 }}>
             Movies Database
           </h1>
-          <p className="text-base" style={{ color: '#666666' }}>
+          <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.4)' }}>
             {totalMovieCount.toLocaleString()} Tamil movies from 2000 to 2026 — with ratings, cast, and reviews.
           </p>
         </div>
       </section>
 
-      <main className="mx-auto max-w-[1280px] px-6 pt-8">
-
-        {/* ── FILTERS (client component) ──────────────────────────────── */}
-        <Suspense fallback={<div className="h-28 mb-4" />}>
+      <main style={{ maxWidth: 1280, margin: '0 auto', padding: '32px 24px 0' }}>
+        <Suspense fallback={<div style={{ height: 112, marginBottom: 16 }} />}>
           <MovieFilters genres={genres} />
         </Suspense>
 
-        {/* Result count */}
-        <p className="text-xs text-center mb-6" style={{ color: '#888888' }}>
-          Showing page{' '}
-          <span className="font-semibold" style={{ color: '#D4291A' }}>{safePage}</span>{' '}
-          of {totalPages} · {filteredCount.toLocaleString()} movies
-          {q ? ` matching "${q}"` : ''}
+        <p style={{ fontSize: 12, textAlign: 'center', marginBottom: 24, color: 'rgba(255,255,255,0.35)' }}>
+          Showing page <span style={{ fontWeight: 700, color: 'var(--crimson)' }}>{safePage}</span> of {totalPages} · {filteredCount.toLocaleString()} movies{q ? ` matching "${q}"` : ''}
         </p>
 
-        {/* ── GRID ────────────────────────────────────────────────────── */}
         {movies.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5">
-            {movies.map((movie) => (
-              <MovieCard key={movie._id} movie={movie} />
+          <div className="movies-grid-pill reveal-group">
+            {movies.map((movie, i) => (
+              <MovieCard key={movie._id} movie={movie} index={i} />
             ))}
           </div>
         ) : (
-          <div
-            className="text-center py-24 rounded-xl"
-            style={{ background: '#FFFFFF', border: '1px solid #E8E7E3' }}
-          >
-            <p className="text-4xl mb-4">🎬</p>
-            <h3 className="text-lg font-bold mb-2" style={{ fontFamily: "'Fraunces', serif", color: '#111111' }}>No Movies Found</h3>
-            <p className="text-sm max-w-xs mx-auto" style={{ color: '#888888' }}>
+          <div style={{ textAlign: 'center', padding: '96px 24px', borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <p style={{ fontSize: 40, marginBottom: 16 }}>🎬</p>
+            <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 18, fontWeight: 800, color: 'rgba(255,255,255,0.92)', marginBottom: 8 }}>No Movies Found</h3>
+            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.35)', maxWidth: 320, margin: '0 auto' }}>
               No results for{q ? ` "${q}"` : ''}{genre !== 'All' ? ` in ${genre}` : ''}. Try a different search or genre.
             </p>
           </div>
         )}
 
-        {/* ── PAGINATION ─────────────────────────────────────────────── */}
         <Pagination
           currentPage={safePage}
           totalPages={totalPages}

@@ -97,39 +97,32 @@ export async function generateMetadata({ params }: MovieDetailProps): Promise<Me
       description: movie.synopsis || `Full details, cast, rating and review for ${movie.title} (${movie.year}).`,
       images: posterUrl ? [posterUrl] : [],
     },
-    alternates: {
-      canonical: `https://tamilcinemahub.xyz/movies/${slug}`,
-    },
+    alternates: { canonical: `https://tamilcinemahub.xyz/movies/${slug}` },
   }
 }
 
-// ── Portable Text components ──────────────────────────────────────────────
 const ptComponents = {
   block: {
     h2: ({ children }: any) => (
-      <h2 className="text-2xl font-bold mt-8 mb-3" style={{ fontFamily: "'Fraunces', serif", color: '#111111' }}>{children}</h2>
+      <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800, marginTop: 32, marginBottom: 12, color: 'rgba(255,255,255,0.92)' }}>{children}</h2>
     ),
     h3: ({ children }: any) => (
-      <h3 className="text-xl font-bold mt-6 mb-2" style={{ color: '#111111' }}>{children}</h3>
+      <h3 style={{ fontSize: 20, fontWeight: 700, marginTop: 24, marginBottom: 8, color: 'rgba(255,255,255,0.92)' }}>{children}</h3>
     ),
     normal: ({ children }: any) => (
-      <p className="leading-relaxed mb-4 text-[15px]" style={{ color: '#444444' }}>{children}</p>
+      <p style={{ lineHeight: 1.8, marginBottom: 16, fontSize: 15, color: 'rgba(255,255,255,0.5)' }}>{children}</p>
     ),
     blockquote: ({ children }: any) => (
-      <blockquote className="border-l-4 border-[#D4291A] bg-[#FFF5F5] px-5 py-3 my-6 italic rounded-r-lg font-medium" style={{ color: '#D4291A' }}>
+      <blockquote style={{ borderLeft: '3px solid var(--crimson)', background: 'rgba(212,41,26,0.08)', paddingLeft: 20, paddingRight: 16, paddingTop: 12, paddingBottom: 12, margin: '24px 0', fontStyle: 'italic', borderRadius: '0 8px 8px 0', color: 'rgba(255,255,255,0.5)' }}>
         {children}
       </blockquote>
     ),
   },
 }
 
-// ── Stat pill ─────────────────────────────────────────────────────────────
 function Pill({ children }: { children: React.ReactNode }) {
   return (
-    <span
-      className="inline-flex items-center rounded-md px-3 py-1 text-xs font-semibold"
-      style={{ background: '#F2F1EE', color: '#666666', border: '1px solid #E8E7E3' }}
-    >
+    <span style={{ display: 'inline-flex', alignItems: 'center', borderRadius: 6, paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, fontSize: 12, fontWeight: 600, background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.06)' }}>
       {children}
     </span>
   )
@@ -144,7 +137,6 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
     ? urlFor(movie.poster).width(600).height(900).quality(90).fit('max').url()
     : movie.posterUrl || null
 
-  const backdropUrl = movie.backdropUrl || null
   const rating = movie.rating || 0
   const fullStars = Math.floor(rating)
   const hasHalf = rating - fullStars >= 0.25
@@ -160,12 +152,7 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
       image: posterUrl || '',
       url: `https://tamilcinemahub.xyz/movies/${slug}`,
       genre: movie.genre || [],
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: rating,
-        bestRating: '5',
-        ratingCount: '1',
-      },
+      aggregateRating: { '@type': 'AggregateRating', ratingValue: rating, bestRating: '5', ratingCount: '1' },
     },
     {
       '@context': 'https://schema.org',
@@ -178,83 +165,60 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
     },
   ]
 
-  return (
-    <div className="min-h-screen" style={{ background: '#F7F7F5' }}>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+  const t = (v: string) => v // helper
 
-      {/* ── PAGE HEADER ───────────────────────────────────────────── */}
-      <div style={{ background: '#FFFFFF', borderBottom: '1px solid #E8E7E3' }}>
-        <div className="mx-auto max-w-[1280px] px-6 py-10">
-          {/* Back button */}
-          <Link
-            href="/movies"
-            className="inline-flex items-center gap-2 text-sm font-medium mb-6 transition-colors hover:text-[#D4291A]"
-            style={{ color: '#888888' }}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+  return (
+    <div style={{ background: 'var(--ink)', minHeight: '100vh' }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+
+      {/* Page Header */}
+      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 24px' }}>
+          <Link href="/movies" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 500, marginBottom: 24, color: 'rgba(255,255,255,0.35)', transition: 'color 0.2s', textDecoration: 'none' }}>
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
             </svg>
             Back to Movies
           </Link>
 
-          <div className="flex flex-col md:flex-row gap-8 items-start">
+          <div style={{ display: 'flex', flexDirection: 'row', gap: 32, alignItems: 'flex-start' }}>
             {/* Poster */}
-            <div className="w-full md:w-52 lg:w-60 flex-shrink-0">
-              <div
-                className="rounded-xl overflow-hidden aspect-[2/3]"
-                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.12)', border: '1px solid #E8E7E3' }}
-              >
+            <div style={{ width: 208, flexShrink: 0 }}>
+              <div style={{ borderRadius: 16, overflow: 'hidden', aspectRatio: '2/3', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.06)' }}>
                 {posterUrl ? (
-                  <img src={posterUrl} alt={movie.title} className="w-full h-full object-cover" />
+                  <img src={posterUrl} alt={movie.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
-                  <div
-                    className="w-full h-full flex flex-col items-center justify-center text-center p-6"
-                    style={{ background: '#F2F1EE' }}
-                  >
-                    <span className="text-5xl mb-3">🎬</span>
-                    <p className="font-bold text-sm leading-tight" style={{ color: '#111111' }}>{movie.title}</p>
-                    <p className="text-xs mt-1" style={{ color: '#888888' }}>{movie.year}</p>
+                  <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24, textAlign: 'center', background: 'rgba(255,255,255,0.04)' }}>
+                    <span style={{ fontSize: 40, marginBottom: 12 }}>🎬</span>
+                    <p style={{ fontWeight: 700, fontSize: 14, color: 'rgba(255,255,255,0.92)' }}>{movie.title}</p>
+                    <p style={{ fontSize: 12, marginTop: 4, color: 'rgba(255,255,255,0.35)' }}>{movie.year}</p>
                   </div>
                 )}
               </div>
             </div>
 
             {/* Title & meta */}
-            <div className="flex-1 min-w-0 pt-2 md:pt-12">
-              <h1
-                className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-none"
-                style={{ fontFamily: "'Fraunces', serif", color: '#111111' }}
-              >
+            <div style={{ flex: 1, minWidth: 0, paddingTop: 48 }}>
+              <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 800, color: 'rgba(255,255,255,0.92)', lineHeight: 1, letterSpacing: '-0.02em' }}>
                 {movie.title}
               </h1>
               {movie.titleTanglish && movie.titleTanglish !== movie.title && (
-                <p className="mt-2 text-base font-medium italic" style={{ color: '#D4291A' }}>&quot;{movie.titleTanglish}&quot;</p>
+                <p style={{ marginTop: 8, fontSize: 16, fontWeight: 500, fontStyle: 'italic', color: 'var(--crimson)' }}>&quot;{movie.titleTanglish}&quot;</p>
               )}
 
-              {/* Rating + meta pills */}
-              <div className="mt-5 flex flex-wrap items-center gap-3">
-                <div className="flex items-center gap-0.5">
+              <div style={{ marginTop: 20, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   {Array.from({ length: 5 }, (_, i) => {
                     const filled = i < fullStars
                     const half = !filled && i === fullStars && hasHalf
                     return (
-                      <svg
-                        key={i}
-                        className="h-5 w-5"
-                        viewBox="0 0 20 20"
-                        fill={filled ? '#C8973A' : 'none'}
-                        stroke={filled || half ? '#C8973A' : '#E8E7E3'}
-                        strokeWidth="1.5"
-                      >
+                      <svg key={i} width="20" height="20" viewBox="0 0 20 20" fill={filled ? '#C8973A' : 'none'} stroke={filled || half ? '#C8973A' : 'rgba(255,255,255,0.1)'} strokeWidth="1.5">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                       </svg>
                     )
                   })}
-                  <span className="ml-2 font-black text-lg" style={{ color: '#C8973A' }}>{rating.toFixed(1)}</span>
-                  <span className="text-sm ml-0.5" style={{ color: '#888888' }}>/5</span>
+                  <span style={{ marginLeft: 8, fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 18, color: '#C8973A' }}>{rating.toFixed(1)}</span>
+                  <span style={{ fontSize: 14, marginLeft: 2, color: 'rgba(255,255,255,0.35)' }}>/5</span>
                 </div>
                 <Pill>{movie.year}</Pill>
                 {movie.ottPlatform && <Pill>📺 {movie.ottPlatform}</Pill>}
@@ -264,16 +228,15 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
         </div>
       </div>
 
-      {/* ── MAIN CONTENT ─────────────────────────────────────────── */}
-      <div className="mx-auto max-w-[1280px] px-6 py-12 grid lg:grid-cols-[1fr_340px] gap-10">
+      {/* Main Content */}
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '48px 24px', display: 'grid', gridTemplateColumns: '1fr 340px', gap: 40 }}>
 
-        {/* ── LEFT COLUMN ──────────────────────────────────────────── */}
-        <div className="min-w-0 space-y-10">
-
+        {/* Left Column */}
+        <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 40 }}>
           {/* Synopsis */}
           <section>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-3" style={{ color: '#D4291A' }}>Synopsis</p>
-            <p className="text-[15px] leading-loose max-w-2xl" style={{ color: '#444444' }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 12, color: 'var(--rose-light)', fontFamily: "'Syne', sans-serif" }}>Synopsis</p>
+            <p style={{ fontSize: 15, lineHeight: 1.8, maxWidth: 640, color: 'rgba(255,255,255,0.5)' }}>
               {movie.synopsis || 'Synopsis not available yet.'}
             </p>
           </section>
@@ -281,94 +244,53 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
           {/* Director */}
           {movie.director && (
             <section>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-4" style={{ color: '#D4291A' }}>Director</p>
-              <div
-                className="inline-flex items-center gap-3 rounded-lg px-4 py-3 transition-colors"
-                style={{ background: '#FFFFFF', border: '1px solid #E8E7E3' }}
-              >
-                <div
-                  className="w-11 h-11 rounded-full flex items-center justify-center font-black text-white text-lg flex-shrink-0"
-                  style={{ background: '#D4291A' }}
-                >
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 16, color: 'var(--rose-light)', fontFamily: "'Syne', sans-serif" }}>Director</p>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, borderRadius: 12, padding: '12px 16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ width: 44, height: 44, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#fff', fontSize: 18, background: 'var(--crimson)', flexShrink: 0 }}>
                   {movie.director.charAt(0)}
                 </div>
                 <div>
-                  <p className="font-bold text-sm" style={{ color: '#111111' }}>{movie.director}</p>
-                  <p className="text-xs" style={{ color: '#888888' }}>Director</p>
+                  <p style={{ fontWeight: 700, fontSize: 14, color: 'rgba(255,255,255,0.92)' }}>{movie.director}</p>
+                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>Director</p>
                 </div>
               </div>
             </section>
           )}
 
-          {/* ── CAST ─────────────────────────────────────────────────── */}
+          {/* Cast */}
           {movie.cast && movie.cast.length > 0 && (
             <section>
-              <div className="flex items-center justify-between mb-6">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-1" style={{ color: '#D4291A' }}>Cast</p>
-                  <h3
-                    className="font-bold text-lg"
-                    style={{ fontFamily: "'Fraunces', serif", color: '#111111' }}
-                  >
-                    Meet the Actors
-                  </h3>
+                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', marginBottom: 4, color: 'var(--rose-light)', fontFamily: "'Syne', sans-serif" }}>Cast</p>
+                  <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 18, color: 'rgba(255,255,255,0.92)' }}>Meet the Actors</h3>
                 </div>
-                <span
-                  className="text-xs font-bold px-3 py-1 rounded-md"
-                  style={{ background: '#FFF5F5', color: '#D4291A', border: '1px solid #D4291A33' }}
-                >
+                <span style={{ fontSize: 11, fontWeight: 700, paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, borderRadius: 6, background: 'rgba(212,41,26,0.08)', color: 'var(--crimson)', border: '1px solid rgba(212,41,26,0.15)' }}>
                   {movie.cast.length} members
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
                 {movie.cast.map((actor, idx) => {
                   const name = getCastName(actor)
                   const character = getCastCharacter(actor)
                   const photo = getCastPhoto(actor)
                   const initial = getCastInitial(actor)
-
                   return (
-                    <div
-                      key={idx}
-                      className="group relative overflow-hidden rounded-xl transition-all duration-300"
-                      style={{
-                        background: '#FFFFFF',
-                        border: '1px solid #E8E7E3',
-                      }}
-                    >
-                      <div className="relative aspect-square overflow-hidden">
+                    <div key={idx} style={{ borderRadius: 12, overflow: 'hidden', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', transition: 'all 0.3s' }}>
+                      <div style={{ position: 'relative', aspectRatio: '1/1', overflow: 'hidden' }}>
                         {photo ? (
-                          <img
-                            src={photo}
-                            alt={name}
-                            className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
-                          />
+                          <img src={photo} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', transition: 'transform 0.5s' }} />
                         ) : (
                           <CastPhoto photo={null} name={name} initial={initial} />
                         )}
-
-                        <div
-                          className="absolute top-2 left-2 w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-black opacity-0 group-hover:opacity-100 transition-all duration-200"
-                          style={{ background: 'rgba(0,0,0,0.65)', color: '#FFFFFF' }}
-                        >
-                          {idx + 1}
-                        </div>
                       </div>
-
-                      <div
-                        className="px-2.5 py-2.5"
-                        style={{ borderTop: '1px solid #E8E7E3' }}
-                      >
-                        <p className="text-[11px] font-black leading-tight line-clamp-1" style={{ color: '#111111' }}>
-                          {name}
-                        </p>
+                      <div style={{ padding: '10px 10px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                        <p style={{ fontSize: 11, fontWeight: 900, lineHeight: 1.2, color: 'rgba(255,255,255,0.92)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</p>
                         {character ? (
-                          <p className="text-[10px] mt-0.5 line-clamp-1 italic" style={{ color: '#888888' }}>
-                            as {character}
-                          </p>
+                          <p style={{ fontSize: 10, marginTop: 2, fontStyle: 'italic', color: 'rgba(255,255,255,0.35)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>as {character}</p>
                         ) : (
-                          <p className="text-[10px] mt-0.5" style={{ color: '#AAAAAA' }}>Actor</p>
+                          <p style={{ fontSize: 10, marginTop: 2, color: 'rgba(255,255,255,0.2)' }}>Actor</p>
                         )}
                       </div>
                     </div>
@@ -381,45 +303,34 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
           {/* Review */}
           {movie.review && (
             <section>
-              <div className="h-px w-full mb-8" style={{ background: '#E8E7E3' }} />
-              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-5" style={{ color: '#D4291A' }}>Full Review</p>
-              <div
-                className="rounded-xl p-6 sm:p-8"
-                style={{ background: '#FFFFFF', border: '1px solid #E8E7E3' }}
-              >
+              <div style={{ height: 1, width: '100%', marginBottom: 32, background: 'rgba(255,255,255,0.06)' }} />
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', marginBottom: 20, color: 'var(--rose-light)', fontFamily: "'Syne', sans-serif" }}>Full Review</p>
+              <div style={{ borderRadius: 16, padding: '24px 32px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <PortableText value={movie.review} components={ptComponents} />
               </div>
             </section>
           )}
         </div>
 
-        {/* ── RIGHT SIDEBAR ──────────────────────────────────────────── */}
-        <div className="lg:sticky lg:top-24 h-fit">
-          <div
-            className="rounded-xl p-5 space-y-3"
-            style={{ background: '#FFFFFF', border: '1px solid #E8E7E3' }}
-          >
+        {/* Right Sidebar */}
+        <div style={{ position: 'sticky', top: 96, height: 'fit-content' }}>
+          <div style={{ borderRadius: 16, padding: 20, display: 'flex', flexDirection: 'column', gap: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
             {[
               { icon: '📅', label: 'Year', value: String(movie.year) },
               { icon: '🎬', label: 'Director', value: movie.director || '—' },
               { icon: '📺', label: 'Streaming', value: movie.ottPlatform || '—' },
             ].map(({ icon, label, value }) => (
-              <div key={label} className="flex items-start justify-between gap-2 text-xs pb-3 border-b last:border-0 last:pb-0" style={{ borderColor: '#E8E7E3' }}>
-                <span className="font-medium whitespace-nowrap" style={{ color: '#888888' }}>{icon} {label}</span>
-                <span className="font-semibold text-right leading-snug" style={{ color: '#111111' }}>{value}</span>
+              <div key={label} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, fontSize: 13, paddingBottom: 12, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                <span style={{ fontWeight: 500, whiteSpace: 'nowrap', color: 'rgba(255,255,255,0.35)' }}>{icon} {label}</span>
+                <span style={{ fontWeight: 700, textAlign: 'right', lineHeight: 1.3, color: 'rgba(255,255,255,0.92)' }}>{value}</span>
               </div>
             ))}
           </div>
 
-          {/* Genre tags */}
           {movie.genre && movie.genre.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1.5">
+            <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {movie.genre.map((g, i) => (
-                <span
-                  key={i}
-                  className="rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
-                  style={{ background: '#FFF5F5', color: '#D4291A', border: '1px solid #D4291A33' }}
-                >
+                <span key={i} style={{ borderRadius: 6, paddingLeft: 10, paddingRight: 10, paddingTop: 4, paddingBottom: 4, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', background: 'rgba(212,41,26,0.1)', color: 'var(--crimson)', border: '1px solid rgba(212,41,26,0.15)' }}>
                   {g}
                 </span>
               ))}
@@ -428,7 +339,7 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
         </div>
       </div>
 
-      {/* ── RECOMMENDATIONS ────────────────────────────────────────── */}
+      {/* Recommendations */}
       <Suspense fallback={null}>
         <MovieRecommendations slug={slug} />
       </Suspense>
@@ -436,28 +347,19 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
   )
 }
 
-// ── Non-blocking recommendations ─────────────────────────────────────────
 async function MovieRecommendations({ slug }: { slug: string }) {
   const recommendations = await getRecommendations(slug)
   if (!recommendations.length) return null
   return (
-    <section
-      className="py-16"
-      style={{ background: '#FFFFFF', borderTop: '1px solid #E8E7E3' }}
-    >
-      <div className="mx-auto max-w-[1280px] px-6">
-        <div className="mb-8">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-1" style={{ color: '#D4291A' }}>You Might Like</p>
-          <h2
-            className="text-2xl font-bold"
-            style={{ fontFamily: "'Fraunces', serif", color: '#111111' }}
-          >
-            Similar Movies
-          </h2>
+    <section style={{ padding: '64px 0', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px' }}>
+        <div style={{ marginBottom: 32 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', marginBottom: 4, color: 'var(--rose-light)', fontFamily: "'Syne', sans-serif" }}>You Might Like</p>
+          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800, color: 'rgba(255,255,255,0.92)' }}>Similar Movies</h2>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5">
-          {recommendations.map((rec) => (
-            <MovieCard key={rec._id} movie={rec} />
+        <div className="movies-grid-pill reveal-group">
+          {recommendations.map((rec, i) => (
+            <MovieCard key={rec._id} movie={rec} index={i} />
           ))}
         </div>
       </div>

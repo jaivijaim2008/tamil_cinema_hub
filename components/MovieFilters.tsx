@@ -28,9 +28,9 @@ export default function MovieFilters({ genres }: MovieFiltersProps) {
   return (
     <>
       {/* Search bar */}
-      <div className="max-w-lg mx-auto mb-8">
-        <div className="relative">
-          <svg className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#888] pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
+      <div style={{ maxWidth: 512, margin: '0 auto 32px' }}>
+        <div style={{ position: 'relative' }}>
+          <svg style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'rgba(255,255,255,0.35)', pointerEvents: 'none' }} viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
           </svg>
           <input
@@ -39,12 +39,19 @@ export default function MovieFilters({ genres }: MovieFiltersProps) {
             onChange={(e) => setLocalQ(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') updateParam('q', localQ.trim()) }}
             placeholder="Search by title or director..."
-            className="w-full rounded-full pl-11 pr-5 py-3.5 text-sm text-[#111] placeholder:text-[#888] outline-none transition-all duration-200 bg-white border border-[#E8E7E3] focus:border-[#D4291A] focus:ring-2 focus:ring-[#D4291A20]"
+            style={{
+              width: '100%', borderRadius: 100, paddingLeft: 44, paddingRight: 20, paddingTop: 14, paddingBottom: 14,
+              fontSize: 14, color: '#fff', background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.08)', outline: 'none', fontFamily: "'DM Sans', sans-serif",
+              transition: 'border-color 0.2s, box-shadow 0.2s',
+            }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(212,41,26,0.5)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(212,41,26,0.08)' }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow = 'none' }}
           />
           {localQ && (
             <button
               onClick={() => { setLocalQ(''); updateParam('q', '') }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888] hover:text-[#444] transition-colors"
+              style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.35)', border: 'none', background: 'none', cursor: 'pointer', fontSize: 14 }}
             >
               ✕
             </button>
@@ -53,7 +60,7 @@ export default function MovieFilters({ genres }: MovieFiltersProps) {
       </div>
 
       {/* Genre pills */}
-      <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 40 }}>
         {genres.map((genre) => {
           const isActive = genre === activeGenre
           return (
@@ -61,11 +68,15 @@ export default function MovieFilters({ genres }: MovieFiltersProps) {
               key={genre}
               onClick={() => updateParam('genre', genre === 'All' ? '' : genre)}
               disabled={isPending && isActive}
-              className="rounded-full px-[18px] py-2 text-[13px] font-medium transition-all duration-200 active:scale-95 disabled:cursor-wait"
-              style={isActive
-                ? { background: '#D4291A', color: '#fff', border: '1px solid #D4291A' }
-                : { background: '#F2F1EE', color: '#444', border: '1px solid #E8E7E3' }
-              }
+              style={{
+                borderRadius: 100, paddingLeft: 18, paddingRight: 18, paddingTop: 8, paddingBottom: 8,
+                fontSize: 13, fontWeight: 500, cursor: isPending ? 'wait' : 'pointer', border: 'none',
+                fontFamily: "'DM Sans', sans-serif", transition: 'all 0.2s',
+                ...(isActive
+                  ? { background: 'var(--crimson)', color: '#fff' }
+                  : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }
+                ),
+              }}
             >
               {genre.charAt(0).toUpperCase() + genre.slice(1)}
             </button>

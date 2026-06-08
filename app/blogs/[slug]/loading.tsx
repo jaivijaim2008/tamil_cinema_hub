@@ -1,47 +1,31 @@
 export default function BlogDetailLoading() {
   return (
-    <main className="min-h-screen animate-pulse" style={{ background: '#F7F7F5' }}>
-      {/* Hero */}
-      <div style={{ background: '#FFFFFF', borderBottom: '1px solid #E8E7E3' }}>
-        <div className="mx-auto max-w-4xl px-6 pt-12 pb-10">
-          <div className="h-3 w-16 rounded mb-5" style={{ background: '#F2F1EE' }} />
-          <div className="h-5 w-24 rounded-full mb-4" style={{ background: '#F2F1EE' }} />
-          <div className="h-11 w-4/5 rounded-lg mb-2" style={{ background: '#F2F1EE' }} />
-          <div className="h-11 w-3/5 rounded-lg mb-5" style={{ background: '#F2F1EE' }} />
-          <div className="flex gap-4">
-            <div className="h-4 w-28 rounded-full" style={{ background: '#F2F1EE' }} />
-            <div className="h-4 w-28 rounded-full" style={{ background: '#F2F1EE' }} />
+    <main style={{ minHeight: '100vh', background: 'var(--ink)' }}>
+      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '48px 0' }}>
+        <div style={{ maxWidth: 768, margin: '0 auto', padding: '0 24px' }}>
+          <div style={{ height: 12, width: 64, borderRadius: 4, marginBottom: 20, background: 'rgba(255,255,255,0.06)' }} />
+          <div style={{ height: 20, width: 96, borderRadius: 100, marginBottom: 16, background: 'rgba(255,255,255,0.06)' }} />
+          <div style={{ height: 44, width: '80%', borderRadius: 8, marginBottom: 8, background: 'rgba(255,255,255,0.06)' }} />
+          <div style={{ height: 44, width: '60%', borderRadius: 8, marginBottom: 20, background: 'rgba(255,255,255,0.05)' }} />
+          <div style={{ display: 'flex', gap: 16 }}>
+            <div style={{ height: 16, width: 112, borderRadius: 100, background: 'rgba(255,255,255,0.05)' }} />
+            <div style={{ height: 16, width: 112, borderRadius: 100, background: 'rgba(255,255,255,0.05)' }} />
           </div>
         </div>
       </div>
-
-      {/* Body */}
-      <div className="mx-auto max-w-4xl px-6 py-10">
-        {/* Excerpt */}
-        <div className="mb-10 space-y-2">
-          <div className="h-5 w-full rounded" style={{ background: '#F2F1EE' }} />
-          <div className="h-5 w-4/5 rounded" style={{ background: '#F2F1EE' }} />
+      <div style={{ maxWidth: 768, margin: '0 auto', padding: '40px 24px' }}>
+        <div style={{ marginBottom: 40 }}>
+          <div style={{ height: 20, width: '100%', borderRadius: 4, marginBottom: 8, background: 'rgba(255,255,255,0.05)' }} />
+          <div style={{ height: 20, width: '80%', borderRadius: 4, background: 'rgba(255,255,255,0.04)' }} />
         </div>
-        {/* Divider */}
-        <div className="mb-10 h-px w-full" style={{ background: '#E8E7E3' }} />
-        {/* Article body */}
-        <div className="space-y-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="space-y-2">
-              <div className="h-4 w-full rounded" style={{ background: '#F2F1EE' }} />
-              <div className="h-4 w-11/12 rounded" style={{ background: '#F2F1EE' }} />
-              <div className="h-4 w-4/5 rounded" style={{ background: '#F2F1EE' }} />
-            </div>
-          ))}
-          {/* subheading break */}
-          <div className="h-6 w-2/5 rounded mt-6" style={{ background: '#F2F1EE' }} />
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="space-y-2">
-              <div className="h-4 w-full rounded" style={{ background: '#F2F1EE' }} />
-              <div className="h-4 w-5/6 rounded" style={{ background: '#F2F1EE' }} />
-            </div>
-          ))}
-        </div>
+        <div style={{ height: 1, width: '100%', marginBottom: 40, background: 'rgba(255,255,255,0.06)' }} />
+        {[1,2,3,4,5,6].map(i => (
+          <div key={i} style={{ marginBottom: 16 }}>
+            <div style={{ height: 16, width: '100%', borderRadius: 4, marginBottom: 6, background: 'rgba(255,255,255,0.04)' }} />
+            <div style={{ height: 16, width: '92%', borderRadius: 4, marginBottom: 6, background: 'rgba(255,255,255,0.04)' }} />
+            <div style={{ height: 16, width: '80%', borderRadius: 4, background: 'rgba(255,255,255,0.03)' }} />
+          </div>
+        ))}
       </div>
     </main>
   )

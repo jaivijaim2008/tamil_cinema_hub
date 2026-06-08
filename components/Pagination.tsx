@@ -32,42 +32,33 @@ export default function Pagination({ currentPage, totalPages, baseUrl, params = 
     pages.push(totalPages)
   }
 
-  const base = 'inline-flex items-center justify-center min-w-[36px] h-9 rounded-[6px] text-[14px] font-medium transition-all duration-200'
-  const active = 'bg-[#D4291A] text-white'
-  const inactive = 'bg-white border border-[#E8E7E3] text-[#444] hover:border-[#D4291A] hover:text-[#D4291A]'
-  const disabled = 'bg-[#F7F7F5] text-[#ccc] border border-[#E8E7E3] cursor-not-allowed'
+  const base = { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: 36, height: 36, borderRadius: 6, fontSize: 14, fontWeight: 500, transition: 'all 0.2s', textDecoration: 'none' }
+  const active = { ...base, background: 'var(--crimson)', color: '#fff' }
+  const inactive = { ...base, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }
+  const disabled = { ...base, background: 'rgba(255,255,255,0.02)', color: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.04)', cursor: 'not-allowed' }
 
   return (
-    <nav className="flex items-center justify-center gap-1.5 mt-12" aria-label="Pagination">
+    <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 48 }} aria-label="Pagination">
       {currentPage > 1 ? (
-        <Link href={getPageUrl(currentPage - 1)} className={`${base} px-3 ${inactive}`}>
-          ← Prev
-        </Link>
+        <Link href={getPageUrl(currentPage - 1)} style={{ ...inactive, paddingLeft: 12, paddingRight: 12 }}>← Prev</Link>
       ) : (
-        <span className={`${base} px-3 ${disabled}`}>← Prev</span>
+        <span style={{ ...disabled, paddingLeft: 12, paddingRight: 12 }}>← Prev</span>
       )}
 
       {pages.map((p, i) =>
         p === 'dots' ? (
-          <span key={`d${i}`} className={`${base} text-[#888]`}>…</span>
+          <span key={`d${i}`} style={{ ...base, color: 'rgba(255,255,255,0.3)' }}>…</span>
         ) : (
-          <Link
-            key={p}
-            href={getPageUrl(p)}
-            className={`${base} ${p === currentPage ? active : inactive}`}
-            style={p === currentPage ? { width: '36px', height: '36px' } : undefined}
-          >
+          <Link key={p} href={getPageUrl(p)} style={p === currentPage ? active : inactive}>
             {p}
           </Link>
         )
       )}
 
       {currentPage < totalPages ? (
-        <Link href={getPageUrl(currentPage + 1)} className={`${base} px-3 ${inactive}`}>
-          Next →
-        </Link>
+        <Link href={getPageUrl(currentPage + 1)} style={{ ...inactive, paddingLeft: 12, paddingRight: 12 }}>Next →</Link>
       ) : (
-        <span className={`${base} px-3 ${disabled}`}>Next →</span>
+        <span style={{ ...disabled, paddingLeft: 12, paddingRight: 12 }}>Next →</span>
       )}
     </nav>
   )

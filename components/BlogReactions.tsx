@@ -62,14 +62,14 @@ export default function BlogReactions({ slug }: BlogReactionsProps) {
 
   return (
     <div className="flex items-center gap-4 py-6">
-      <p className="text-sm font-semibold text-[#888]">Was this helpful?</p>
+      <p className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.35)' }}>Was this helpful?</p>
       <button
         onClick={() => react('like')}
         disabled={loading}
         className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 active:scale-95"
         style={userVote === 'like'
-          ? { background: '#F0FFF4', border: '1px solid #BBF7D0', color: '#16A34A' }
-          : { background: '#F7F7F5', border: '1px solid #E8E7E3', color: '#444' }
+          ? { background: 'rgba(45,212,191,0.12)', border: '1px solid rgba(45,212,191,0.3)', color: '#2DD4BF' }
+          : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }
         }
       >
         <svg className="w-4 h-4" fill={userVote === 'like' ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -82,8 +82,8 @@ export default function BlogReactions({ slug }: BlogReactionsProps) {
         disabled={loading}
         className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 active:scale-95"
         style={userVote === 'dislike'
-          ? { background: '#FFF5F5', border: '1px solid #FECACA', color: '#DC2626' }
-          : { background: '#F7F7F5', border: '1px solid #E8E7E3', color: '#444' }
+          ? { background: 'rgba(212,41,26,0.12)', border: '1px solid rgba(212,41,26,0.3)', color: '#D4291A' }
+          : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }
         }
       >
         <svg className="w-4 h-4" fill={userVote === 'dislike' ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
