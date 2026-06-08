@@ -1,12 +1,9 @@
 import type { Metadata, Viewport } from 'next'
 import Script from 'next/script'
-import dynamic from 'next/dynamic'
 import './globals.css'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-
-const Chatbot = dynamic(() => import('../components/Chatbot'), { ssr: false })
-const ScrollReveal = dynamic(() => import('../components/ScrollReveal'), { ssr: false })
+import ClientShell from '../components/ClientShell'
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -55,10 +52,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
       </head>
       <body className="antialiased" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-        <ScrollReveal />
+        <ClientShell />
         <Navbar />
         <main className="flex-1">{children}</main>
-        <Chatbot />
         <Footer />
       </body>
     </html>
