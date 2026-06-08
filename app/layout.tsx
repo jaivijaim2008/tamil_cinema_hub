@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from 'next'
 import Script from 'next/script'
+import dynamic from 'next/dynamic'
 import './globals.css'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import Chatbot from '../components/Chatbot'
-import ScrollReveal from '../components/ScrollReveal'
+
+const Chatbot = dynamic(() => import('../components/Chatbot'), { ssr: false })
+const ScrollReveal = dynamic(() => import('../components/ScrollReveal'), { ssr: false })
 
 export const viewport: Viewport = {
   width: 'device-width',

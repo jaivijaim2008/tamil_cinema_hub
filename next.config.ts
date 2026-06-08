@@ -24,6 +24,13 @@ const nextConfig: NextConfig = {
         { key: 'Pragma', value: 'no-cache' },
       ],
     },
+    {
+      // Cache static assets aggressively
+      source: '/(.*)\.(ico|svg|png|jpg|jpeg|gif|webp|woff|woff2|ttf|eot)',
+      headers: [
+        { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+      ],
+    },
   ],
 
   // ── Image Optimization Security ────────────────────────────

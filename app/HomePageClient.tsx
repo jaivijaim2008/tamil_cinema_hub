@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, lazy, Suspense } from 'react'
 import Link from 'next/link'
 import MovieCard, { Movie } from '../components/MovieCard'
 import BlogCard, { Blog } from '../components/BlogCard'
-import ChatWithAIButton from '../components/ChatWithAIButton'
+
+const ChatWithAIButton = lazy(() => import('../components/ChatWithAIButton'))
 
 const FAKE_MOVIES: Movie[] = [
   { _id: '1', title: 'Coolie', slug: 'coolie', year: 2025, director: 'Lokesh Kanagaraj', genre: ['Action'], rating: 4.5, ottPlatform: 'Netflix' },
@@ -187,7 +188,7 @@ export default function HomePageClient({ movies, blogs }: { movies: Movie[]; blo
             <span className="gradient">to watch?</span>
           </h2>
           <p className="cta-subtitle-dark">Ask our AI chatbot in Tamil or English — it knows every Kollywood film ever made and will find the perfect movie for your mood.</p>
-          <ChatWithAIButton />
+          <Suspense fallback={null}><ChatWithAIButton /></Suspense>
         </div>
       </section>
     </div>
