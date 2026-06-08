@@ -10,7 +10,7 @@ type Message = {
   suggestions?: string[]
 }
 
-const CHARS_PER_TICK = 8
+const CHARS_PER_TICK = 4
 const TICK_MS = 40
 
 export default function TamilCinemaHubChatbot() {
