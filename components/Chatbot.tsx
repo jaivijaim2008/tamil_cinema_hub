@@ -10,8 +10,8 @@ type Message = {
   suggestions?: string[]
 }
 
-const CHARS_PER_TICK = 3
-const TICK_MS = 20
+const CHARS_PER_TICK = 8
+const TICK_MS = 40
 
 export default function TamilCinemaHubChatbot() {
   const [isOpen, setIsOpen] = useState(false)

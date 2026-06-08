@@ -39,17 +39,23 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value
     setSearchQuery(query)
     if (query.length < 2) { setSearchResults([]); setShowResults(false); return }
-    setIsSearching(true); setShowResults(true)
-    try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
-      const data = await res.json()
-      setSearchResults(data.results || [])
-    } catch { setSearchResults([]) }
-    finally { setIsSearching(false) }
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    setShowResults(true)
+    debounceRef.current = setTimeout(async () => {
+      setIsSearching(true)
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
+        const data = await res.json()
+        setSearchResults(data.results || [])
+      } catch { setSearchResults([]) }
+      finally { setIsSearching(false) }
+    }, 300)
   }
 
   const handleSearchSubmit = (e: React.FormEvent) => {

@@ -24,19 +24,7 @@ const FAKE_BLOGS: Blog[] = [
   { _id: 'b5', title: 'Thug Life — Art Over Box Office', slug: 'thug-life-review', author: 'Priya Ramachandran', publishedAt: '2025-11-20', category: 'Review', excerpt: "Mani Ratnam's latest is a bold artistic statement." },
 ]
 
-function createRipple(e: React.MouseEvent<HTMLElement>) {
-  const btn = e.currentTarget
-  const circle = document.createElement('span')
-  const diameter = Math.max(btn.clientWidth, btn.clientHeight)
-  const radius = diameter / 2
-  circle.style.width = circle.style.height = `${diameter}px`
-  circle.style.left = `${e.clientX - btn.getBoundingClientRect().left - radius}px`
-  circle.style.top = `${e.clientY - btn.getBoundingClientRect().top - radius}px`
-  circle.classList.add('ripple')
-  const existing = btn.querySelector('.ripple')
-  if (existing) existing.remove()
-  btn.appendChild(circle)
-}
+
 
 export default function HomePageClient({ movies, blogs }: { movies: Movie[]; blogs: Blog[] }) {
   const displayMovies = movies.length > 0 ? movies : FAKE_MOVIES
@@ -57,8 +45,8 @@ export default function HomePageClient({ movies, blogs }: { movies: Movie[]; blo
             Explore 1,600+ Tamil movies, read honest reviews, discover hidden gems, and chat with our AI to find your next favourite film — all in one place.
           </p>
           <div className="hero-buttons">
-            <Link href="/movies" className="btn-hero-primary" onClick={createRipple}>Browse 1,600+ Movies</Link>
-            <Link href="/blogs" className="btn-hero-secondary" onClick={createRipple}>Read Reviews</Link>
+            <Link href="/movies" className="btn-hero-primary">Browse 1,600+ Movies</Link>
+            <Link href="/blogs" className="btn-hero-secondary">Read Reviews</Link>
           </div>
           <div className="hero-stats">
             <span className="stat-chip"><span style={{ color: 'var(--crimson)' }}>●</span> 1,600+ Movies</span>
