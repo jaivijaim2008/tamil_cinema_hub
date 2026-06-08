@@ -601,18 +601,12 @@ body::before {
    ═══════════════════════════════════════════════════════════════ */
 
 /* Live dot pulse — tiny element, opacity+scale only */
-@keyframes livePulse {
+@keyframes pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.6; transform: scale(0.8); }
 }
-.live-dot { animation: livePulse 2s ease-in-out infinite; }
-
-/* AI button dot pulse */
-@keyframes dotPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.7); }
-}
-.nav-ai-btn::before { animation: dotPulse 2s ease-in-out infinite; }
+.live-dot { animation: pulse 2s ease-in-out infinite; }
+.nav-ai-btn::before { animation: pulse 2s ease-in-out infinite; }
 
 /* Hero entrance — CSS-only one-shot fade+slide up */
 @keyframes fadeUp {
@@ -626,7 +620,7 @@ body::before {
 .hero-subtitle { animation: fadeUp 0.6s ease-out both; animation-delay: 0.5s; }
 .hero-buttons { animation: fadeUp 0.6s ease-out both; animation-delay: 0.6s; }
 .hero-stats { animation: fadeUp 0.6s ease-out both; animation-delay: 0.7s; }
-.hero-visual { animation: fadeUp 0.8s ease-out both; animation-delay: 0.3s; }
+.hero-visual { animation: fadeUp 0.8s ease-out both; animation-delay: 0.6s; }
 
 /* Marquee gradient shimmer */
 @keyframes bgShift {
@@ -749,7 +743,7 @@ body::before {
   .cast-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .related-blog-grid { grid-template-columns: 1fr; gap: 12px; }
   .about-section-grid { grid-template-columns: 1fr; gap: 16px; }
-
+}
 @media (max-width: 480px) {
   .hero-title .line { font-size: clamp(28px, 9vw, 40px); }
   .hero-visual { max-width: 220px; height: 220px; overflow: hidden; }
