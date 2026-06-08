@@ -222,7 +222,7 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
                 className="w-full h-full object-cover"
                 loading="eager"
               />
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(255,255,255,0.9) 0%, transparent 40%)' }} />
+              <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(255,255,255,0.65) 0%, transparent 45%)' }} />
 
             </div>
           </div>
