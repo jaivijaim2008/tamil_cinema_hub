@@ -27,14 +27,14 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
       title,
       description: 'Tamil movie reviews, top lists, actor spotlights, and cinema news — all in one place.',
       type: 'website',
-    images: [
-      {
-        url: 'https://tamilcinemahub.xyz/opengraph-image',
-        width: 1200,
-        height: 630,
-        alt: 'TamilCinemaHub Reviews & Blogs',
-      },
-    ],
+      images: [
+        {
+          url: 'https://tamilcinemahub.xyz/opengraph-image',
+          width: 1200,
+          height: 630,
+          alt: 'TamilCinemaHub Reviews & Blogs',
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image' as const,
@@ -70,54 +70,27 @@ export default async function BlogsPage({ searchParams }: { searchParams: Promis
   const safePage = Math.min(page, totalPages || 1)
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: '#07070f' }}>
+    <div className="min-h-screen pb-24" style={{ background: '#F7F7F5' }}>
 
-      {/* ── HERO HEADER ─────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden pt-20 pb-16 text-center">
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(249,115,22,0.25) 0%, rgba(109,40,217,0.2) 40%, transparent 70%)',
-          }}
-        />
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-            backgroundSize: '200px',
-          }}
-        />
-        <div className="relative z-10 mx-auto max-w-3xl px-4">
-          <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-3">
+      {/* ── PAGE HEADER ─────────────────────────────────────────────── */}
+      <section style={{ background: '#FFFFFF', borderBottom: '1px solid #E8E7E3' }}>
+        <div className="mx-auto max-w-[1280px] px-6 py-12">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] mb-2" style={{ color: '#D4291A' }}>
             TamilCinemaHub
           </p>
           <h1
-            className="text-4xl sm:text-6xl font-black text-white tracking-tight"
-            style={{ fontFamily: "'Outfit', sans-serif" }}
+            className="text-4xl sm:text-5xl font-bold tracking-tight mb-3"
+            style={{ fontFamily: "'Fraunces', serif", color: '#111111' }}
           >
-            Reviews &{' '}
-            <span
-              style={{
-                background: 'linear-gradient(135deg, #fb923c, #a78bfa)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              Blogs
-            </span>
+            Reviews & Blogs
           </h1>
-          <p className="mt-4 text-sm text-white/40 max-w-md mx-auto">
+          <p className="text-base" style={{ color: '#666666' }}>
             Tamil movie reviews, top lists, actor spotlights, and cinema news — all in one place.
           </p>
         </div>
-        <div
-          className="absolute bottom-0 left-0 right-0 h-16"
-          style={{ background: 'linear-gradient(to bottom, transparent, #07070f)' }}
-        />
       </section>
 
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-[1280px] px-6 pt-8">
 
         {/* ── FILTERS (client component) ──────────────────────────────── */}
         <Suspense fallback={<div className="h-28 mb-4" />}>
@@ -125,9 +98,9 @@ export default async function BlogsPage({ searchParams }: { searchParams: Promis
         </Suspense>
 
         {/* Result count */}
-        <p className="text-xs text-white/25 text-center mb-6">
+        <p className="text-xs text-center mb-6" style={{ color: '#888888' }}>
           Showing page{' '}
-          <span className="font-bold text-orange-400">{safePage}</span>{' '}
+          <span className="font-semibold" style={{ color: '#D4291A' }}>{safePage}</span>{' '}
           of {totalPages} · {totalCount.toLocaleString()} articles
           {q ? ` matching "${q}"` : ''}
         </p>
@@ -141,12 +114,12 @@ export default async function BlogsPage({ searchParams }: { searchParams: Promis
           </div>
         ) : (
           <div
-            className="text-center py-24 rounded-2xl"
-            style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+            className="text-center py-24 rounded-xl"
+            style={{ background: '#FFFFFF', border: '1px solid #E8E7E3' }}
           >
             <p className="text-4xl mb-4">✍️</p>
-            <h3 className="text-lg font-black text-white mb-2">No Articles Found</h3>
-            <p className="text-sm text-white/30 max-w-xs mx-auto">
+            <h3 className="text-lg font-bold mb-2" style={{ fontFamily: "'Fraunces', serif", color: '#111111' }}>No Articles Found</h3>
+            <p className="text-sm max-w-xs mx-auto" style={{ color: '#888888' }}>
               No results{q ? ` for "${q}"` : ''}{category !== 'All' ? ` in ${category}` : ''}. Try a different search or category.
             </p>
           </div>

@@ -30,82 +30,39 @@ export const metadata = {
 
 export default function AboutPage() {
   return (
-    <main
-      className="min-h-screen"
-      style={{ background: '#07070f', fontFamily: "'Outfit', sans-serif" }}
-    >
+    <main className="min-h-screen" style={{ background: '#F7F7F5' }}>
       {/* ── Hero ── */}
-      <div className="relative overflow-hidden">
-        {/* bg glow */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(168,85,247,0.18) 0%, transparent 70%)',
-          }}
-        />
-        {/* film grain */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-[0.03]"
-          style={{
-            backgroundImage:
-              'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")',
-            backgroundSize: '180px',
-          }}
-        />
-
-        <div className="relative z-10 mx-auto max-w-3xl px-4 sm:px-6 pt-20 pb-16 text-center">
-          <span
-            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest mb-5"
-            style={{
-              background: 'rgba(168,85,247,0.12)',
-              color: '#c084fc',
-              border: '1px solid rgba(168,85,247,0.25)',
-            }}
-          >
-            🎬 About Us
-          </span>
-
+      <section style={{ background: '#FFFFFF', borderBottom: '1px solid #E8E7E3' }}>
+        <div className="mx-auto max-w-3xl px-6 pt-16 pb-12 text-center">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] mb-3" style={{ color: '#D4291A' }}>
+            About Us
+          </p>
           <h1
-            className="text-4xl sm:text-5xl md:text-6xl font-black leading-[1.05] tracking-tight"
-            style={{
-              background: 'linear-gradient(135deg, #ffffff 30%, #a78bfa 70%, #fb923c 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
+            className="text-4xl sm:text-5xl md:text-6xl font-bold leading-[1.05] tracking-tight mb-6"
+            style={{ fontFamily: "'Fraunces', serif", color: '#111111' }}
           >
             Tamil Cinema,<br />One Hub.
           </h1>
-
-          <p className="mt-6 text-lg text-white/50 leading-relaxed max-w-xl mx-auto">
+          <p className="text-lg leading-relaxed max-w-xl mx-auto" style={{ color: '#666666' }}>
             A passion project built for Tamil movie lovers — curated reviews, deep catalogues, and an AI companion that actually knows Kollywood.
           </p>
         </div>
-      </div>
+      </section>
 
       {/* ── Content ── */}
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 pb-24 space-y-16">
-
-        {/* Divider */}
-        <div
-          className="h-px w-full"
-          style={{ background: 'linear-gradient(to right, transparent, rgba(168,85,247,0.4), transparent)' }}
-        />
+      <div className="mx-auto max-w-3xl px-6 py-16 space-y-16">
 
         {/* Mission */}
         <section className="grid md:grid-cols-[1fr_2fr] gap-8 items-start">
           <div>
-            <p
-              className="text-[11px] font-bold uppercase tracking-widest mb-2"
-              style={{ color: '#a855f7' }}
-            >
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-2" style={{ color: '#D4291A' }}>
               Our Mission
             </p>
-            <h2 className="text-2xl font-black text-white leading-tight">Why we built this</h2>
+            <h2 className="text-2xl font-bold leading-tight" style={{ fontFamily: "'Fraunces', serif", color: '#111111' }}>Why we built this</h2>
           </div>
-          <div className="space-y-4 text-[17px] leading-[1.8] text-white/60">
+          <div className="space-y-4 text-[17px] leading-[1.8]" style={{ color: '#444444' }}>
             <p>
-              Most movie databases treat Tamil cinema as an afterthought — a footnote in a sea of Hollywood content. We think that's wrong. Kollywood has produced some of the most inventive, emotionally powerful films in the world, and it deserves a home built specifically for it.
+              Most movie databases treat Tamil cinema as an afterthought — a footnote in a sea of Hollywood content. We think that&apos;s wrong. Kollywood has produced some of the most inventive, emotionally powerful films in the world, and it deserves a home built specifically for it.
             </p>
             <p>
               TamilCinemaHub is that home. A hand-curated catalogue spanning 2000–2026, honest reviews, and an AI chatbot that can discuss plot arcs, recommend hidden gems, and debate director filmographies — without needing a Google search in between.
@@ -114,23 +71,17 @@ export default function AboutPage() {
         </section>
 
         {/* Divider */}
-        <div
-          className="h-px w-full"
-          style={{ background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.06), transparent)' }}
-        />
+        <div className="h-px w-full" style={{ background: '#E8E7E3' }} />
 
         {/* Tech */}
         <section className="grid md:grid-cols-[1fr_2fr] gap-8 items-start">
           <div>
-            <p
-              className="text-[11px] font-bold uppercase tracking-widest mb-2"
-              style={{ color: '#fb923c' }}
-            >
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-2" style={{ color: '#D4291A' }}>
               Under the Hood
             </p>
-            <h2 className="text-2xl font-black text-white leading-tight">How it works</h2>
+            <h2 className="text-2xl font-bold leading-tight" style={{ fontFamily: "'Fraunces', serif", color: '#111111' }}>How it works</h2>
           </div>
-          <div className="space-y-4 text-[17px] leading-[1.8] text-white/60">
+          <div className="space-y-4 text-[17px] leading-[1.8]" style={{ color: '#444444' }}>
             <p>
               The site is built on Next.js with content managed through Sanity CMS, giving editors a fast and flexible workflow. The recommendation engine uses TF-IDF vectorisation and cosine similarity to surface genuinely related titles — not just movies from the same year.
             </p>
@@ -141,23 +92,17 @@ export default function AboutPage() {
         </section>
 
         {/* Divider */}
-        <div
-          className="h-px w-full"
-          style={{ background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.06), transparent)' }}
-        />
+        <div className="h-px w-full" style={{ background: '#E8E7E3' }} />
 
         {/* Ads / Operations */}
         <section className="grid md:grid-cols-[1fr_2fr] gap-8 items-start">
           <div>
-            <p
-              className="text-[11px] font-bold uppercase tracking-widest mb-2"
-              style={{ color: '#34d399' }}
-            >
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-2" style={{ color: '#D4291A' }}>
               Operations
             </p>
-            <h2 className="text-2xl font-black text-white leading-tight">Keeping the lights on</h2>
+            <h2 className="text-2xl font-bold leading-tight" style={{ fontFamily: "'Fraunces', serif", color: '#111111' }}>Keeping the lights on</h2>
           </div>
-          <div className="space-y-4 text-[17px] leading-[1.8] text-white/60">
+          <div className="space-y-4 text-[17px] leading-[1.8]" style={{ color: '#444444' }}>
             <p>
               To keep the servers running and fund continued development, we display non-intrusive Google AdSense advertisements. We comply fully with all relevant privacy regulations and are committed to a clean, family-safe browsing experience.
             </p>
@@ -165,20 +110,15 @@ export default function AboutPage() {
         </section>
 
         {/* Divider */}
-        <div
-          className="h-px w-full"
-          style={{ background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.06), transparent)' }}
-        />
+        <div className="h-px w-full" style={{ background: '#E8E7E3' }} />
 
         {/* CTA */}
         <section className="text-center space-y-4">
-          <p className="text-white/40 text-sm">Have feedback, suggestions, or just want to talk movies?</p>
+          <p className="text-sm" style={{ color: '#888888' }}>Have feedback, suggestions, or just want to talk movies?</p>
           <Link
             href="/contact"
-            className="inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-bold text-white transition-opacity hover:opacity-80"
-            style={{
-              background: 'linear-gradient(135deg, #7c3aed, #ea580c)',
-            }}
+            className="inline-flex items-center gap-2 rounded-md px-7 py-3 text-sm font-semibold text-white transition-all hover:translate-y-[-1px]"
+            style={{ background: '#D4291A' }}
           >
             Get in Touch
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">

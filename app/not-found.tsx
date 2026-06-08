@@ -1,4 +1,4 @@
-// app/not-found.tsx — Global 404 page
+﻿// app/not-found.tsx â€” Global 404 page
 import Link from 'next/link'
 
 export default function NotFound() {

@@ -35,69 +35,32 @@ export default function ContactPage() {
   }
 
   return (
-    <main
-      className="min-h-screen"
-      style={{ background: '#07070f', fontFamily: "'Outfit', sans-serif" }}
-    >
+    <main className="min-h-screen" style={{ background: '#F7F7F5' }}>
       {/* ── Hero ── */}
-      <div className="relative overflow-hidden">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(ellipse 60% 45% at 50% 0%, rgba(251,146,60,0.15) 0%, transparent 70%)',
-          }}
-        />
-        <div
-          className="absolute inset-0 pointer-events-none opacity-[0.03]"
-          style={{
-            backgroundImage:
-              'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")',
-            backgroundSize: '180px',
-          }}
-        />
-
-        <div className="relative z-10 mx-auto max-w-xl px-4 sm:px-6 pt-20 pb-12 text-center">
-          <span
-            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest mb-5"
-            style={{
-              background: 'rgba(251,146,60,0.12)',
-              color: '#fb923c',
-              border: '1px solid rgba(251,146,60,0.25)',
-            }}
-          >
-            ✉️ Get In Touch
-          </span>
-
+      <section style={{ background: '#FFFFFF', borderBottom: '1px solid #E8E7E3' }}>
+        <div className="mx-auto max-w-xl px-6 pt-16 pb-10 text-center">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] mb-3" style={{ color: '#D4291A' }}>
+            Get In Touch
+          </p>
           <h1
-            className="text-4xl sm:text-5xl font-black leading-[1.05] tracking-tight"
-            style={{
-              background: 'linear-gradient(135deg, #ffffff 30%, #fb923c 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
+            className="text-4xl sm:text-5xl font-bold leading-[1.05] tracking-tight mb-4"
+            style={{ fontFamily: "'Fraunces', serif", color: '#111111' }}
           >
             Contact Us
           </h1>
-          <p className="mt-4 text-white/45 text-base leading-relaxed">
+          <p className="text-base leading-relaxed" style={{ color: '#666666' }}>
             Have questions, movie suggestions, or just want to talk Tamil cinema? We read every message.
           </p>
         </div>
-      </div>
+      </section>
 
       {/* ── Form ── */}
-      <div className="mx-auto max-w-xl px-4 sm:px-6 pb-24">
-
-        {/* Divider */}
-        <div
-          className="mb-10 h-px w-full"
-          style={{ background: 'linear-gradient(to right, transparent, rgba(251,146,60,0.4), transparent)' }}
-        />
+      <div className="mx-auto max-w-xl px-6 py-12">
 
         {error && !submitted && (
           <div
-            className="mb-6 rounded-xl px-4 py-3 text-sm text-red-400 flex items-center gap-2"
-            style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}
+            className="mb-6 rounded-lg px-4 py-3 text-sm flex items-center gap-2"
+            style={{ background: '#FFF5F5', border: '1px solid #D4291A33', color: '#D4291A' }}
           >
             <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -108,29 +71,25 @@ export default function ContactPage() {
 
         {submitted ? (
           <div
-            className="rounded-2xl p-8 text-center"
-            style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
-            }}
+            className="rounded-xl p-8 text-center"
+            style={{ background: '#FFFFFF', border: '1px solid #E8E7E3' }}
           >
-            {/* success icon */}
             <div
               className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full"
-              style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)' }}
+              style={{ background: '#F0FFF4', border: '1px solid #1A8C4E33' }}
             >
-              <svg className="h-7 w-7" style={{ color: '#34d399' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <svg className="h-7 w-7" style={{ color: '#1A8C4E' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h3 className="text-xl font-black text-white mb-2">Message Sent!</h3>
-            <p className="text-white/50 text-sm leading-relaxed mb-7">
+            <h3 className="text-xl font-bold mb-2" style={{ fontFamily: "'Fraunces', serif", color: '#111111' }}>Message Sent!</h3>
+            <p className="text-sm leading-relaxed mb-7" style={{ color: '#666666' }}>
               We received your message and will get back to you within 24 hours.
             </p>
             <button
               onClick={() => setSubmitted(false)}
-              className="rounded-full px-6 py-2.5 text-xs font-bold text-white transition-opacity hover:opacity-80"
-              style={{ background: 'linear-gradient(135deg, #7c3aed, #ea580c)' }}
+              className="rounded-md px-6 py-2.5 text-xs font-semibold text-white transition-all hover:translate-y-[-1px]"
+              style={{ background: '#D4291A' }}
             >
               Send Another Message
             </button>
@@ -141,8 +100,8 @@ export default function ContactPage() {
             <div>
               <label
                 htmlFor="name"
-                className="block text-xs font-bold uppercase tracking-widest mb-2"
-                style={{ color: 'rgba(255,255,255,0.45)' }}
+                className="block text-[11px] font-semibold uppercase tracking-[0.1em] mb-2"
+                style={{ color: '#888888' }}
               >
                 Your Name
               </label>
@@ -153,13 +112,14 @@ export default function ContactPage() {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Enter your name"
-                className="w-full rounded-xl px-5 py-3.5 text-sm text-white placeholder:text-white/25 outline-none transition-all"
+                className="w-full rounded-lg px-5 py-3.5 text-sm outline-none transition-all"
                 style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: '#FFFFFF',
+                  border: '1px solid #E8E7E3',
+                  color: '#111111',
                 }}
-                onFocus={(e) => (e.currentTarget.style.borderColor = 'rgba(251,146,60,0.5)')}
-                onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
+                onFocus={(e) => (e.currentTarget.style.borderColor = '#D4291A')}
+                onBlur={(e) => (e.currentTarget.style.borderColor = '#E8E7E3')}
               />
             </div>
 
@@ -167,8 +127,8 @@ export default function ContactPage() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-xs font-bold uppercase tracking-widest mb-2"
-                style={{ color: 'rgba(255,255,255,0.45)' }}
+                className="block text-[11px] font-semibold uppercase tracking-[0.1em] mb-2"
+                style={{ color: '#888888' }}
               >
                 Email Address
               </label>
@@ -179,13 +139,14 @@ export default function ContactPage() {
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="you@example.com"
-                className="w-full rounded-xl px-5 py-3.5 text-sm text-white placeholder:text-white/25 outline-none transition-all"
+                className="w-full rounded-lg px-5 py-3.5 text-sm outline-none transition-all"
                 style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: '#FFFFFF',
+                  border: '1px solid #E8E7E3',
+                  color: '#111111',
                 }}
-                onFocus={(e) => (e.currentTarget.style.borderColor = 'rgba(251,146,60,0.5)')}
-                onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
+                onFocus={(e) => (e.currentTarget.style.borderColor = '#D4291A')}
+                onBlur={(e) => (e.currentTarget.style.borderColor = '#E8E7E3')}
               />
             </div>
 
@@ -193,8 +154,8 @@ export default function ContactPage() {
             <div>
               <label
                 htmlFor="message"
-                className="block text-xs font-bold uppercase tracking-widest mb-2"
-                style={{ color: 'rgba(255,255,255,0.45)' }}
+                className="block text-[11px] font-semibold uppercase tracking-[0.1em] mb-2"
+                style={{ color: '#888888' }}
               >
                 Message
               </label>
@@ -205,13 +166,14 @@ export default function ContactPage() {
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                 placeholder="Write your message here..."
-                className="w-full rounded-xl px-5 py-3.5 text-sm text-white placeholder:text-white/25 outline-none transition-all resize-none"
+                className="w-full rounded-lg px-5 py-3.5 text-sm outline-none transition-all resize-none"
                 style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: '#FFFFFF',
+                  border: '1px solid #E8E7E3',
+                  color: '#111111',
                 }}
-                onFocus={(e) => (e.currentTarget.style.borderColor = 'rgba(251,146,60,0.5)')}
-                onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
+                onFocus={(e) => (e.currentTarget.style.borderColor = '#D4291A')}
+                onBlur={(e) => (e.currentTarget.style.borderColor = '#E8E7E3')}
               />
             </div>
 
@@ -219,8 +181,8 @@ export default function ContactPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl py-3.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
-              style={{ background: 'linear-gradient(135deg, #7c3aed, #ea580c)' }}
+              className="w-full rounded-lg py-3.5 text-sm font-semibold text-white transition-all hover:translate-y-[-1px] disabled:opacity-50 flex items-center justify-center gap-2"
+              style={{ background: '#D4291A' }}
             >
               {loading ? (
                 <>

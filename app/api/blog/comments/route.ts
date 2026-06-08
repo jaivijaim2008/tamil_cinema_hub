@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { client } from '@/sanity/client'
 import { writeClient } from '@/sanity/writeClient'
+import { escapeHtml, isValidSlug, getIP } from '@/lib/sanitize'
 
 export async function GET(req: NextRequest) {
   const slug = req.nextUrl.searchParams.get('slug')
@@ -8,15 +9,25 @@ export async function GET(req: NextRequest) {
   const before = req.nextUrl.searchParams.get('before') // cursor: createdAt of last item
   if (!slug) return NextResponse.json({ error: 'slug required' }, { status: 400 })
 
+  // Validate slug format
+  if (typeof slug !== 'string' || !isValidSlug(slug)) {
+    return NextResponse.json({ error: 'Invalid slug format.' }, { status: 400 })
+  }
+
+  // Validate limit
+  if (isNaN(limit) || limit < 1) {
+    return NextResponse.json({ error: 'Invalid limit.' }, { status: 400 })
+  }
+
   try {
-    const doc = await writeClient.fetch<{ comments?: any[] }>(
+    const doc = await client.fetch<{ comments?: any[] }>(
       `*[_type == "blog" && slug.current == $slug][0]{ comments }`,
       { slug }
     )
     let all = (doc?.comments ?? []).reverse() // newest-first
 
     // Cursor-based pagination: filter comments older than the cursor
-    if (before) {
+    if (before && typeof before === 'string') {
       all = all.filter(c => c.createdAt < before)
     }
 
@@ -36,9 +47,20 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // Check content-length
+  const contentLength = parseInt(req.headers.get('content-length') || '0', 10)
+  if (contentLength > 8 * 1024) {
+    return NextResponse.json({ error: 'Request too large.' }, { status: 413 })
+  }
+
   let body: any
   try { body = await req.json() } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  }
+
+  // Validate body structure
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) {
+    return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 })
   }
 
   const { slug, author, email, content, parentId } = body
@@ -46,12 +68,30 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'slug, author, and content required' }, { status: 400 })
   }
 
-  // Basic sanitization
-  const cleanAuthor = author.trim().slice(0, 50)
-  const cleanContent = content.trim().slice(0, 1000)
+  // Type checks
+  if (typeof slug !== 'string' || typeof author !== 'string' || typeof content !== 'string') {
+    return NextResponse.json({ error: 'Invalid field types.' }, { status: 400 })
+  }
+
+  if (email && typeof email !== 'string') {
+    return NextResponse.json({ error: 'Invalid email.' }, { status: 400 })
+  }
+
+  if (parentId && typeof parentId !== 'string') {
+    return NextResponse.json({ error: 'Invalid parentId.' }, { status: 400 })
+  }
+
+  // Validate slug format
+  if (!isValidSlug(slug)) {
+    return NextResponse.json({ error: 'Invalid slug format.' }, { status: 400 })
+  }
+
+  // Basic sanitization + HTML escaping
+  const cleanAuthor = escapeHtml(author.trim().slice(0, 50))
+  const cleanContent = escapeHtml(content.trim().slice(0, 1000))
 
   // Rate limit: 1 comment per IP per 30 seconds
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
+  const ip = getIP(req)
   const now = Date.now()
   if (!(globalThis as any).__commentRL) (globalThis as any).__commentRL = new Map<string, number>()
   const rl: Map<string, number> = (globalThis as any).__commentRL
@@ -76,8 +116,9 @@ export async function POST(req: NextRequest) {
       author: cleanAuthor,
       content: cleanContent,
       createdAt: new Date().toISOString(),
+      authorIp: ip, // Store IP for ownership verification on edit/delete
     }
-    if (email?.trim()) comment.email = email.trim().slice(0, 200)
+    if (email?.trim()) comment.email = escapeHtml(email.trim().slice(0, 200))
     if (parentId) comment.parentId = parentId
 
     const result = await writeClient

@@ -9,7 +9,7 @@ interface CastPhotoProps {
 export default function CastPhoto({ photo, name, initial }: CastPhotoProps) {
   if (!photo) {
     return (
-      <div className="w-full h-full bg-gradient-to-br from-violet-700 to-indigo-900 flex items-center justify-center text-white font-black text-xl">
+      <div className="w-full h-full flex items-center justify-center text-white font-black text-xl" style={{ background: 'linear-gradient(135deg, #D4291A, #8B1A0F)' }}>
         {initial}
       </div>
     )
@@ -24,7 +24,11 @@ export default function CastPhoto({ photo, name, initial }: CastPhotoProps) {
         const target = e.target as HTMLImageElement
         target.style.display = 'none'
         if (target.parentElement) {
-          target.parentElement.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#7c3aed,#4338ca);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:1.25rem">${initial}</div>`
+          // Safe DOM manipulation instead of innerHTML
+          const fallback = document.createElement('div')
+          fallback.style.cssText = 'width:100%;height:100%;background:linear-gradient(135deg,#D4291A,#8B1A0F);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:1.25rem'
+          fallback.textContent = initial
+          target.parentElement?.replaceChild(fallback, target)
         }
       }}
     />

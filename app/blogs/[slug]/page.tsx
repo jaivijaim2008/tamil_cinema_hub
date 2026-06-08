@@ -76,12 +76,12 @@ export async function generateMetadata({ params }: BlogDetailProps): Promise<Met
 
 // ─── Category config ──────────────────────────────────────────────────────────
 
-const CATEGORY_CONFIG: Record<string, { color: string; glow: string; label: string }> = {
-  Review:     { color: '#a855f7', glow: 'rgba(168,85,247,0.3)',  label: '★ Review' },
-  'Top List': { color: '#f97316', glow: 'rgba(249,115,22,0.3)',  label: '⊞ Top List' },
-  News:       { color: '#3b82f6', glow: 'rgba(59,130,246,0.3)',  label: '◉ News' },
-  Actor:      { color: '#ec4899', glow: 'rgba(236,72,153,0.3)',  label: '♦ Actor' },
-  Director:   { color: '#10b981', glow: 'rgba(16,185,129,0.3)',  label: '◈ Director' },
+const CATEGORY_CONFIG: Record<string, { color: string; bg: string; label: string }> = {
+  Review:     { color: '#D4291A', bg: '#FFF5F5',  label: 'Review' },
+  'Top List': { color: '#C8973A', bg: '#FFF8EE',  label: 'Top List' },
+  News:       { color: '#1A6BD4', bg: '#F0F7FF',  label: 'News' },
+  Actor:      { color: '#D4291A', bg: '#FFF5F5',  label: 'Actor' },
+  Director:   { color: '#1A8C4E', bg: '#F0FFF4',  label: 'Director' },
 }
 
 // ─── PortableText components ──────────────────────────────────────────────────
@@ -89,19 +89,19 @@ const CATEGORY_CONFIG: Record<string, { color: string; glow: string; label: stri
 const ptComponents = {
   block: {
     normal: ({ children }: any) => (
-      <p className="mb-5 text-[17px] leading-[1.85] text-[#c8c8d8]">{children}</p>
+      <p className="mb-5 text-[17px] leading-[1.85]" style={{ color: '#444444' }}>{children}</p>
     ),
     h1: ({ children }: any) => (
-      <h1 className="mt-10 mb-4 text-3xl font-black text-white tracking-tight">{children}</h1>
+      <h1 className="mt-10 mb-4 text-3xl font-bold tracking-tight" style={{ fontFamily: "'Fraunces', serif", color: '#111111' }}>{children}</h1>
     ),
     h2: ({ children }: any) => (
-      <h2 className="mt-10 mb-4 text-2xl font-black text-white tracking-tight">{children}</h2>
+      <h2 className="mt-10 mb-4 text-2xl font-bold tracking-tight" style={{ fontFamily: "'Fraunces', serif", color: '#111111' }}>{children}</h2>
     ),
     h3: ({ children }: any) => (
-      <h3 className="mt-8 mb-3 text-xl font-bold text-white">{children}</h3>
+      <h3 className="mt-8 mb-3 text-xl font-bold" style={{ color: '#111111' }}>{children}</h3>
     ),
     blockquote: ({ children }: any) => (
-      <blockquote className="my-8 pl-5 border-l-2 border-violet-500 italic text-[#b8b0d8] text-[17px] leading-relaxed">
+      <blockquote className="my-8 pl-5 border-l-2 border-[#D4291A] italic text-[17px] leading-relaxed" style={{ color: '#666666' }}>
         {children}
       </blockquote>
     ),
@@ -111,26 +111,27 @@ const ptComponents = {
       <ul className="mb-5 space-y-2 pl-6 list-none">{children}</ul>
     ),
     number: ({ children }: any) => (
-      <ol className="mb-5 space-y-2 pl-6 list-decimal text-[#c8c8d8]">{children}</ol>
+      <ol className="mb-5 space-y-2 pl-6 list-decimal" style={{ color: '#444444' }}>{children}</ol>
     ),
   },
   listItem: {
     bullet: ({ children }: any) => (
-      <li className="flex items-start gap-2 text-[17px] text-[#c8c8d8] leading-relaxed">
-        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-violet-400" />
+      <li className="flex items-start gap-2 text-[17px] leading-relaxed" style={{ color: '#444444' }}>
+        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: '#D4291A' }} />
         <span>{children}</span>
       </li>
     ),
   },
   marks: {
-    strong: ({ children }: any) => <strong className="font-bold text-white">{children}</strong>,
-    em: ({ children }: any) => <em className="italic text-violet-300">{children}</em>,
+    strong: ({ children }: any) => <strong className="font-bold" style={{ color: '#111111' }}>{children}</strong>,
+    em: ({ children }: any) => <em className="italic" style={{ color: '#D4291A' }}>{children}</em>,
     link: ({ value, children }: any) => (
       <a
         href={value?.href}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-violet-400 underline underline-offset-2 hover:text-violet-300 transition-colors"
+        className="underline underline-offset-2 transition-colors hover:text-[#D4291A]"
+        style={{ color: '#D4291A' }}
       >
         {children}
       </a>
@@ -144,7 +145,7 @@ const ptComponents = {
         <figure className="my-8 mx-auto max-w-[85%] overflow-hidden rounded-xl">
           <img src={url} alt={value.alt || ''} className="w-full object-cover rounded-lg" loading="lazy" />
           {value.caption && (
-            <figcaption className="mt-2 text-center text-sm text-[#888]">{value.caption}</figcaption>
+            <figcaption className="mt-2 text-center text-sm" style={{ color: '#888888' }}>{value.caption}</figcaption>
           )}
         </figure>
       )
@@ -161,7 +162,7 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
   if (!data?.blog) notFound()
 
   const { blog, related } = data
-  const cat = CATEGORY_CONFIG[blog.category] ?? { color: '#a855f7', glow: 'rgba(168,85,247,0.3)', label: blog.category }
+  const cat = CATEGORY_CONFIG[blog.category] ?? { color: '#D4291A', bg: '#FFF5F5', label: blog.category }
   const coverUrl = blog.mainImage ? urlFor(blog.mainImage).width(1400).height(600).quality(90).fit('max').url() : null
   const formattedDate = new Date(blog.publishedAt).toLocaleDateString('en-US', {
     day: 'numeric', month: 'long', year: 'numeric',
@@ -203,55 +204,35 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
   ]
 
   return (
-    <main
-      className="min-h-screen"
-      style={{ background: '#07070f', fontFamily: "'Outfit', sans-serif" }}
-    >
+    <main className="min-h-screen" style={{ background: '#F7F7F5' }}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+
       {/* ── Hero ── */}
-      <div className="relative w-full overflow-hidden" style={{ minHeight: 'clamp(320px, 52vw, 580px)' }}>
-        {coverUrl ? (
-          <>
-            <img
-              src={coverUrl}
-              alt={blog.title}
-              className="absolute inset-0 h-full w-full object-cover"
-              style={{ filter: 'brightness(0.28) saturate(1.2)' }}
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                background: 'linear-gradient(to bottom, rgba(7,7,15,0.1) 0%, rgba(7,7,15,0.55) 60%, #07070f 100%)',
-              }}
-            />
-          </>
-        ) : (
-          <div
-            className="absolute inset-0"
-            style={{
-              background: `radial-gradient(ellipse 80% 60% at 50% 0%, ${cat.glow} 0%, transparent 70%), #07070f`,
-            }}
-          />
+      <div style={{ background: '#FFFFFF', borderBottom: '1px solid #E8E7E3' }}>
+        {/* Cover Image */}
+        {coverUrl && (
+          <div className="mx-auto max-w-5xl px-6 pt-6">
+            <div className="relative overflow-hidden rounded-xl" style={{ aspectRatio: '21/9' }}>
+              <img
+                src={coverUrl}
+                alt={blog.title}
+                className="w-full h-full object-cover"
+                loading="eager"
+              />
+              <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(255,255,255,0.9) 0%, transparent 40%)' }} />
+
+            </div>
+          </div>
         )}
 
-        {/* film grain */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-[0.035]"
-          style={{
-            backgroundImage:
-              'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")',
-            backgroundSize: '180px',
-          }}
-        />
-
-        {/* Content */}
-        <div className="relative z-10 mx-auto max-w-4xl px-4 sm:px-6 flex flex-col justify-end h-full pb-12 pt-24">
+        <div className="mx-auto max-w-4xl px-6 pt-8 pb-10">
           <Link
             href="/blogs"
-            className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-white/60 hover:text-white transition-colors self-start"
+            className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-[#D4291A] self-start"
+            style={{ color: '#888888' }}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -260,24 +241,24 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
           </Link>
 
           <span
-            className="mb-4 inline-flex self-start items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest"
+            className="mb-4 inline-flex self-start items-center gap-1.5 rounded-md px-3 py-1 text-[11px] font-bold uppercase tracking-widest"
             style={{
-              background: `${cat.color}22`,
+              background: cat.bg,
               color: cat.color,
-              border: `1px solid ${cat.color}44`,
+              border: `1px solid ${cat.color}33`,
             }}
           >
             {cat.label}
           </span>
 
           <h1
-            className="text-3xl sm:text-4xl md:text-5xl font-black leading-[1.1] text-white tracking-tight"
-            style={{ textShadow: '0 2px 30px rgba(0,0,0,0.7)' }}
+            className="text-3xl sm:text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight"
+            style={{ fontFamily: "'Fraunces', serif", color: '#111111' }}
           >
             {blog.title}
           </h1>
 
-          <div className="mt-5 flex flex-wrap items-center gap-4 text-sm text-white/50">
+          <div className="mt-5 flex flex-wrap items-center gap-4 text-sm" style={{ color: '#888888' }}>
             <span className="flex items-center gap-1.5">
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
@@ -303,26 +284,23 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
       </div>
 
       {/* ── Body ── */}
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 pb-24">
+      <div className="mx-auto max-w-4xl px-6 py-10">
         {blog.excerpt && (
           <p
-            className="mt-8 mb-10 text-lg sm:text-xl leading-relaxed font-medium"
-            style={{ color: '#a09ab8' }}
+            className="mb-10 text-lg sm:text-xl leading-relaxed font-medium"
+            style={{ color: '#666666' }}
           >
             {blog.excerpt}
           </p>
         )}
 
-        <div
-          className="mb-10 h-px w-full"
-          style={{ background: `linear-gradient(to right, transparent, ${cat.color}55, transparent)` }}
-        />
+        <div className="mb-10 h-px w-full" style={{ background: '#E8E7E3' }} />
 
         <article>
           {blog.body ? (
             <PortableText value={blog.body} components={ptComponents} />
           ) : (
-            <p className="text-[#666] italic">No content available for this post.</p>
+            <p className="italic" style={{ color: '#888888' }}>No content available for this post.</p>
           )}
         </article>
 
@@ -335,11 +313,11 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
             {blog.tags.map((tag, i) => (
               <span
                 key={i}
-                className="rounded-lg px-3 py-1 text-xs font-semibold"
+                className="rounded-md px-3 py-1 text-xs font-semibold"
                 style={{
-                  background: 'rgba(168,85,247,0.1)',
-                  color: '#a78bfa',
-                  border: '1px solid rgba(168,85,247,0.2)',
+                  background: '#F2F1EE',
+                  color: '#444444',
+                  border: '1px solid #E8E7E3',
                 }}
               >
                 #{tag}
@@ -356,14 +334,15 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
           <section className="mt-20">
             <div className="mb-8 flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: cat.color }}>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: '#D4291A' }}>
                   More Articles
                 </p>
-                <h2 className="mt-1 text-2xl font-black text-white">Related Reads</h2>
+                <h2 className="mt-1 text-2xl font-bold" style={{ fontFamily: "'Fraunces', serif", color: '#111111' }}>Related Reads</h2>
               </div>
               <Link
                 href="/blogs"
-                className="text-sm font-semibold text-white/40 hover:text-white transition-colors flex items-center gap-1"
+                className="text-sm font-semibold transition-colors flex items-center gap-1 hover:text-[#D4291A]"
+                style={{ color: '#888888' }}
               >
                 All Articles
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -383,10 +362,10 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
                   <Link
                     key={rel._id}
                     href={`/blogs/${rel.slug}`}
-                    className="group flex flex-col overflow-hidden rounded-2xl transition-transform duration-300 hover:-translate-y-1"
+                    className="group flex flex-col overflow-hidden rounded-xl transition-all duration-300 hover:-translate-y-1"
                     style={{
-                      background: 'rgba(255,255,255,0.04)',
-                      border: '1px solid rgba(255,255,255,0.07)',
+                      background: '#FFFFFF',
+                      border: '1px solid #E8E7E3',
                     }}
                   >
                     <div className="relative aspect-[16/9] overflow-hidden">
@@ -399,7 +378,7 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
                       ) : (
                         <div
                           className="h-full w-full flex items-center justify-center"
-                          style={{ background: `linear-gradient(135deg, ${relCat.color}22, ${relCat.color}08)` }}
+                          style={{ background: relCat.bg }}
                         >
                           <svg className="w-8 h-8 opacity-30" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25" />
@@ -407,22 +386,22 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
                         </div>
                       )}
                       <span
-                        className="absolute left-2.5 top-2.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider"
-                        style={{ background: `${relCat.color}22`, color: relCat.color, border: `1px solid ${relCat.color}44` }}
+                        className="absolute left-2.5 top-2.5 rounded-md px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                        style={{ background: relCat.bg, color: relCat.color, border: `1px solid ${relCat.color}33` }}
                       >
                         {rel.category}
                       </span>
                     </div>
                     <div className="flex flex-col flex-1 p-4">
-                      <div className="flex items-center justify-between text-[11px] text-white/35 mb-2">
+                      <div className="flex items-center justify-between text-[11px] mb-2" style={{ color: '#888888' }}>
                         <span>{rel.author}</span>
                         <span>{relDate}</span>
                       </div>
-                      <h3 className="text-sm font-bold text-white leading-snug line-clamp-2 group-hover:text-violet-300 transition-colors">
+                      <h3 className="text-sm font-bold leading-snug line-clamp-2 transition-colors group-hover:text-[#D4291A]" style={{ color: '#111111' }}>
                         {rel.title}
                       </h3>
-                      <p className="mt-1.5 text-xs leading-relaxed text-white/40 line-clamp-2">{rel.excerpt}</p>
-                      <span className="mt-auto pt-3 text-xs font-semibold flex items-center gap-1" style={{ color: relCat.color }}>
+                      <p className="mt-1.5 text-xs leading-relaxed line-clamp-2" style={{ color: '#888888' }}>{rel.excerpt}</p>
+                      <span className="mt-auto pt-3 text-xs font-semibold flex items-center gap-1 transition-colors group-hover:text-[#D4291A]" style={{ color: '#D4291A' }}>
                         Read article
                         <svg className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />

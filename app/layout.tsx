@@ -1,18 +1,19 @@
 import type { Metadata, Viewport } from 'next'
-import { Outfit } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import Chatbot from '../components/Chatbot'
+import ScrollReveal from '../components/ScrollReveal'
 
-const outfit = Outfit({
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-outfit',
-  weight: ['400', '500', '600', '700', '800', '900'],
+  variable: '--font-inter',
+  weight: ['400', '500', '600', '700'],
 })
 
-export const viewport = {
+export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover' as const,
@@ -71,9 +72,6 @@ export const metadata: Metadata = {
     shortcut: '/favicon.ico',
     apple: '/favicon.ico',
   },
-  // verification: { google: 'YOUR_GSC_VERIFICATION_CODE' },
-  // ── Google Analytics (add your GA4 Measurement ID, e.g. G-XXXXXXXXXX) ──
-  // analytics: { measurementId: 'YOUR_GA4_MEASUREMENT_ID' },
 }
 
 export default function RootLayout({
@@ -82,32 +80,26 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${outfit.variable} h-full antialiased`}>
+    <html lang="en" className={`${inter.variable}`}>
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700;800&family=Inter:wght@400;500;600;700&family=Noto+Serif+Tamil:wght@400;600&display=swap"
+          rel="stylesheet"
+        />
         <Script
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_ADSENSE_ID"
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
       </head>
-      <body
-        className="font-sans min-h-full flex flex-col bg-[#080810] text-white"
-        style={{ fontFamily: 'var(--font-outfit), sans-serif' }}
-      >
-        {/* Navigation */}
+      <body className="font-sans antialiased" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <ScrollReveal />
         <Navbar />
-
-        {/* Page Content */}
-        <div className="flex-1">
-          {children}
-        </div>
-
-        {/* Floating AI Chatbot */}
+        <main className="flex-1">{children}</main>
         <Chatbot />
-
-        {/* Footer */}
         <Footer />
-
       </body>
     </html>
   )

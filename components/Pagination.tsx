@@ -32,10 +32,10 @@ export default function Pagination({ currentPage, totalPages, baseUrl, params = 
     pages.push(totalPages)
   }
 
-  const base = 'inline-flex items-center justify-center min-w-[36px] h-9 rounded-lg text-xs font-bold transition-all duration-200'
-  const active = 'bg-violet-600 text-white border border-violet-500 shadow-lg shadow-violet-900/40'
-  const inactive = 'bg-white/5 border border-white/8 text-white/50 hover:text-white hover:bg-white/10'
-  const disabled = 'bg-white/[0.03] text-white/15 border border-white/5 cursor-not-allowed'
+  const base = 'inline-flex items-center justify-center min-w-[36px] h-9 rounded-[6px] text-[14px] font-medium transition-all duration-200'
+  const active = 'bg-[#D4291A] text-white'
+  const inactive = 'bg-white border border-[#E8E7E3] text-[#444] hover:border-[#D4291A] hover:text-[#D4291A]'
+  const disabled = 'bg-[#F7F7F5] text-[#ccc] border border-[#E8E7E3] cursor-not-allowed'
 
   return (
     <nav className="flex items-center justify-center gap-1.5 mt-12" aria-label="Pagination">
@@ -49,12 +49,13 @@ export default function Pagination({ currentPage, totalPages, baseUrl, params = 
 
       {pages.map((p, i) =>
         p === 'dots' ? (
-          <span key={`d${i}`} className={`${base} text-white/20`}>…</span>
+          <span key={`d${i}`} className={`${base} text-[#888]`}>…</span>
         ) : (
           <Link
             key={p}
             href={getPageUrl(p)}
             className={`${base} ${p === currentPage ? active : inactive}`}
+            style={p === currentPage ? { width: '36px', height: '36px' } : undefined}
           >
             {p}
           </Link>

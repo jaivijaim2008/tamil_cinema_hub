@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { client } from '@/sanity/client'
 import { writeClient } from '@/sanity/writeClient'
+import { isValidSlug, getIP } from '@/lib/sanitize'
 
 // POST: Like/unlike a comment (toggle)
 export async function POST(
@@ -8,16 +9,31 @@ export async function POST(
   { params }: { params: Promise<{ key: string }> }
 ) {
   const { key } = await params
+
+  // Validate comment key format
+  if (!key || typeof key !== 'string' || key.length > 50 || /[^a-zA-Z0-9]/.test(key)) {
+    return NextResponse.json({ error: 'Invalid comment key.' }, { status: 400 })
+  }
+
   let body: any
   try { body = await req.json() } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
+  // Validate body structure
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) {
+    return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 })
+  }
+
   const { slug } = body
   if (!slug) return NextResponse.json({ error: 'slug required' }, { status: 400 })
 
+  if (typeof slug !== 'string' || !isValidSlug(slug)) {
+    return NextResponse.json({ error: 'Invalid slug format.' }, { status: 400 })
+  }
+
   // Rate limit: 1 like per IP per 5 seconds
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
+  const ip = getIP(req)
   const now = Date.now()
   if (!(globalThis as any).__commentLikeRL) (globalThis as any).__commentLikeRL = new Map<string, number>()
   const rl: Map<string, number> = (globalThis as any).__commentLikeRL

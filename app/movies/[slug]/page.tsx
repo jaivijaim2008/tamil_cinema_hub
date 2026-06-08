@@ -107,28 +107,28 @@ export async function generateMetadata({ params }: MovieDetailProps): Promise<Me
 const ptComponents = {
   block: {
     h2: ({ children }: any) => (
-      <h2 className="text-2xl font-black text-white mt-8 mb-3">{children}</h2>
+      <h2 className="text-2xl font-bold mt-8 mb-3" style={{ fontFamily: "'Fraunces', serif", color: '#111111' }}>{children}</h2>
     ),
     h3: ({ children }: any) => (
-      <h3 className="text-xl font-bold text-white mt-6 mb-2">{children}</h3>
+      <h3 className="text-xl font-bold mt-6 mb-2" style={{ color: '#111111' }}>{children}</h3>
     ),
     normal: ({ children }: any) => (
-      <p className="text-white/60 leading-relaxed mb-4 text-[15px]">{children}</p>
+      <p className="leading-relaxed mb-4 text-[15px]" style={{ color: '#444444' }}>{children}</p>
     ),
     blockquote: ({ children }: any) => (
-      <blockquote className="border-l-4 border-violet-500 bg-violet-500/10 px-5 py-3 my-6 italic text-violet-200 rounded-r-xl font-medium">
+      <blockquote className="border-l-4 border-[#D4291A] bg-[#FFF5F5] px-5 py-3 my-6 italic rounded-r-lg font-medium" style={{ color: '#D4291A' }}>
         {children}
       </blockquote>
     ),
   },
 }
 
-// ── Small stat pill ───────────────────────────────────────────────────────
+// ── Stat pill ─────────────────────────────────────────────────────────────
 function Pill({ children }: { children: React.ReactNode }) {
   return (
     <span
-      className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold text-white/60"
-      style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.09)' }}
+      className="inline-flex items-center rounded-md px-3 py-1 text-xs font-semibold"
+      style={{ background: '#F2F1EE', color: '#666666', border: '1px solid #E8E7E3' }}
     >
       {children}
     </span>
@@ -179,328 +179,252 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
   ]
 
   return (
-    <div className="min-h-screen text-white" style={{ background: '#07070f' }}>
+    <div className="min-h-screen" style={{ background: '#F7F7F5' }}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* ── BACKDROP HERO ───────────────────────────────────────────── */}
-      <div className="relative w-full overflow-hidden" style={{ height: 'clamp(340px, 65vh, 620px)' }}>
-        {backdropUrl ? (
-          <img
-            src={backdropUrl}
-            alt=""
-            aria-hidden
-            className="absolute inset-0 w-full h-full object-cover object-center"
-            style={{ filter: 'brightness(0.45) saturate(1.1)' }}
-          />
-        ) : (
-          <div
-            className="absolute inset-0"
-            style={{ background: 'linear-gradient(135deg, #1a0533 0%, #0d0d2b 50%, #000 100%)' }}
-          />
-        )}
+      {/* ── PAGE HEADER ───────────────────────────────────────────── */}
+      <div style={{ background: '#FFFFFF', borderBottom: '1px solid #E8E7E3' }}>
+        <div className="mx-auto max-w-[1280px] px-6 py-10">
+          {/* Back button */}
+          <Link
+            href="/movies"
+            className="inline-flex items-center gap-2 text-sm font-medium mb-6 transition-colors hover:text-[#D4291A]"
+            style={{ color: '#888888' }}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+            </svg>
+            Back to Movies
+          </Link>
 
-        {/* Gradient vignettes */}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #07070f 0%, #07070f 5%, rgba(7,7,15,0.55) 45%, transparent 100%)' }} />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(7,7,15,0.75) 0%, transparent 50%)' }} />
-
-        {/* Film grain */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            opacity: 0.04,
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-            backgroundSize: '128px',
-          }}
-        />
-
-        {/* Back button */}
-        <Link
-          href="/movies"
-          className="absolute top-6 left-6 z-20 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white/80 hover:text-white transition-all"
-          style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.1)' }}
-        >
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-          </svg>
-          Movies
-        </Link>
-      </div>
-
-      {/* ── MAIN LAYOUT ─────────────────────────────────────────────── */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" style={{ marginTop: 'clamp(-180px, -20vw, -240px)' }}>
-        <div className="relative z-10 flex flex-col md:flex-row gap-8 lg:gap-12 items-start">
-
-          {/* ── POSTER COLUMN ─────────────────────────────────────────── */}
-          <div className="w-full md:w-52 lg:w-60 flex-shrink-0">
-            <div className="sticky top-24">
-
-              {/* Poster */}
+          <div className="flex flex-col md:flex-row gap-8 items-start">
+            {/* Poster */}
+            <div className="w-full md:w-52 lg:w-60 flex-shrink-0">
               <div
-                className="rounded-2xl overflow-hidden aspect-[2/3]"
-                style={{ boxShadow: '0 32px 80px rgba(0,0,0,0.85)', border: '1px solid rgba(255,255,255,0.1)' }}
+                className="rounded-xl overflow-hidden aspect-[2/3]"
+                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.12)', border: '1px solid #E8E7E3' }}
               >
                 {posterUrl ? (
                   <img src={posterUrl} alt={movie.title} className="w-full h-full object-cover" />
                 ) : (
                   <div
                     className="w-full h-full flex flex-col items-center justify-center text-center p-6"
-                    style={{ background: 'linear-gradient(135deg, #2d1b69, #0d0d2b)' }}
+                    style={{ background: '#F2F1EE' }}
                   >
                     <span className="text-5xl mb-3">🎬</span>
-                    <p className="text-white font-bold text-sm leading-tight">{movie.title}</p>
-                    <p className="text-violet-400 text-xs mt-1">{movie.year}</p>
+                    <p className="font-bold text-sm leading-tight" style={{ color: '#111111' }}>{movie.title}</p>
+                    <p className="text-xs mt-1" style={{ color: '#888888' }}>{movie.year}</p>
                   </div>
                 )}
               </div>
+            </div>
 
-              {/* Quick info */}
-              <div
-                className="mt-4 rounded-2xl p-4 space-y-3"
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+            {/* Title & meta */}
+            <div className="flex-1 min-w-0 pt-2 md:pt-12">
+              <h1
+                className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-none"
+                style={{ fontFamily: "'Fraunces', serif", color: '#111111' }}
               >
-                {[
-                  { icon: '📅', label: 'Year',      value: String(movie.year) },
-                  { icon: '🎬', label: 'Director',  value: movie.director || '—' },
-                  { icon: '📺', label: 'Streaming', value: movie.ottPlatform || '—' },
-                ].map(({ icon, label, value }) => (
-                  <div key={label} className="flex items-start justify-between gap-2 text-xs pb-3 border-b last:border-0 last:pb-0" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-                    <span className="text-white/35 font-medium whitespace-nowrap">{icon} {label}</span>
-                    <span className="text-white/80 font-semibold text-right leading-snug">{value}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Genre tags */}
-              {movie.genre && movie.genre.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {movie.genre.map((g, i) => (
-                    <span
-                      key={i}
-                      className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
-                      style={{ background: 'rgba(124,58,237,0.2)', color: '#a78bfa', border: '1px solid rgba(124,58,237,0.25)' }}
-                    >
-                      {g}
-                    </span>
-                  ))}
-                </div>
+                {movie.title}
+              </h1>
+              {movie.titleTanglish && movie.titleTanglish !== movie.title && (
+                <p className="mt-2 text-base font-medium italic" style={{ color: '#D4291A' }}>&quot;{movie.titleTanglish}&quot;</p>
               )}
-            </div>
-          </div>
 
-          {/* ── DETAILS COLUMN ──────────────────────────────────────────── */}
-          <div className="flex-1 min-w-0 pt-2 md:pt-48">
-
-            {/* Title */}
-            <h1
-              className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-none"
-              style={{ fontFamily: "'Outfit', sans-serif" }}
-            >
-              {movie.title}
-            </h1>
-            {movie.titleTanglish && movie.titleTanglish !== movie.title && (
-              <p className="mt-2 text-violet-400 text-base font-medium italic">"{movie.titleTanglish}"</p>
-            )}
-
-            {/* Rating + meta pills */}
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              {/* Stars */}
-              <div className="flex items-center gap-0.5">
-                {Array.from({ length: 5 }, (_, i) => {
-                  const filled = i < fullStars
-                  const half   = !filled && i === fullStars && hasHalf
-                  return (
-                    <svg
-                      key={i}
-                      className="h-5 w-5"
-                      viewBox="0 0 20 20"
-                      fill={filled ? '#fbbf24' : 'none'}
-                      stroke={filled || half ? '#fbbf24' : 'rgba(255,255,255,0.15)'}
-                      strokeWidth="1.5"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  )
-                })}
-                <span className="ml-2 text-white font-black text-lg">{rating.toFixed(1)}</span>
-                <span className="text-white/30 text-sm ml-0.5">/5</span>
-              </div>
-
-              <Pill>{movie.year}</Pill>
-              {movie.ottPlatform && <Pill>📺 {movie.ottPlatform}</Pill>}
-            </div>
-
-            {/* Divider */}
-            <div className="mt-8 h-px" style={{ background: 'linear-gradient(to right, rgba(124,58,237,0.4), transparent)' }} />
-
-            {/* Synopsis */}
-            <section className="mt-8">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-violet-500 mb-3">Synopsis</p>
-              <p className="text-white/55 text-[15px] leading-loose max-w-2xl">
-                {movie.synopsis || 'Synopsis not available yet.'}
-              </p>
-            </section>
-
-            {/* Divider */}
-            <div className="mt-8 h-px" style={{ background: 'linear-gradient(to right, rgba(124,58,237,0.4), transparent)' }} />
-
-            {/* Director */}
-            {movie.director && (
-              <section className="mt-8">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-violet-500 mb-4">Director</p>
-                <div
-                  className="inline-flex items-center gap-3 rounded-2xl px-4 py-3 transition-colors"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
-                >
-                  <div
-                    className="w-11 h-11 rounded-full flex items-center justify-center font-black text-white text-lg flex-shrink-0"
-                    style={{ background: 'linear-gradient(135deg, #7c3aed, #4c1d95)' }}
-                  >
-                    {movie.director.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="text-white font-bold text-sm">{movie.director}</p>
-                    <p className="text-white/30 text-xs">Director</p>
-                  </div>
-                </div>
-              </section>
-            )}
-
-            {/* ── CAST ─────────────────────────────────────────────────── */}
-            {movie.cast && movie.cast.length > 0 && (
-              <section className="mt-10">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-violet-500 mb-1">Cast</p>
-                    <h3
-                      className="text-white font-black text-lg"
-                      style={{ fontFamily: "'Outfit', sans-serif" }}
-                    >
-                      Meet the Actors
-                    </h3>
-                  </div>
-                  <span
-                    className="text-xs font-bold px-3 py-1 rounded-full"
-                    style={{ background: 'rgba(124,58,237,0.15)', color: '#a78bfa', border: '1px solid rgba(124,58,237,0.25)' }}
-                  >
-                    {movie.cast.length} members
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                  {movie.cast.map((actor, idx) => {
-                    const name      = getCastName(actor)
-                    const character = getCastCharacter(actor)
-                    const photo     = getCastPhoto(actor)
-                    const initial   = getCastInitial(actor)
-
-                    // Unique hue per actor for gradient fallback
-                    const hue = (idx * 47) % 360
-
+              {/* Rating + meta pills */}
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-0.5">
+                  {Array.from({ length: 5 }, (_, i) => {
+                    const filled = i < fullStars
+                    const half = !filled && i === fullStars && hasHalf
                     return (
-                      <div
-                        key={idx}
-                        className="group relative overflow-hidden rounded-xl transition-all duration-300 cursor-default"
-                        style={{
-                          background: 'rgba(255,255,255,0.03)',
-                          border: '1px solid rgba(255,255,255,0.07)',
-                        }}
+                      <svg
+                        key={i}
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill={filled ? '#C8973A' : 'none'}
+                        stroke={filled || half ? '#C8973A' : '#E8E7E3'}
+                        strokeWidth="1.5"
                       >
-                        {/* Square photo area */}
-                        <div className="relative aspect-square overflow-hidden">
-                          {photo ? (
-                            <img
-                              src={photo}
-                              alt={name}
-                              className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
-                            />
-                          ) : (
-                            <div
-                              className="w-full h-full flex items-center justify-center"
-                              style={{
-                                background: `linear-gradient(135deg,
-                                  hsl(${hue}, 40%, 18%) 0%,
-                                  hsl(${(hue + 40) % 360}, 30%, 10%) 100%)`,
-                              }}
-                            >
-                              <span
-                                className="text-4xl font-black select-none"
-                                style={{
-                                  color: `hsl(${hue}, 60%, 70%)`,
-                                  fontFamily: "'Outfit', sans-serif",
-                                }}
-                              >
-                                {initial}
-                              </span>
-                            </div>
-                          )}
-
-                          {/* Purple hover overlay */}
-                          <div
-                            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                            style={{
-                              background: 'linear-gradient(to top, rgba(109,40,217,0.6) 0%, transparent 55%)',
-                            }}
-                          />
-
-                          {/* Index badge — appears on hover */}
-                          <div
-                            className="absolute top-2 left-2 w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-black opacity-0 group-hover:opacity-100 transition-all duration-200"
-                            style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', color: '#a78bfa' }}
-                          >
-                            {idx + 1}
-                          </div>
-                        </div>
-
-                        {/* Name + character row */}
-                        <div
-                          className="px-2.5 py-2.5"
-                          style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
-                        >
-                          <p className="text-white text-[11px] font-black leading-tight line-clamp-1 group-hover:text-violet-300 transition-colors duration-200">
-                            {name}
-                          </p>
-                          {character ? (
-                            <p className="text-white/35 text-[10px] mt-0.5 line-clamp-1 italic">
-                              as {character}
-                            </p>
-                          ) : (
-                            <p className="text-white/20 text-[10px] mt-0.5">Actor</p>
-                          )}
-                        </div>
-
-                        {/* Bottom violet accent bar — slides in on hover */}
-                        <div
-                          className="absolute bottom-0 left-0 right-0 h-[2px] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"
-                          style={{ background: 'linear-gradient(to right, #7c3aed, #a78bfa)' }}
-                        />
-                      </div>
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
                     )
                   })}
+                  <span className="ml-2 font-black text-lg" style={{ color: '#C8973A' }}>{rating.toFixed(1)}</span>
+                  <span className="text-sm ml-0.5" style={{ color: '#888888' }}>/5</span>
                 </div>
-              </section>
-            )}
-
-            {/* Review */}
-            {movie.review && (
-              <>
-                <div className="mt-12 h-px" style={{ background: 'linear-gradient(to right, rgba(124,58,237,0.4), transparent)' }} />
-                <section className="mt-8">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-violet-500 mb-5">Full Review</p>
-                  <div
-                    className="rounded-2xl p-6 sm:p-8"
-                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
-                  >
-                    <PortableText value={movie.review} components={ptComponents} />
-                  </div>
-                </section>
-              </>
-            )}
-
-            <div className="pb-20" />
+                <Pill>{movie.year}</Pill>
+                {movie.ottPlatform && <Pill>📺 {movie.ottPlatform}</Pill>}
+              </div>
+            </div>
           </div>
+        </div>
+      </div>
+
+      {/* ── MAIN CONTENT ─────────────────────────────────────────── */}
+      <div className="mx-auto max-w-[1280px] px-6 py-12 grid lg:grid-cols-[1fr_340px] gap-10">
+
+        {/* ── LEFT COLUMN ──────────────────────────────────────────── */}
+        <div className="min-w-0 space-y-10">
+
+          {/* Synopsis */}
+          <section>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-3" style={{ color: '#D4291A' }}>Synopsis</p>
+            <p className="text-[15px] leading-loose max-w-2xl" style={{ color: '#444444' }}>
+              {movie.synopsis || 'Synopsis not available yet.'}
+            </p>
+          </section>
+
+          {/* Director */}
+          {movie.director && (
+            <section>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-4" style={{ color: '#D4291A' }}>Director</p>
+              <div
+                className="inline-flex items-center gap-3 rounded-lg px-4 py-3 transition-colors"
+                style={{ background: '#FFFFFF', border: '1px solid #E8E7E3' }}
+              >
+                <div
+                  className="w-11 h-11 rounded-full flex items-center justify-center font-black text-white text-lg flex-shrink-0"
+                  style={{ background: '#D4291A' }}
+                >
+                  {movie.director.charAt(0)}
+                </div>
+                <div>
+                  <p className="font-bold text-sm" style={{ color: '#111111' }}>{movie.director}</p>
+                  <p className="text-xs" style={{ color: '#888888' }}>Director</p>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* ── CAST ─────────────────────────────────────────────────── */}
+          {movie.cast && movie.cast.length > 0 && (
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-1" style={{ color: '#D4291A' }}>Cast</p>
+                  <h3
+                    className="font-bold text-lg"
+                    style={{ fontFamily: "'Fraunces', serif", color: '#111111' }}
+                  >
+                    Meet the Actors
+                  </h3>
+                </div>
+                <span
+                  className="text-xs font-bold px-3 py-1 rounded-md"
+                  style={{ background: '#FFF5F5', color: '#D4291A', border: '1px solid #D4291A33' }}
+                >
+                  {movie.cast.length} members
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                {movie.cast.map((actor, idx) => {
+                  const name = getCastName(actor)
+                  const character = getCastCharacter(actor)
+                  const photo = getCastPhoto(actor)
+                  const initial = getCastInitial(actor)
+
+                  return (
+                    <div
+                      key={idx}
+                      className="group relative overflow-hidden rounded-xl transition-all duration-300"
+                      style={{
+                        background: '#FFFFFF',
+                        border: '1px solid #E8E7E3',
+                      }}
+                    >
+                      <div className="relative aspect-square overflow-hidden">
+                        {photo ? (
+                          <img
+                            src={photo}
+                            alt={name}
+                            className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                          />
+                        ) : (
+                          <CastPhoto photo={null} name={name} initial={initial} />
+                        )}
+
+                        <div
+                          className="absolute top-2 left-2 w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-black opacity-0 group-hover:opacity-100 transition-all duration-200"
+                          style={{ background: 'rgba(0,0,0,0.65)', color: '#FFFFFF' }}
+                        >
+                          {idx + 1}
+                        </div>
+                      </div>
+
+                      <div
+                        className="px-2.5 py-2.5"
+                        style={{ borderTop: '1px solid #E8E7E3' }}
+                      >
+                        <p className="text-[11px] font-black leading-tight line-clamp-1" style={{ color: '#111111' }}>
+                          {name}
+                        </p>
+                        {character ? (
+                          <p className="text-[10px] mt-0.5 line-clamp-1 italic" style={{ color: '#888888' }}>
+                            as {character}
+                          </p>
+                        ) : (
+                          <p className="text-[10px] mt-0.5" style={{ color: '#AAAAAA' }}>Actor</p>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* Review */}
+          {movie.review && (
+            <section>
+              <div className="h-px w-full mb-8" style={{ background: '#E8E7E3' }} />
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-5" style={{ color: '#D4291A' }}>Full Review</p>
+              <div
+                className="rounded-xl p-6 sm:p-8"
+                style={{ background: '#FFFFFF', border: '1px solid #E8E7E3' }}
+              >
+                <PortableText value={movie.review} components={ptComponents} />
+              </div>
+            </section>
+          )}
+        </div>
+
+        {/* ── RIGHT SIDEBAR ──────────────────────────────────────────── */}
+        <div className="lg:sticky lg:top-24 h-fit">
+          <div
+            className="rounded-xl p-5 space-y-3"
+            style={{ background: '#FFFFFF', border: '1px solid #E8E7E3' }}
+          >
+            {[
+              { icon: '📅', label: 'Year', value: String(movie.year) },
+              { icon: '🎬', label: 'Director', value: movie.director || '—' },
+              { icon: '📺', label: 'Streaming', value: movie.ottPlatform || '—' },
+            ].map(({ icon, label, value }) => (
+              <div key={label} className="flex items-start justify-between gap-2 text-xs pb-3 border-b last:border-0 last:pb-0" style={{ borderColor: '#E8E7E3' }}>
+                <span className="font-medium whitespace-nowrap" style={{ color: '#888888' }}>{icon} {label}</span>
+                <span className="font-semibold text-right leading-snug" style={{ color: '#111111' }}>{value}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Genre tags */}
+          {movie.genre && movie.genre.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {movie.genre.map((g, i) => (
+                <span
+                  key={i}
+                  className="rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
+                  style={{ background: '#FFF5F5', color: '#D4291A', border: '1px solid #D4291A33' }}
+                >
+                  {g}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -518,20 +442,20 @@ async function MovieRecommendations({ slug }: { slug: string }) {
   if (!recommendations.length) return null
   return (
     <section
-      className="mt-4 pt-16 pb-20"
-      style={{ background: 'rgba(0,0,0,0.3)', borderTop: '1px solid rgba(255,255,255,0.05)' }}
+      className="py-16"
+      style={{ background: '#FFFFFF', borderTop: '1px solid #E8E7E3' }}
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1280px] px-6">
         <div className="mb-8">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-violet-500 mb-1">You Might Like</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-1" style={{ color: '#D4291A' }}>You Might Like</p>
           <h2
-            className="text-2xl font-black text-white"
-            style={{ fontFamily: "'Outfit', sans-serif" }}
+            className="text-2xl font-bold"
+            style={{ fontFamily: "'Fraunces', serif", color: '#111111' }}
           >
             Similar Movies
           </h2>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5">
           {recommendations.map((rec) => (
             <MovieCard key={rec._id} movie={rec} />
           ))}

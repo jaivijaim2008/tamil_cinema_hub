@@ -1,20 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { escapeHtml } from '@/lib/sanitize'
 
 function getResend() {
   if (!process.env.RESEND_API_KEY) return null
   return new Resend(process.env.RESEND_API_KEY)
 }
 
+// ── Request body size limit (8KB) ──────────────────────────────────────────
+const MAX_BODY_SIZE = 8 * 1024
+
 export async function POST(req: NextRequest) {
+  // Check content-length header as first line of defense
+  const contentLength = parseInt(req.headers.get('content-length') || '0', 10)
+  if (contentLength > MAX_BODY_SIZE) {
+    return NextResponse.json({ error: 'Request too large.' }, { status: 413 })
+  }
+
   let body: any
   try { body = await req.json() } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
+  // Validate body is a plain object with expected keys only
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) {
+    return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 })
+  }
+
   const { name, email, message } = body
   if (!name?.trim() || !email?.trim() || !message?.trim()) {
     return NextResponse.json({ error: 'Name, email, and message are required.' }, { status: 400 })
+  }
+
+  // Type checks
+  if (typeof name !== 'string' || typeof email !== 'string' || typeof message !== 'string') {
+    return NextResponse.json({ error: 'All fields must be strings.' }, { status: 400 })
   }
 
   // Basic email validation
@@ -24,6 +44,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Rate limit: 3 messages per IP per 5 minutes
+  // (middleware also enforces this as defense-in-depth)
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
   const now = Date.now()
   if (!(globalThis as any).__contactRL) (globalThis as any).__contactRL = new Map<string, number[]>()
@@ -36,9 +57,10 @@ export async function POST(req: NextRequest) {
   recent.push(now)
   rl.set(ip, recent)
 
-  const cleanName = name.trim().slice(0, 100)
-  const cleanEmail = email.trim().slice(0, 200)
-  const cleanMessage = message.trim().slice(0, 2000)
+  // Sanitize and escape all user input
+  const cleanName = escapeHtml(name.trim().slice(0, 100))
+  const cleanEmail = escapeHtml(email.trim().slice(0, 200))
+  const cleanMessage = escapeHtml(message.trim().slice(0, 2000))
 
   // If no RESEND_API_KEY, just log the message and return success
   const resend = getResend()

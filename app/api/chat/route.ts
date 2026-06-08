@@ -1215,10 +1215,16 @@ async function handleDebug(): Promise<NextResponse> {
 // API ROUTE HANDLER
 // ═══════════════════════════════════════════════════════════════
 
+// ── Request body size limit ────────────────────────────────────────────────
+const MAX_BODY_SIZE = 8 * 1024
+
 export async function POST(req: NextRequest) {
-  // Debug mode — POST /api/chat?debug=1
+  // Debug mode — only allowed in development
   const url = new URL(req.url)
   if (url.searchParams.get('debug') === '1') {
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json({ error: 'Debug mode not available in production' }, { status: 403 })
+    }
     return await handleDebug()
   }
 
@@ -1235,6 +1241,12 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  // Check content-length
+  const contentLength = parseInt(req.headers.get('content-length') || '0', 10)
+  if (contentLength > MAX_BODY_SIZE) {
+    return NextResponse.json({ error: 'Request too large.' }, { status: 413 })
+  }
+
   let body: any
   try {
     body = await req.json()
@@ -1242,26 +1254,43 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body.' }, { status: 400 })
   }
 
+  // Validate body structure
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) {
+    return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 })
+  }
+
   const { messages = [] } = body
   if (!Array.isArray(messages) || messages.length === 0) {
     return NextResponse.json({ error: 'A non-empty messages array is required.' }, { status: 400 })
   }
 
-  const lastMsg: string = messages.filter((m: any) => m.role === 'user').pop()?.content ?? ''
+  // Validate message structure and sanitize
+  const sanitizedMessages = messages
+    .filter((m: any) => m && typeof m === 'object' && typeof m.content === 'string')
+    .map((m: any) => ({
+      role: m.role === 'assistant' ? 'assistant' as const : 'user' as const,
+      content: m.content.slice(0, 2000), // Limit each message to 2000 chars
+    }))
+    .slice(-20) // Max 20 messages in history
+
+  const lastMsg: string = sanitizedMessages.filter((m) => m.role === 'user').pop()?.content ?? ''
   if (!lastMsg.trim()) {
     return NextResponse.json({ error: 'Message content cannot be empty.' }, { status: 400 })
   }
 
-  const history = messages.slice(-8)
+  // Limit user message length
+  const userMessage = lastMsg.trim().slice(0, 1000)
+
+  const history = sanitizedMessages.slice(-8)
 
   try {
-    const { reply, suggestions } = await generateResponse(lastMsg, history)
+    const { reply, suggestions } = await generateResponse(userMessage, history)
     return NextResponse.json({ reply, suggestions, provider: 'TamilCinemaHub AI' })
   } catch (err: any) {
     console.error('[TamilCinemaHub] Unhandled error in generateResponse:', err?.message, err?.stack)
     try {
       // Last-resort Groq call with minimal context
-      const fallback = await askGroq(lastMsg, [], 'top-level error recovery')
+      const fallback = await askGroq(userMessage, [], 'top-level error recovery')
       return NextResponse.json({ ...fallback, provider: 'TamilCinemaHub AI' })
     } catch (finalErr: any) {
       console.error('[TamilCinemaHub] Final fallback also failed:', finalErr?.message)
