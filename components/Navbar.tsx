@@ -31,7 +31,6 @@ export default function Navbar() {
 
   useEffect(() => { setIsOpen(false) }, [pathname])
 
-  // Close search dropdown on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) setShowResults(false)
@@ -78,17 +77,17 @@ export default function Navbar() {
       className={`sticky top-0 z-50 w-full transition-all duration-300 ${
         scrolled
           ? 'bg-white/92 backdrop-blur-md shadow-[0_2px_12px_rgba(0,0,0,0.08)] border-b border-[#E8E7E3]'
-          : 'bg-white border-b border-[#E8E7E3]'
+          : 'bg-white border-b border-[#EBEBEB]'
       }`}
-      style={{ height: '64px' }}
+      style={{ height: 64 }}
     >
       <div className="mx-auto max-w-[1280px] px-6">
         <div className="flex h-16 items-center justify-between">
 
           {/* Logo */}
           <Link href="/" className="flex items-baseline gap-0.5 flex-shrink-0">
-            <span className="text-[#D4291A] text-lg font-bold" style={{ fontFamily: "'Fraunces', serif" }}>Tamil</span>
-            <span className="text-[#111111] text-lg font-bold" style={{ fontFamily: "'Fraunces', serif" }}>CinemaHub</span>
+            <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 800, color: '#D4291A' }}>Tamil</span>
+            <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 800, color: '#111111' }}>CinemaHub</span>
           </Link>
 
           {/* Desktop Nav */}
@@ -114,23 +113,21 @@ export default function Navbar() {
           {/* Desktop Search + AI Chat */}
           <div className="hidden md:flex items-center gap-3" ref={searchRef}>
             <form onSubmit={handleSearchSubmit} className="relative">
-              <input
-                type="text"
-                placeholder="Search movies..."
-                value={searchQuery}
-                onChange={handleSearch}
-                onFocus={() => searchQuery && setShowResults(true)}
-                className="bg-[#F7F7F5] border border-[#E8E7E3] rounded-full px-4 py-2 text-sm text-[#111] placeholder-[#888] focus:outline-none focus:border-[#D4291A] focus:bg-white transition-all duration-200"
-                style={{ width: searchQuery ? '16rem' : '12rem' }}
-              />
-              <button type="submit" className="absolute right-3 top-2.5" aria-label="Search">
-                <svg className="w-4 h-4 text-[#888]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <div className="navbar-search" style={{ width: searchQuery ? '16rem' : '12rem' }}>
+                <svg className="search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-              </button>
+                <input
+                  type="text"
+                  placeholder="Search movies..."
+                  value={searchQuery}
+                  onChange={handleSearch}
+                  onFocus={() => searchQuery && setShowResults(true)}
+                />
+              </div>
 
               {showResults && (
-                <div className="absolute top-full mt-2 w-80 bg-white border border-[#E8E7E3] rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] max-h-96 overflow-y-auto z-50">
+                <div className="absolute top-full mt-2 w-80 bg-white border border-[#EBEBEB] rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] max-h-96 overflow-y-auto z-50">
                   {isSearching ? (
                     <div className="p-4 text-center text-[#888] text-sm">Searching...</div>
                   ) : searchResults.length > 0 ? (
@@ -139,7 +136,7 @@ export default function Navbar() {
                         <button
                           key={movie._id}
                           onClick={() => { router.push(`/movies/${movie.slug?.current || movie._id}`); setSearchQuery(''); setShowResults(false) }}
-                          className="w-full text-left px-4 py-3 hover:bg-[#F7F7F5] transition-colors border-b border-[#E8E7E3] last:border-b-0"
+                          className="w-full text-left px-4 py-3 hover:bg-[#F7F7F5] transition-colors border-b border-[#EBEBEB] last:border-b-0"
                         >
                           <div className="font-semibold text-[#111] text-sm">{movie.title}</div>
                           <div className="text-xs text-[#888] mt-0.5">{movie.year} · {movie.genre?.join(', ')}</div>
@@ -155,8 +152,7 @@ export default function Navbar() {
 
             <button
               onClick={() => window.dispatchEvent(new Event('open-chatbot'))}
-              className="rounded-full px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#B01F12] hover:shadow-md active:scale-95"
-              style={{ background: '#D4291A', borderRadius: '20px', padding: '8px 16px' }}
+              className="navbar-ai-btn"
             >
               AI Chat
             </button>
@@ -183,7 +179,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-white border-t border-[#E8E7E3] px-6 py-4 space-y-1 shadow-lg">
+        <div className="md:hidden bg-white border-t border-[#EBEBEB] px-6 py-4 space-y-1 shadow-lg">
           {links.map((link) => (
             <Link
               key={link.href}
@@ -191,7 +187,7 @@ export default function Navbar() {
               onClick={() => setIsOpen(false)}
               className={`flex items-center justify-between rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
                 isActive(link.href)
-                  ? 'bg-[#FFF5F5] text-[#D4291A] border border-[#D4291A20]'
+                  ? 'bg-[#FFF0EE] text-[#D4291A] border border-[#FCDAD7]'
                   : 'text-[#444] hover:bg-[#F7F7F5]'
               }`}
             >
@@ -199,21 +195,20 @@ export default function Navbar() {
               {isActive(link.href) && <span className="w-1.5 h-1.5 bg-[#D4291A] rounded-full" />}
             </Link>
           ))}
-          <div className="pt-3 mt-2 border-t border-[#E8E7E3]">
+          <div className="pt-3 mt-2 border-t border-[#EBEBEB]">
             <form onSubmit={handleSearchSubmit} className="relative">
               <input
                 type="text"
                 placeholder="Search Tamil movies..."
                 value={searchQuery}
                 onChange={handleSearch}
-                className="w-full bg-[#F7F7F5] border border-[#E8E7E3] rounded-lg px-4 py-3 text-sm text-[#111] placeholder-[#888] focus:outline-none focus:border-[#D4291A] transition-all"
+                className="w-full bg-[#F4F3EF] border border-[#E8E7E3] rounded-lg px-4 py-3 text-sm text-[#111] placeholder-[#AAAAAA] focus:outline-none focus:border-[#D4291A] focus:shadow-[0_0_0_3px_rgba(212,41,26,0.08)] transition-all"
               />
             </form>
           </div>
           <button
             onClick={() => { setIsOpen(false); window.dispatchEvent(new Event('open-chatbot')) }}
-            className="w-full mt-2 rounded-lg px-4 py-3 text-sm font-semibold text-white text-center"
-            style={{ background: '#D4291A' }}
+            className="navbar-ai-btn w-full mt-2 justify-center"
           >
             AI Chat
           </button>

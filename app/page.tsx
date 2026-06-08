@@ -56,140 +56,139 @@ export default async function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* ── HERO ────────────────────────────────────────────── */}
-      <section className="overflow-hidden" style={{ background: '#FFFFFF' }}>
-        <div className="mx-auto max-w-[1280px] px-6 pt-28 pb-24">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Left: Text */}
-            <div>
-              <p className="hero-label text-[11px] font-semibold uppercase tracking-[0.1em] text-[#D4291A] mb-4" style={{ fontFamily: "'Inter', sans-serif" }}>
-                &#x1F3AC; KOLLYWOOD&apos;S #1 DATABASE
-              </p>
-              <h1 className="hero-title text-5xl sm:text-6xl lg:text-7xl font-extrabold text-[#111] leading-[1.05] mb-6" style={{ fontFamily: "'Fraunces', serif" }}>
-                Tamil Cinema, Discovered.
-              </h1>
-              <p className="hero-sub text-[17px] text-[#666] leading-[1.7] max-w-[480px] mb-10" style={{ fontFamily: "'Inter', sans-serif" }}>
-                The ultimate database for Tamil movies. Browse reviews, discover hidden gems, and get recommendations powered by AI — all in one place.
-              </p>
-              <div className="hero-btns flex flex-wrap gap-4 mb-10">
-                <Link href="/movies" className="inline-flex items-center gap-2 px-7 py-3.5 text-[14px] font-semibold text-white transition-all hover:-translate-y-0.5" style={{ background: '#D4291A', borderRadius: '6px', fontFamily: "'Inter', sans-serif", boxShadow: '0 4px 16px rgba(212,41,26,0.25)' }}>
-                  Browse 1,600+ Movies
-                </Link>
-                <Link href="/blogs" className="inline-flex items-center gap-2 px-7 py-3.5 text-[14px] font-semibold transition-all hover:bg-[#FFF5F5]" style={{ background: 'transparent', border: '1.5px solid #D4291A', color: '#D4291A', borderRadius: '6px', fontFamily: "'Inter', sans-serif" }}>
-                  Read Reviews
-                </Link>
-              </div>
-              <div className="hero-stats flex flex-wrap gap-3">
-                {['1,600+ Movies', '2000–2026', 'AI Chatbot'].map((stat) => (
-                  <span key={stat} className="inline-block px-3.5 py-1.5 text-[13px] font-medium text-[#444] bg-white rounded-full" style={{ border: '1px solid #E8E7E3', boxShadow: 'var(--shadow-sm)', fontFamily: "'Inter', sans-serif" }}>
-                    {stat}
-                  </span>
-                ))}
-              </div>
+      <section style={{ background: '#FFFFFF' }}>
+        <div className="hero-section">
+          {/* Left: Text */}
+          <div>
+            <span className="hero-eyebrow">
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#D4291A', display: 'inline-block' }} />
+              KOLLYWOOD&apos;S #1 DATABASE
+            </span>
+            <h1 className="hero-title">Tamil Cinema, Discovered.</h1>
+            <p className="hero-subtitle">
+              The ultimate database for Tamil movies. Browse reviews, discover hidden gems, and get recommendations powered by AI — all in one place.
+            </p>
+            <div className="hero-buttons">
+              <Link href="/movies" className="btn-primary">
+                Browse 1,600+ Movies
+              </Link>
+              <Link href="/blogs" className="btn-secondary">
+                Read Reviews
+              </Link>
             </div>
+            <div className="hero-stats">
+              {[
+                { label: '1,600+ Movies', dot: true },
+                { label: '2000–2026', dot: true },
+                { label: 'AI Chatbot', dot: true },
+              ].map((stat) => (
+                <span key={stat.label} className="stat-chip">
+                  {stat.dot && <span className="dot" />}
+                  {stat.label}
+                </span>
+              ))}
+            </div>
+          </div>
 
-            {/* Right: Decorative visual */}
-            <div className="relative hidden lg:flex items-center justify-center" style={{ minHeight: '400px' }}>
-              <div className="absolute w-80 h-80 rounded-full" style={{ background: '#FFF5F5', filter: 'blur(60px)' }} />
-              <div className="relative flex gap-4">
-                {[0, 1, 2].map((i) => (
-                  <div key={i} className="w-32 h-48 rounded-xl shadow-lg" style={{
-                    background: i === 0 ? 'linear-gradient(135deg, #D4291A, #8B1A0F)' : i === 1 ? 'linear-gradient(135deg, #111, #333)' : 'linear-gradient(135deg, #C8973A, #8B6914)',
-                    transform: `rotate(${i === 0 ? -8 : i === 1 ? 3 : -4}deg) translateY(${i === 1 ? -20 : 0}px)`,
-                  }} />
-                ))}
+          {/* Right: Poster Cards Visual */}
+          <div className="hero-visual">
+            <div className="poster-card">
+              <div className="card-label" style={{ position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)', zIndex: 20, background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '5px 12px', color: 'white', fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+                ⭐ Top Rated
               </div>
             </div>
+            <div className="poster-card" />
+            <div className="poster-card" />
           </div>
         </div>
       </section>
 
       {/* ── STATS BAR ───────────────────────────────────────── */}
-      <div className="reveal" style={{ background: '#F2F1EE', borderTop: '1px solid #E8E7E3', borderBottom: '1px solid #E8E7E3' }}>
-        <div className="mx-auto max-w-[1280px] px-6 py-12">
-          <div className="flex flex-wrap items-center justify-center gap-12">
-            <div className="flex flex-col items-center gap-1">
-              <span className="text-[40px] font-bold text-[#D4291A]" style={{ fontFamily: "'Fraunces', serif", lineHeight: 1 }}>
-                <StatCounter end={1600} suffix="+" />
-              </span>
-              <span className="text-[13px] text-[#888]" style={{ fontFamily: "'Inter', sans-serif" }}>Movies</span>
-            </div>
-            <div className="hidden sm:block w-px h-12" style={{ background: '#E8E7E3' }} />
-            <div className="flex flex-col items-center gap-1">
-              <span className="text-[40px] font-bold text-[#D4291A]" style={{ fontFamily: "'Fraunces', serif", lineHeight: 1 }}>
-                2000–2026
-              </span>
-              <span className="text-[13px] text-[#888]" style={{ fontFamily: "'Inter', sans-serif" }}>Years</span>
-            </div>
-            <div className="hidden sm:block w-px h-12" style={{ background: '#E8E7E3' }} />
-            <div className="flex flex-col items-center gap-1">
-              <span className="text-[40px] font-bold text-[#D4291A]" style={{ fontFamily: "'Fraunces', serif", lineHeight: 1 }}>
-                Live
-              </span>
-              <span className="text-[13px] text-[#888]" style={{ fontFamily: "'Inter', sans-serif" }}>AI Chatbot</span>
-            </div>
+      <div className="stats-bar reveal">
+        <div className="stats-inner">
+          <div className="stat-item">
+            <span className="stat-number">
+              <StatCounter end={1600} suffix="+" />
+            </span>
+            <span className="stat-label">Movies</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-number">2000–2026</span>
+            <span className="stat-label">Years</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-number">Live</span>
+            <span className="stat-label">AI Chatbot</span>
           </div>
         </div>
       </div>
 
       {/* ── LATEST MOVIES ───────────────────────────────────── */}
-      <section className="reveal mx-auto max-w-[1280px] px-6 py-20" style={{ background: '#FFFFFF' }}>
-        <div className="flex items-end justify-between mb-10">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#D4291A] mb-2" style={{ fontFamily: "'Inter', sans-serif" }}>Recently Added</p>
-            <h2 className="text-[36px] font-bold text-[#111] leading-tight" style={{ fontFamily: "'Fraunces', serif" }}>Latest Movies</h2>
+      <section className="reveal" style={{ background: '#FFFFFF' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '80px 32px' }}>
+          <div className="section-header">
+            <div>
+              <span className="section-eyebrow">Recently Added</span>
+              <h2 className="section-title">Latest Movies</h2>
+            </div>
+            <Link href="/movies" className="view-all-link">
+              View all
+              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+            </Link>
           </div>
-          <Link href="/movies" className="hidden sm:flex items-center gap-1.5 text-[13px] font-medium text-[#D4291A] hover:underline" style={{ fontFamily: "'Inter', sans-serif" }}>
-            View all →
-          </Link>
-        </div>
-        {movies.length > 0 ? (
-          <div className="reveal-group grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5">
-            {movies.map((movie) => (<MovieCard key={movie._id} movie={movie} />))}
+          {movies.length > 0 ? (
+            <div className="reveal-group movies-grid">
+              {movies.map((movie) => (<MovieCard key={movie._id} movie={movie} />))}
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '64px 0', borderRadius: 12, background: '#FFFFFF', border: '1px solid #EBEBEB' }}>
+              <p style={{ fontSize: 40, marginBottom: 16 }}>🎬</p>
+              <p style={{ color: '#888', fontSize: 14 }}>No movies found. Add them in Sanity Studio.</p>
+            </div>
+          )}
+          <div style={{ marginTop: 32, textAlign: 'center' }} className="md:hidden">
+            <Link href="/movies" className="view-all-link" style={{ justifyContent: 'center' }}>
+              View all movies
+              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+            </Link>
           </div>
-        ) : (
-          <div className="text-center py-16 rounded-xl bg-white" style={{ border: '1px solid #E8E7E3' }}>
-            <p className="text-4xl mb-4">&#x1F3AC;</p>
-            <p className="text-[#888] text-sm">No movies found. Add them in Sanity Studio.</p>
-          </div>
-        )}
-        <div className="mt-8 sm:hidden text-center">
-          <Link href="/movies" className="inline-block px-8 py-3 text-[14px] font-semibold text-[#D4291A] rounded-md transition-all hover:bg-[#FFF5F5]" style={{ border: '1px solid #D4291A', fontFamily: "'Inter', sans-serif" }}>
-            View all movies →
-          </Link>
         </div>
       </section>
 
       {/* ── LATEST BLOGS ────────────────────────────────────── */}
-      <section className="reveal mx-auto max-w-[1280px] px-6 py-20" style={{ background: '#F7F7F5' }}>
-        <div className="flex items-end justify-between mb-10">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#D4291A] mb-2" style={{ fontFamily: "'Inter', sans-serif" }}>Latest Articles</p>
-            <h2 className="text-[36px] font-bold text-[#111] leading-tight" style={{ fontFamily: "'Fraunces', serif" }}>Reviews &amp; Blogs</h2>
+      <section className="reveal" style={{ background: '#F7F7F5' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '80px 32px' }}>
+          <div className="section-header">
+            <div>
+              <span className="section-eyebrow">Latest Articles</span>
+              <h2 className="section-title">Reviews &amp; Blogs</h2>
+            </div>
+            <Link href="/blogs" className="view-all-link">
+              View all
+              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+            </Link>
           </div>
-          <Link href="/blogs" className="hidden sm:flex items-center gap-1.5 text-[13px] font-medium text-[#D4291A] hover:underline" style={{ fontFamily: "'Inter', sans-serif" }}>
-            View all →
-          </Link>
+          {blogs.length > 0 ? (
+            <div className="reveal-group blogs-grid">
+              {blogs.map((blog) => (<BlogCard key={blog._id} blog={blog} />))}
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '64px 0', borderRadius: 12, background: '#FFFFFF', border: '1px solid #EBEBEB' }}>
+              <p style={{ fontSize: 40, marginBottom: 16 }}>✍️</p>
+              <p style={{ color: '#888', fontSize: 14 }}>No blog posts yet. Write reviews in Sanity Studio.</p>
+            </div>
+          )}
         </div>
-        {blogs.length > 0 ? (
-          <div className="reveal-group grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {blogs.map((blog) => (<BlogCard key={blog._id} blog={blog} />))}
-          </div>
-        ) : (
-          <div className="text-center py-16 rounded-xl bg-white" style={{ border: '1px solid #E8E7E3' }}>
-            <p className="text-4xl mb-4">&#x270D;&#xFE0F;</p>
-            <p className="text-[#888] text-sm">No blog posts yet. Write reviews in Sanity Studio.</p>
-          </div>
-        )}
       </section>
 
       {/* ── AI CTA ──────────────────────────────────────────── */}
       <section className="reveal" style={{ background: '#111111' }}>
-        <div className="mx-auto max-w-[1280px] px-6 py-20 text-center relative overflow-hidden">
-          <div className="absolute inset-0" style={{ background: 'repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(255,255,255,0.012) 40px, rgba(255,255,255,0.012) 80px)' }} />
-          <div className="relative z-10">
-            <p className="text-[56px] mb-3">&#x1F3AC;</p>
-            <h3 className="text-[42px] font-bold text-white mb-3" style={{ fontFamily: "'Fraunces', serif" }}>Not sure what to watch?</h3>
-            <p className="text-[17px] text-[#AAAAAA] mb-8 max-w-md mx-auto" style={{ fontFamily: "'Inter', sans-serif" }}>Ask our AI for personalised Tamil movie recommendations.</p>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '80px 32px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(255,255,255,0.012) 40px, rgba(255,255,255,0.012) 80px)' }} />
+          <div style={{ position: 'relative', zIndex: 10 }}>
+            <p style={{ fontSize: 56, marginBottom: 12 }}>🎬</p>
+            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(32px, 5vw, 42px)', fontWeight: 800, color: '#FFFFFF', marginBottom: 12 }}>Not sure what to watch?</h3>
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 17, color: '#AAAAAA', marginBottom: 32, maxWidth: 480, marginLeft: 'auto', marginRight: 'auto' }}>Ask our AI for personalised Tamil movie recommendations.</p>
             <ChatWithAIButton />
           </div>
         </div>
