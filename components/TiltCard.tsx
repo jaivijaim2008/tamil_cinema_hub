@@ -1,8 +1,8 @@
 'use client'
 
-import { useRef, useState, useCallback, useEffect } from 'react'
+import { useRef, useState, useCallback, useEffect, type HTMLAttributes } from 'react'
 
-interface TiltCardProps {
+interface TiltCardProps extends HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode
   className?: string
   maxTilt?: number
@@ -18,13 +18,13 @@ export default function TiltCard({
   perspective = 1000,
   scale = 1.03,
   glareEnabled = true,
+  ...rest
 }: TiltCardProps) {
   const ref = useRef<HTMLDivElement>(null)
   const [style, setStyle] = useState<React.CSSProperties>({})
   const [glare, setGlare] = useState({ x: 50, y: 50, opacity: 0 })
   const prefersReduced = useRef(false)
 
-  // Check prefers-reduced-motion in useEffect instead of render
   useEffect(() => {
     prefersReduced.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   }, [])
@@ -48,7 +48,6 @@ export default function TiltCard({
   }, [maxTilt, perspective, scale, glareEnabled])
 
   const handleMouseLeave = useCallback(() => {
-    // Reset to identity without translateZ to avoid 1-frame flash
     setStyle({
       transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)',
       boxShadow: '',
@@ -62,6 +61,7 @@ export default function TiltCard({
       className={className}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      {...rest}
       style={{
         ...style,
         transformStyle: 'preserve-3d',
@@ -75,7 +75,7 @@ export default function TiltCard({
           style={{
             position: 'absolute',
             inset: 0,
-            borderRadius: 'inherit', // Inherit card border-radius
+            borderRadius: 'inherit',
             background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgba(255,255,255,${glare.opacity}) 0%, transparent 60%)`,
             pointerEvents: 'none',
             zIndex: 30,

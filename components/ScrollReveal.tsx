@@ -16,12 +16,12 @@ export default function ScrollReveal() {
           }
         })
       },
-      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+      { threshold: 0.08, rootMargin: '0px 0px -48px 0px' }
     )
 
-    // Small delay to let new page DOM render
     const timer = setTimeout(() => {
-      document.querySelectorAll('.reveal:not(.visible), .reveal-group > *:not(.visible)').forEach((el) => {
+      document.querySelectorAll('.reveal-up:not(.visible), .reveal-left:not(.visible), .reveal-scale:not(.visible), .reveal:not(.visible), .reveal-group > *:not(.visible)').forEach((el, i) => {
+        (el as HTMLElement).style.transitionDelay = `${(i % 5) * 0.08}s`
         observer.observe(el)
       })
     }, 100)

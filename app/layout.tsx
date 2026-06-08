@@ -24,9 +24,7 @@ export const metadata: Metadata = {
   creator: 'TamilCinemaHub',
   publisher: 'TamilCinemaHub',
   openGraph: {
-    type: 'website',
-    siteName: 'TamilCinemaHub',
-    locale: 'en_US',
+    type: 'website', siteName: 'TamilCinemaHub', locale: 'en_US',
     title: 'TamilCinemaHub — Tamil Movies, Reviews & AI Recommendations',
     description: 'Your complete guide to Tamil cinema. Explore 1600+ Tamil movies from 2000 to 2026.',
     url: 'https://tamilcinemahub.xyz',
@@ -45,7 +43,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&family=Noto+Serif+Tamil:wght@400;600&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&family=Noto+Serif+Tamil:wght@600&display=swap"
           rel="stylesheet"
         />
         <Script

@@ -24,12 +24,14 @@ interface BlogCardProps {
 }
 
 const CATEGORY_TAG_CLASS: Record<string, string> = {
-  Review: 'tag-review',
-  'Top List': 'tag-toplist',
-  News: 'tag-news',
-  Actor: 'tag-actor',
-  Director: 'tag-director',
+  Review: 'tag-review-dark',
+  'Top List': 'tag-toplist-dark',
+  News: 'tag-news-dark',
+  Actor: 'tag-actor-dark',
+  Director: 'tag-director-dark',
 }
+
+const BANNER_CLASSES = ['blog-banner-1', 'blog-banner-2', 'blog-banner-3', 'blog-banner-4', 'blog-banner-5']
 
 export default function BlogCard({ blog, index = 0 }: BlogCardProps) {
   const imageUrl = blog.mainImage
@@ -40,30 +42,31 @@ export default function BlogCard({ blog, index = 0 }: BlogCardProps) {
     day: 'numeric', month: 'short', year: 'numeric',
   })
 
-  const tagClass = CATEGORY_TAG_CLASS[blog.category] || 'tag-review'
+  const tagClass = CATEGORY_TAG_CLASS[blog.category] || 'tag-review-dark'
+  const bannerClass = BANNER_CLASSES[index % BANNER_CLASSES.length]
+  const isFeatured = index === 0
+  const watermarkText = blog.category === 'Top List' ? 'TOP 10' : blog.category.toUpperCase()
 
   return (
-    <TiltCard className="blog-card" maxTilt={6} perspective={1000} scale={1.02}>
-      <Link href={`/blogs/${blog.slug}`} className="block h-full">
-        <div className="blog-card-image">
-          {imageUrl ? (
+    <TiltCard className={`blog-card-dark ${isFeatured ? 'featured' : ''}`} maxTilt={6} perspective={1000} scale={1.02}>
+      <Link href={`/blogs/${blog.slug}`} style={{ display: 'block', height: '100%' }}>
+        {imageUrl ? (
+          <div className="blog-card-image-dark">
             <img src={imageUrl} alt={blog.title} loading="lazy" />
-          ) : (
-            <div style={{ display: 'flex', height: '100%', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="1.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </div>
-          )}
-          <span className={`blog-category-tag ${tagClass}`}>{blog.category}</span>
-        </div>
-        <div className="blog-card-body">
-          <span className="blog-author-line">{blog.author} · {formattedDate}</span>
-          <h3 className="blog-title">{blog.title}</h3>
-          <p className="blog-excerpt">{blog.excerpt}</p>
-          <span className="blog-read-link">
-            Read article
-            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+            <span className={`blog-category-tag-dark ${tagClass}`}>{blog.category}</span>
+          </div>
+        ) : (
+          <div className={`blog-banner-dark ${bannerClass}`}>
+            <span className={`blog-category-tag-dark ${tagClass}`}>{blog.category}</span>
+            <span className="blog-watermark-dark" style={isFeatured ? {} : { fontSize: 32 }}>{watermarkText}</span>
+          </div>
+        )}
+        <div className="blog-body-dark">
+          <span className="blog-author-dark">{blog.author} · {formattedDate}</span>
+          <h3 className="blog-title-dark">{blog.title}</h3>
+          {blog.excerpt && <p className="blog-excerpt-dark">{blog.excerpt}</p>}
+          <span className="blog-read-link-dark">
+            Read article →
           </span>
         </div>
       </Link>
