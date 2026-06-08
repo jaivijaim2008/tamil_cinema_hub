@@ -150,9 +150,9 @@ export default function TamilCinemaHubChatbot() {
   }
 
   return (
-    <div className={`fixed z-50 flex flex-col items-end ${isOpen ? 'bottom-6 right-6 max-[479px]:inset-0 max-[479px]:!bottom-0 max-[479px]:!right-0' : 'bottom-6 right-6'}`}>
+    <div className={`fixed z-50 flex flex-col items-end justify-end ${isOpen ? 'bottom-6 right-6 max-[479px]:inset-0 max-[479px]:!bottom-0 max-[479px]:!right-0' : 'bottom-6 right-6'}`}>
       {isOpen && (
-        <div className="mb-4 w-[420px] max-w-[calc(100vw-48px)] h-[520px] max-h-[calc(100vh-120px)] max-[479px]:w-full max-[479px]:h-full max-[479px]:max-w-full max-[479px]:max-h-full max-[479px]:mb-0 max-[479px]:rounded-none max-[479px]:border-0 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] flex flex-col overflow-hidden border border-white/[0.08]" style={{ background: 'rgba(10,0,8,0.92)', backdropFilter: 'blur(20px) saturate(180%)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+        <div className="mb-4 w-[420px] max-w-[calc(100vw-48px)] h-[520px] max-h-[calc(100dvh-120px)] max-[479px]:w-full max-[479px]:h-full max-[479px]:max-w-full max-[479px]:max-h-full max-[479px]:mb-0 max-[479px]:rounded-none max-[479px]:border-0 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] flex flex-col overflow-hidden border border-white/[0.08]" style={{ background: 'rgba(10,0,8,0.92)', backdropFilter: 'blur(20px) saturate(180%)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           <div className="px-4 py-3 flex items-center justify-between flex-shrink-0" style={{ background: 'linear-gradient(135deg, var(--crimson), var(--violet))', paddingTop: 'calc(0.75rem + env(safe-area-inset-top, 0px))' }}>
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center"><svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" /><path d="M2 11h20M2 7l4-4M8 7l4-4M14 7l4-4M20 7l2-2M2 3h20" /></svg></div>

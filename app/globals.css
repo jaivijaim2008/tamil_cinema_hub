@@ -246,6 +246,7 @@ body::before {
 .hero-visual {
   position: relative; width: 100%; max-width: 500px; height: 500px;
   display: flex; align-items: center; justify-content: center; perspective: 800px;
+  overflow: hidden;
 }
 .bg-orb-1 {
   position: absolute; width: 300px; height: 300px; border-radius: 50%;
