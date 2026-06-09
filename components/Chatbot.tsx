@@ -93,10 +93,11 @@ export default function TamilCinemaHubChatbot() {
   const handleDragStart = useCallback((e: React.MouseEvent) => {
     if (window.innerWidth < 768) return // no drag on mobile
     e.preventDefault()
-    const currentPos = dragPos || { x: window.innerWidth - 440, y: window.innerHeight - 600 }
+    const rect = chatWindowRef.current?.getBoundingClientRect()
+    const currentPos = dragPos || (rect ? { x: rect.left, y: rect.top } : defaultPos)
     dragRef.current = { dragging: true, startX: e.clientX, startY: e.clientY, origX: currentPos.x, origY: currentPos.y }
     setIsDragging(true)
-  }, [dragPos])
+  }, [dragPos, defaultPos])
 
   useEffect(() => {
     if (!isDragging) return
@@ -222,8 +223,11 @@ export default function TamilCinemaHubChatbot() {
     return parts
   }
 
-  // Compute desktop position style
-  const desktopStyle: React.CSSProperties = dragPos
+  // Compute desktop position style — always use left/top for consistency
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+  const defaultPos = { x: (typeof window !== 'undefined' ? window.innerWidth : 1200) - 440, y: (typeof window !== 'undefined' ? window.innerHeight : 800) - 600 }
+  const desktopStyle: React.CSSProperties = mounted && dragPos
     ? { left: dragPos.x, top: dragPos.y }
     : { right: 20, bottom: 20 }
 
