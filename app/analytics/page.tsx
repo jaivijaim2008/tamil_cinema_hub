@@ -4,7 +4,6 @@ import AnalyticsDashboard from '../../components/AnalyticsDashboard'
 
 export const revalidate = 300
 
-// ─── SEO ──────────────────────────────────────────────────────────────────────
 export const metadata: Metadata = {
   title: 'Movie Database Dashboard | TamilCinemaHub',
   description:
@@ -45,13 +44,35 @@ const OTT_ALIAS: Record<string, string> = {
 }
 const normaliseOTT = (raw: string) => OTT_ALIAS[raw.toLowerCase().trim()] ?? raw.trim()
 
-// ─── Data fetcher ─────────────────────────────────────────────────────────────
+// ─── Movie type ───────────────────────────────────────────────────────────────
+type Movie = {
+  title: string
+  year: number
+  rating: number | string | null
+  genre: string[]
+  ottPlatform?: string
+  director?: string
+}
+
+// ─── Data fetcher (paginated) ─────────────────────────────────────────────────
 async function getStats() {
   try {
-    const movies = await client.fetch<
-      { title: string; year: number; rating: number | string | null; genre: string[]; ottPlatform?: string; director?: string }[]
-    >(`*[_type == "movie"][0...9999]{ title, year, rating, genre, ottPlatform, director }`)
+    const PAGE_SIZE = 500
+    let allMovies: Movie[] = []
+    let page = 0
 
+    while (true) {
+      const from = page * PAGE_SIZE
+      const to = from + PAGE_SIZE
+      const batch = await client.fetch<Movie[]>(
+        `*[_type == "movie"][${from}...${to}]{ title, year, rating, genre, ottPlatform, director }`
+      )
+      allMovies = [...allMovies, ...batch]
+      if (batch.length < PAGE_SIZE) break
+      page++
+    }
+
+    const movies = allMovies
     const total = movies.length
 
     // Year
@@ -64,7 +85,7 @@ async function getStats() {
     movies.forEach(m => { (m.genre || []).forEach(g => { if (g) genreMap.set(g, (genreMap.get(g) || 0) + 1) }) })
     const genres = Array.from(genreMap.entries()).map(([genre, count]) => ({ genre, count })).sort((a, b) => b.count - a.count)
 
-    // Rating (fix NaN: parse string → float)
+    // Rating
     const ratingBuckets = [0, 0, 0, 0, 0]
     let ratingSum = 0, ratingCount = 0
     movies.forEach(m => {
@@ -80,7 +101,7 @@ async function getStats() {
     })
     const avgRating = ratingCount ? (ratingSum / ratingCount).toFixed(1) : 'N/A'
 
-    // OTT (merge duplicates)
+    // OTT
     const ottMap = new Map<string, number>()
     movies.forEach(m => {
       if (m.ottPlatform) {
@@ -93,7 +114,7 @@ async function getStats() {
       .sort((a, b) => b.count - a.count)
       .slice(0, 8)
 
-    // Directors (skip Unknown / N/A)
+    // Directors
     const directorMap = new Map<string, number>()
     movies.forEach(m => {
       const d = m.director?.trim()
@@ -106,8 +127,8 @@ async function getStats() {
       .sort((a, b) => b.count - a.count)
       .slice(0, 10)
 
-    const maxYear  = years.length ? years[years.length - 1].year : 2026
-    const minYear  = years.length ? years[0].year : 2000
+    const maxYear    = years.length ? years[years.length - 1].year : 2026
+    const minYear    = years.length ? years[0].year : 2000
     const totalRated = ratingBuckets.reduce((a, b) => a + b, 0)
 
     return { total, years, genres, ratingBuckets, ottPlatforms, topDirectors, avgRating, minYear, maxYear, totalRated }
@@ -121,7 +142,6 @@ async function getStats() {
 export default async function AnalyticsPage() {
   const stats = await getStats()
 
-  // JSON-LD structured data
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Dataset',
