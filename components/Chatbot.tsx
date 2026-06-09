@@ -41,7 +41,22 @@ export default function TamilCinemaHubChatbot() {
   const streamRef = useRef({ full: '', idx: 0, timer: null as any, provider: undefined as string | undefined, suggestions: undefined as string[] | undefined })
   const abortRef = useRef<AbortController | null>(null)
 
+  // ── Drag state (desktop only) ──
+  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null)
+  const dragRef = useRef({ dragging: false, startX: 0, startY: 0, origX: 0, origY: 0 })
+  const chatWindowRef = useRef<HTMLDivElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
+
   useEffect(() => { try { const s = localStorage.getItem('chatbot-feedback'); if (s) setFeedback(JSON.parse(s)) } catch {} }, [])
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('chatbot-drag-pos')
+      if (saved) {
+        const p = JSON.parse(saved)
+        if (p && typeof p.x === 'number' && typeof p.y === 'number') setDragPos(p)
+      }
+    } catch {}
+  }, [])
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
@@ -73,6 +88,45 @@ export default function TamilCinemaHubChatbot() {
       if (scrollY) window.scrollTo(0, parseInt(scrollY || '0') * -1)
     }
   }, [isOpen])
+
+  // ── Drag handlers (desktop only) ──
+  const handleDragStart = useCallback((e: React.MouseEvent) => {
+    if (window.innerWidth < 768) return // no drag on mobile
+    e.preventDefault()
+    const currentPos = dragPos || { x: window.innerWidth - 440, y: window.innerHeight - 600 }
+    dragRef.current = { dragging: true, startX: e.clientX, startY: e.clientY, origX: currentPos.x, origY: currentPos.y }
+    setIsDragging(true)
+  }, [dragPos])
+
+  useEffect(() => {
+    if (!isDragging) return
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!dragRef.current.dragging) return
+      const dx = e.clientX - dragRef.current.startX
+      const dy = e.clientY - dragRef.current.startY
+      const maxX = window.innerWidth - 80
+      const maxY = window.innerHeight - 80
+      const newX = Math.max(0, Math.min(maxX, dragRef.current.origX + dx))
+      const newY = Math.max(0, Math.min(maxY, dragRef.current.origY + dy))
+      setDragPos({ x: newX, y: newY })
+    }
+    const handleMouseUp = () => {
+      dragRef.current.dragging = false
+      setIsDragging(false)
+      setDragPos((prev) => {
+        if (prev) {
+          try { localStorage.setItem('chatbot-drag-pos', JSON.stringify(prev)) } catch {}
+        }
+        return prev
+      })
+    }
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isDragging])
 
   const startStreaming = useCallback((fullText: string, provider?: string, suggestions?: string[]) => {
     if (streamRef.current.timer) clearInterval(streamRef.current.timer)
@@ -168,28 +222,39 @@ export default function TamilCinemaHubChatbot() {
     return parts
   }
 
+  // Compute desktop position style
+  const desktopStyle: React.CSSProperties = dragPos
+    ? { left: dragPos.x, top: dragPos.y }
+    : { right: 20, bottom: 20 }
+
   return (
     <>
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop — mobile only */}
           <div
-            className="fixed inset-0 z-[199]"
+            className="fixed inset-0 z-[199] md:hidden"
             style={{ background: 'rgba(5,0,8,0.7)' }}
             onClick={() => setIsOpen(false)}
           />
 
-          {/* Chat Window — cinema ticket shape */}
+          {/* Chat Window */}
           <div
-            className="fixed inset-0 z-[200] flex flex-col overflow-hidden md:inset-auto md:bottom-5 md:right-5 md:w-[420px] md:max-w-[calc(100vw-28px)] md:h-[min(580px,calc(100dvh-80px))] md:shadow-[0_32px_100px_rgba(0,0,0,0.9)]"
+            ref={chatWindowRef}
+            className={`z-[200] flex flex-col overflow-hidden ${
+              isDragging ? 'select-none' : ''
+            } fixed inset-0 md:inset-auto md:w-[420px] md:max-w-[calc(100vw-28px)] md:h-[min(580px,calc(100dvh-80px))] md:shadow-[0_32px_100px_rgba(0,0,0,0.9)]`}
             style={{
+              ...desktopStyle,
               background: '#0A0008',
               paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+              transition: isDragging ? 'none' : undefined,
             }}
           >
-            {/* ── Header — crimson gradient with film grain texture ── */}
+            {/* ── Header — draggable on desktop ── */}
             <div
-              className="relative flex items-center justify-between px-4 py-3.5 flex-shrink-0 overflow-hidden"
+              onMouseDown={handleDragStart}
+              className="relative flex items-center justify-between px-4 py-3.5 flex-shrink-0 overflow-hidden md:cursor-move"
               style={{ background: 'linear-gradient(135deg, #1a0510 0%, #2a0a18 50%, #1a0510 100%)' }}
             >
               {/* Film grain overlay */}
@@ -223,7 +288,7 @@ export default function TamilCinemaHubChatbot() {
 
               <div className="flex items-center gap-1 relative z-10">
                 <button
-                  onClick={clearChat}
+                  onClick={(e) => { e.stopPropagation(); clearChat() }}
                   className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
                   style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,248,240,0.4)' }}
                   title="Clear chat"
@@ -233,7 +298,7 @@ export default function TamilCinemaHubChatbot() {
                   </svg>
                 </button>
                 <button
-                  onClick={() => setIsOpen(false)}
+                  onClick={(e) => { e.stopPropagation(); setIsOpen(false) }}
                   className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
                   style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,248,240,0.5)' }}
                 >
@@ -419,7 +484,7 @@ export default function TamilCinemaHubChatbot() {
               </div>
             </div>
 
-            {/* ── Quick suggestions — first load (ticket stub style) ── */}
+            {/* ── Quick suggestions — first load ── */}
             {messages.length === 1 && (
               <div
                 className="px-4 py-2.5 flex gap-2 overflow-x-auto flex-shrink-0"
@@ -442,12 +507,11 @@ export default function TamilCinemaHubChatbot() {
               </div>
             )}
 
-            {/* ── Input — cinema ticket bottom ── */}
+            {/* ── Input ── */}
             <div
               className="relative flex-shrink-0"
               style={{ background: 'linear-gradient(180deg, #12000a, #0A0008)' }}
             >
-              {/* Top accent */}
               <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(212,41,26,0.3), rgba(240,180,41,0.2), transparent)' }} />
               <div className="px-4 py-3 flex items-center gap-3">
                 <div className="flex-1 relative">
