@@ -41,22 +41,23 @@ export default function TamilCinemaHubChatbot() {
   const streamRef = useRef({ full: '', idx: 0, timer: null as any, provider: undefined as string | undefined, suggestions: undefined as string[] | undefined })
   const abortRef = useRef<AbortController | null>(null)
 
-  // ── Drag state (desktop only) ──
-  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null)
+  // ── Drag state (desktop only) — initialized from localStorage ──
+  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(() => {
+    if (typeof window === 'undefined') return null
+    try {
+      const saved = localStorage.getItem('chatbot-drag-pos')
+      if (saved) {
+        const p = JSON.parse(saved)
+        if (p && typeof p.x === 'number' && typeof p.y === 'number') return p
+      }
+    } catch {}
+    return null
+  })
   const dragRef = useRef({ dragging: false, startX: 0, startY: 0, origX: 0, origY: 0 })
   const chatWindowRef = useRef<HTMLDivElement>(null)
   const [isDragging, setIsDragging] = useState(false)
 
   useEffect(() => { try { const s = localStorage.getItem('chatbot-feedback'); if (s) setFeedback(JSON.parse(s)) } catch {} }, [])
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('chatbot-drag-pos')
-      if (saved) {
-        const p = JSON.parse(saved)
-        if (p && typeof p.x === 'number' && typeof p.y === 'number') setDragPos(p)
-      }
-    } catch {}
-  }, [])
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
@@ -94,10 +95,10 @@ export default function TamilCinemaHubChatbot() {
     if (window.innerWidth < 768) return // no drag on mobile
     e.preventDefault()
     const rect = chatWindowRef.current?.getBoundingClientRect()
-    const currentPos = dragPos || (rect ? { x: rect.left, y: rect.top } : defaultPos)
+    const currentPos = dragPos || (rect ? { x: rect.left, y: rect.top } : getDefaultPos())
     dragRef.current = { dragging: true, startX: e.clientX, startY: e.clientY, origX: currentPos.x, origY: currentPos.y }
     setIsDragging(true)
-  }, [dragPos, defaultPos])
+  }, [dragPos, getDefaultPos])
 
   useEffect(() => {
     if (!isDragging) return
@@ -223,11 +224,9 @@ export default function TamilCinemaHubChatbot() {
     return parts
   }
 
-  // Compute desktop position style — always use left/top for consistency
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => { setMounted(true) }, [])
-  const defaultPos = { x: (typeof window !== 'undefined' ? window.innerWidth : 1200) - 440, y: (typeof window !== 'undefined' ? window.innerHeight : 800) - 600 }
-  const desktopStyle: React.CSSProperties = mounted && dragPos
+  // Compute desktop position — always use left/top
+  const getDefaultPos = useCallback(() => ({ x: window.innerWidth - 440, y: window.innerHeight - 600 }), [])
+  const desktopStyle: React.CSSProperties = dragPos
     ? { left: dragPos.x, top: dragPos.y }
     : { right: 20, bottom: 20 }
 
