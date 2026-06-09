@@ -43,9 +43,8 @@ export async function generateMetadata({ params }: BlogDetailProps): Promise<Met
 
   const { blog } = data
   const ogImageUrl = blog.mainImage ? urlFor(blog.mainImage).width(1200).height(630).url() : ''
-  const pageTitle = blog.seoTitle || blog.title
   return {
-    title: pageTitle.includes('TamilCinemaHub') ? pageTitle : `${pageTitle} | TamilCinemaHub`,
+    title: blog.seoTitle || blog.title,
     description: blog.seoDescription || blog.excerpt,
     openGraph: {
       title: blog.seoTitle || blog.title,
