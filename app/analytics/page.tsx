@@ -5,21 +5,21 @@ export const revalidate = 300
 
 async function getStats() {
   try {
-    const [movies, genres, total] = await Promise.all([
-      client.fetch<{ title: string; year: number; rating: number; genre: string[]; ottPlatform?: string; director?: string }[]>(
-        `*[_type == "movie"]{ title, year, rating, genre, ottPlatform, director }`
-      ),
-      client.fetch<{ genre: string; count: number }[]>(
-        `array::compact(*[_type == "movie"].genre[]) | order() { "genre": @, "count": count(*[_type == "movie" && @ in genre]) }`
-      ),
-      client.fetch<number>(`count(*[_type == "movie"])`),
-    ])
+    const movies = await client.fetch<{ title: string; year: number; rating: number; genre: string[]; ottPlatform?: string; director?: string }[]>(
+      `*[_type == "movie"]{ title, year, rating, genre, ottPlatform, director }`
+    )
+
+    const total = movies.length
 
     const yearMap = new Map<number, number>()
-    movies.forEach(m => { yearMap.set(m.year, (yearMap.get(m.year) || 0) + 1) })
+    movies.forEach(m => { if (m.year) yearMap.set(m.year, (yearMap.get(m.year) || 0) + 1) })
     const years = Array.from(yearMap.entries()).map(([year, count]) => ({ year, count })).sort((a, b) => a.year - b.year)
 
-    const ratingBuckets = [0, 0, 0, 0, 0] // 1-2, 2-3, 3-4, 4-5, 5
+    const genreMap = new Map<string, number>()
+    movies.forEach(m => { (m.genre || []).forEach(g => { if (g) genreMap.set(g, (genreMap.get(g) || 0) + 1) }) })
+    const genres = Array.from(genreMap.entries()).map(([genre, count]) => ({ genre, count })).sort((a, b) => b.count - a.count)
+
+    const ratingBuckets = [0, 0, 0, 0, 0]
     movies.forEach(m => {
       const r = m.rating || 0
       if (r >= 4.5) ratingBuckets[4]++
@@ -37,11 +37,11 @@ async function getStats() {
     movies.forEach(m => { if (m.director) directorMap.set(m.director, (directorMap.get(m.director) || 0) + 1) })
     const topDirectors = Array.from(directorMap.entries()).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count).slice(0, 10)
 
-    const avgRating = movies.length ? (movies.reduce((sum, m) => sum + (m.rating || 0), 0) / movies.length).toFixed(1) : '0'
+    const avgRating = total ? (movies.reduce((sum, m) => sum + (m.rating || 0), 0) / total).toFixed(1) : '0'
     const maxYear = years.length ? years[years.length - 1].year : 2026
     const minYear = years.length ? years[0].year : 2000
 
-    return { total, years, genres, ratingBuckets, ottPlatforms, topDirectors, avgRating, minYear, maxYear, movieCount: movies.length }
+    return { total, years, genres, ratingBuckets, ottPlatforms, topDirectors, avgRating, minYear, maxYear, movieCount: total }
   } catch {
     return null
   }

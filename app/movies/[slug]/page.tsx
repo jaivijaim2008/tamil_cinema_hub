@@ -173,7 +173,7 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* Page Header */}
-      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="movie-detail-page-header" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingTop: 100 }}>
         <div style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 24px' }}>
           <Link href="/movies" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 500, marginBottom: 24, color: 'rgba(255,255,255,0.35)', transition: 'color 0.2s', textDecoration: 'none' }}>
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -314,7 +314,7 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
         </div>
 
         {/* Right Sidebar */}
-        <div style={{ position: 'sticky', top: 96, height: 'fit-content' }}>
+        <div className="movie-detail-sidebar" style={{ position: 'sticky', top: 96, height: 'fit-content' }}>
           <div style={{ borderRadius: 16, padding: 20, display: 'flex', flexDirection: 'column', gap: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
             {[
               { icon: '📅', label: 'Year', value: String(movie.year) },
