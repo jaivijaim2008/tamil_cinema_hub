@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import Link from 'next/link'
 import { client } from '../../sanity/client'
 import { paginatedMoviesQuery, moviesCountQuery, allGenresQuery } from '../../lib/queries'
 import MovieCard, { Movie } from '../../components/MovieCard'
@@ -69,15 +70,53 @@ export default async function MoviesPage({ searchParams }: { searchParams: Promi
       {/* Page Header */}
       <section style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '48px 0' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px' }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--rose-light)', marginBottom: 8, fontFamily: "'Syne', sans-serif" }}>
-            TamilCinemaHub
-          </p>
-          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 800, color: 'rgba(255,255,255,0.92)', marginBottom: 8, lineHeight: 1.1 }}>
-            Movies Database
-          </h1>
-          <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.4)' }}>
-            {totalMovieCount.toLocaleString()} Tamil movies from 2000 to 2026 — with ratings, cast, and reviews.
-          </p>
+          <div style={{ flexWrap: 'wrap' }} className="flex md:flex-row flex-col md:items-center items-start justify-between gap-5">
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--rose-light)', marginBottom: 8, fontFamily: "'Syne', sans-serif" }}>
+                TamilCinemaHub
+              </p>
+              <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 800, color: 'rgba(255,255,255,0.92)', marginBottom: 8, lineHeight: 1.1 }}>
+                Movies Database
+              </h1>
+              <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.4)' }}>
+                {totalMovieCount.toLocaleString()} Tamil movies from 2000 to 2026 — with ratings, cast, and reviews.
+              </p>
+            </div>
+            <Link
+              href="/analytics"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                background: 'linear-gradient(135deg, rgba(212,41,26,0.1) 0%, rgba(124,58,237,0.1) 100%)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 12,
+                padding: '10px 18px',
+                fontSize: 13,
+                fontWeight: 600,
+                color: 'rgba(255,255,255,0.85)',
+                textDecoration: 'none',
+                fontFamily: "'Syne', sans-serif",
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={e => {
+                const target = e.currentTarget;
+                target.style.background = 'linear-gradient(135deg, rgba(212,41,26,0.2) 0%, rgba(124,58,237,0.2) 100%)';
+                target.style.borderColor = 'rgba(255,255,255,0.16)';
+                target.style.color = '#fff';
+                target.style.boxShadow = '0 8px 24px rgba(212,41,26,0.15)';
+              }}
+              onMouseLeave={e => {
+                const target = e.currentTarget;
+                target.style.background = 'linear-gradient(135deg, rgba(212,41,26,0.1) 0%, rgba(124,58,237,0.1) 100%)';
+                target.style.borderColor = 'rgba(255,255,255,0.08)';
+                target.style.color = 'rgba(255,255,255,0.85)';
+                target.style.boxShadow = 'none';
+              }}
+            >
+              📊 View Database Analytics &amp; Insights
+            </Link>
+          </div>
         </div>
       </section>
 

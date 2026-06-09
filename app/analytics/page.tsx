@@ -64,7 +64,7 @@ async function getStats() {
 
     while (true) {
       const from = page * PAGE_SIZE
-      const to = from + PAGE_SIZE - 1
+      const to = from + PAGE_SIZE
 
       // KEY FIX: Use GROQ params ($from / $to) instead of string interpolation.
       // String interpolation like `[${from}...${to}]` is treated as a static
