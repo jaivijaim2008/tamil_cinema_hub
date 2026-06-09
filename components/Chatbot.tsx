@@ -172,14 +172,23 @@ export default function TamilCinemaHubChatbot() {
   return (
     <>
       {isOpen && (
-        <div
-          className="fixed inset-0 z-[200] md:inset-auto md:bottom-[88px] md:right-6 md:w-[390px] md:max-w-[calc(100vw-48px)] md:h-[min(520px,calc(100dvh-120px))] md:rounded-2xl md:shadow-[0_24px_64px_rgba(0,0,0,0.75)] flex flex-col overflow-hidden"
-          style={{
-            background: '#0f1117',
-            border: 'none',
-            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-          }}
-        >
+        <>
+          {/* Backdrop overlay — covers entire page */}
+          <div
+            className="fixed inset-0 z-[199]"
+            style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+            onClick={() => setIsOpen(false)}
+          />
+          {/* Chat panel */}
+          <div
+            className="fixed z-[200] md:bottom-[88px] md:right-6 md:w-[390px] md:max-w-[calc(100vw-48px)] md:h-[min(520px,calc(100dvh-120px))] md:rounded-2xl md:shadow-[0_24px_64px_rgba(0,0,0,0.75)] flex flex-col overflow-hidden"
+            style={{
+              background: '#0f1117',
+              border: 'none',
+              paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+              inset: '0',
+            }}
+          >
           {/* ── Header ── */}
           <div
             className="px-3 py-2.5 flex items-center justify-between flex-shrink-0"
@@ -417,8 +426,8 @@ export default function TamilCinemaHubChatbot() {
                 </svg>
               </button>
             )}
-          </div>
-        </div>
+          </div>          </div>
+        </>
       )}
 
       {/* ── FAB toggle ── */}
