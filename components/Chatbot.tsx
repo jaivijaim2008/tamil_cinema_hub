@@ -55,6 +55,26 @@ export default function TamilCinemaHubChatbot() {
   useEffect(() => { return () => { if (streamRef.current.timer) clearInterval(streamRef.current.timer) } }, [])
   useEffect(() => { const h = () => setIsOpen(true); window.addEventListener('open-chatbot', h); return () => window.removeEventListener('open-chatbot', h) }, [])
 
+  // Lock body scroll when chat is open on mobile
+  useEffect(() => {
+    if (!isOpen) return
+    const isMobile = window.innerWidth <= 479
+    if (isMobile) {
+      document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+      document.body.style.top = `-${window.scrollY}px`
+    }
+    return () => {
+      const scrollY = document.body.style.top
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+      document.body.style.top = ''
+      if (scrollY) window.scrollTo(0, parseInt(scrollY || '0') * -1)
+    }
+  }, [isOpen])
+
   const startStreaming = useCallback((fullText: string, provider?: string, suggestions?: string[]) => {
     if (streamRef.current.timer) clearInterval(streamRef.current.timer)
     streamRef.current = { full: fullText, idx: 0, timer: null, provider, suggestions }
@@ -150,42 +170,40 @@ export default function TamilCinemaHubChatbot() {
   }
 
   return (
-    <div className={`fixed z-[200] flex flex-col items-end justify-end ${isOpen ? 'bottom-6 right-6 max-[479px]:inset-0 max-[479px]:!bottom-0 max-[479px]:!right-0' : 'bottom-6 right-6'}`}>
+    <div className="fixed z-[200]">
       {isOpen && (
         <div
-          className="mb-4 w-[390px] max-w-[calc(100vw-48px)] max-[479px]:w-full max-[479px]:h-full max-[479px]:max-w-full max-[479px]:max-h-full max-[479px]:mb-0 max-[479px]:rounded-none rounded-2xl flex flex-col overflow-hidden"
+          className="fixed inset-0 md:inset-auto md:bottom-[88px] md:right-6 md:w-[390px] md:max-w-[calc(100vw-48px)] md:h-[min(520px,calc(100dvh-120px))] md:rounded-2xl md:shadow-[0_24px_64px_rgba(0,0,0,0.75)] flex flex-col overflow-hidden"
           style={{
-            height: 'min(560px, calc(100dvh - 120px))',
             background: '#0f1117',
             border: 'none',
-            boxShadow: '0 24px 64px rgba(0,0,0,0.75), 0 4px 16px rgba(0,0,0,0.5)',
             paddingBottom: 'env(safe-area-inset-bottom, 0px)',
           }}
         >
           {/* ── Header ── */}
           <div
-            className="px-4 py-3 flex items-center justify-between flex-shrink-0"
+            className="px-3 py-2.5 flex items-center justify-between flex-shrink-0"
             style={{ background: '#161820' }}
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                 style={{ background: 'rgba(99,102,241,0.18)' }}
               >
-                <svg className="w-5 h-5" style={{ color: '#818cf8' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <svg className="w-4 h-4" style={{ color: '#818cf8' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="2" y="7" width="20" height="15" rx="2" />
                   <path d="M2 11h20M2 7l4-4M8 7l4-4M14 7l4-4" />
                 </svg>
               </div>
               <div>
                 <p className="text-white text-sm font-semibold leading-none tracking-tight">TamilCinemaHub AI</p>
-                <div className="flex items-center gap-1.5 mt-1">
+                <div className="flex items-center gap-1.5 mt-0.5">
                   <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
-                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Online</p>
+                  <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>Online</p>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1">
               <button
                 onClick={clearChat}
                 className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:bg-white/10"
@@ -210,7 +228,7 @@ export default function TamilCinemaHubChatbot() {
 
           {/* ── Messages ── */}
           <div
-            className="overflow-y-auto px-4 py-4 space-y-4 flex-1 flex flex-col justify-start"
+            className="overflow-y-auto px-3 py-3 space-y-3 flex-1 flex flex-col justify-start"
             style={{ background: '#0f1117', scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.06) transparent' }}
           >
             {messages.map((msg, index) => (
@@ -218,7 +236,7 @@ export default function TamilCinemaHubChatbot() {
                 {msg.role === 'system' ? (
                   <div className="w-full flex justify-center">
                     <div
-                      className="flex items-center gap-2 text-xs px-3.5 py-2 rounded-lg max-w-[85%]"
+                      className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg max-w-[85%]"
                       style={{ background: 'rgba(234,179,8,0.1)', color: 'rgba(253,224,71,0.75)', border: 'none' }}
                     >
                       <span>⏱</span>
@@ -229,10 +247,10 @@ export default function TamilCinemaHubChatbot() {
                   <>
                     {msg.role === 'assistant' && (
                       <div
-                        className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mr-2 mt-0.5"
+                        className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 mr-1.5 mt-0.5"
                         style={{ background: 'rgba(99,102,241,0.18)', border: 'none' }}
                       >
-                        <svg className="w-3.5 h-3.5" style={{ color: '#818cf8' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <svg className="w-3 h-3" style={{ color: '#818cf8' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                           <rect x="2" y="7" width="20" height="15" rx="2" />
                           <path d="M2 11h20M2 7l4-4M8 7l4-4M14 7l4-4" />
                         </svg>
@@ -240,10 +258,10 @@ export default function TamilCinemaHubChatbot() {
                     )}
                     <div className={`max-w-[78%] ${msg.role === 'user' ? 'items-end' : 'items-start'} flex flex-col`}>
                       <div
-                        className={`px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-line ${
+                        className={`px-3 py-2 text-[13px] leading-relaxed whitespace-pre-line ${
                           msg.role === 'user'
-                            ? 'rounded-2xl rounded-br-sm text-white'
-                            : 'rounded-2xl rounded-bl-sm'
+                            ? 'rounded-xl rounded-br-sm text-white'
+                            : 'rounded-xl rounded-bl-sm'
                         }`}
                         style={
                           msg.role === 'user'
@@ -263,7 +281,7 @@ export default function TamilCinemaHubChatbot() {
             {isLoading && !streamingText && (
               <div className="flex justify-start">
                 <div
-                  className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mr-2 mt-0.5"
+                  className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 mr-1.5 mt-0.5"
                   style={{ background: 'rgba(99,102,241,0.18)', border: 'none' }}
                 >
                   <svg className="w-3.5 h-3.5" style={{ color: '#818cf8' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -272,7 +290,7 @@ export default function TamilCinemaHubChatbot() {
                   </svg>
                 </div>
                 <div
-                  className="rounded-2xl rounded-bl-sm px-4 py-3 flex items-center"
+                  className="rounded-xl rounded-bl-sm px-3 py-2.5 flex items-center"
                   style={{ background: '#1a1c27', border: 'none' }}
                 >
                   <div className="flex gap-1.5">
@@ -288,7 +306,7 @@ export default function TamilCinemaHubChatbot() {
             {streamingText !== null && (
               <div className="flex justify-start">
                 <div
-                  className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mr-2 mt-0.5"
+                  className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 mr-1.5 mt-0.5"
                   style={{ background: 'rgba(99,102,241,0.18)', border: 'none' }}
                 >
                   <svg className="w-3.5 h-3.5" style={{ color: '#818cf8' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -298,7 +316,7 @@ export default function TamilCinemaHubChatbot() {
                 </div>
                 <div className="max-w-[78%] flex flex-col items-start">
                   <div
-                    className="px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-line rounded-2xl rounded-bl-sm"
+                    className="px-3 py-2 text-[13px] leading-relaxed whitespace-pre-line rounded-xl rounded-bl-sm"
                     style={{ background: '#1a1c27', border: 'none', color: 'rgba(255,255,255,0.78)' }}
                   >
                     {renderMessageText(streamingText)}
@@ -316,7 +334,7 @@ export default function TamilCinemaHubChatbot() {
                   const isLatest = !messages.slice(i + 1).some(m => m.role === 'assistant')
                   if (!isLatest) break
                   return (
-                    <div className="flex justify-start pl-9">
+                    <div className="flex justify-start pl-7.5">
                       <div className="flex flex-wrap gap-1.5 max-w-[78%]">
                         {msg.suggestions.map((s) => (
                           <button
@@ -341,7 +359,7 @@ export default function TamilCinemaHubChatbot() {
           {/* Quick suggestions — first load only */}
           {messages.length === 1 && (
             <div
-              className="px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0"
+              className="px-3 py-2 flex gap-1.5 overflow-x-auto flex-shrink-0"
               style={{ background: '#0f1117', scrollbarWidth: 'none' }}
             >
               {['Best 2026 movies', 'Vijay movies', 'Recommend thriller'].map((s) => (
@@ -359,7 +377,7 @@ export default function TamilCinemaHubChatbot() {
 
           {/* Input */}
           <div
-            className="px-3 py-3 flex gap-2 flex-shrink-0"
+            className="px-3 py-2.5 flex gap-2 flex-shrink-0"
             style={{ background: '#161820' }}
           >
             <input
@@ -368,7 +386,7 @@ export default function TamilCinemaHubChatbot() {
               onKeyDown={handleKeyDown}
               placeholder={isLoading || streamingText ? 'Generating...' : 'Ask about Tamil movies...'}
               disabled={isLoading || rateLimitCountdown > 0}
-              className="flex-1 rounded-xl px-4 py-2.5 text-sm outline-none disabled:opacity-50 transition-all focus:ring-0"
+              className="flex-1 rounded-xl px-3.5 py-2 text-[13px] outline-none disabled:opacity-50 transition-all focus:ring-0"
               style={{
                 background: '#0f1117',
                 border: 'none',
@@ -381,7 +399,7 @@ export default function TamilCinemaHubChatbot() {
             {(isLoading || streamingText) ? (
               <button
                 onClick={stopGeneration}
-                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all active:scale-95 animate-pulse"
+                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all active:scale-95 animate-pulse"
                 style={{ background: 'rgba(99,102,241,0.2)', border: 'none', color: '#a5b4fc' }}
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="3" /></svg>
@@ -390,7 +408,7 @@ export default function TamilCinemaHubChatbot() {
               <button
                 onClick={() => sendMessage()}
                 disabled={rateLimitCountdown > 0 || !input.trim()}
-                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all active:scale-95 disabled:opacity-30"
+                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all active:scale-95 disabled:opacity-30"
                 style={{ background: '#4f46e5', border: 'none', color: '#fff' }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -404,27 +422,24 @@ export default function TamilCinemaHubChatbot() {
       )}
 
       {/* ── FAB toggle ── */}
+      {!isOpen && (
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 active:scale-95 ${isOpen ? 'max-[479px]:hidden' : 'hover:scale-105'}`}
-        style={
-          !isOpen
-            ? { background: '#4f46e5', boxShadow: '0 8px 32px rgba(79,70,229,0.45)', color: '#fff', border: 'none' }
-            : { background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)', border: 'none' }
-        }
-        aria-label={isOpen ? 'Close chat' : 'Open TamilCinemaHub AI chat'}
+        onClick={() => setIsOpen(true)}
+        className="w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 active:scale-95 hover:scale-105 fixed bottom-6 right-6"
+        style={{
+          background: '#4f46e5',
+          boxShadow: '0 8px 32px rgba(79,70,229,0.45)',
+          color: '#fff',
+          border: 'none',
+        }}
+        aria-label="Open TamilCinemaHub AI chat"
       >
-        {isOpen ? (
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        ) : (
-          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="2" y="7" width="20" height="15" rx="2" />
-            <path d="M2 11h20M2 7l4-4M8 7l4-4M14 7l4-4M20 7l2-2M2 3h20" />
-          </svg>
-        )}
+        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="7" width="20" height="15" rx="2" />
+          <path d="M2 11h20M2 7l4-4M8 7l4-4M14 7l4-4M20 7l2-2M2 3h20" />
+        </svg>
       </button>
+      )}
     </div>
   )
 }
