@@ -91,6 +91,7 @@ export default function TamilCinemaHubChatbot() {
   }, [isOpen])
 
   // ── Drag handlers (desktop only) ──
+  const getDefaultPos = useCallback(() => ({ x: window.innerWidth - 440, y: window.innerHeight - 600 }), [])
   const handleDragStart = useCallback((e: React.MouseEvent) => {
     if (window.innerWidth < 768) return // no drag on mobile
     e.preventDefault()
@@ -225,7 +226,6 @@ export default function TamilCinemaHubChatbot() {
   }
 
   // Compute desktop position — always use left/top
-  const getDefaultPos = useCallback(() => ({ x: window.innerWidth - 440, y: window.innerHeight - 600 }), [])
   const desktopStyle: React.CSSProperties = dragPos
     ? { left: dragPos.x, top: dragPos.y }
     : { right: 20, bottom: 20 }
