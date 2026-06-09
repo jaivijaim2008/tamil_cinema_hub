@@ -4,6 +4,7 @@ import AnalyticsDashboard from '../../components/AnalyticsDashboard'
 
 export const revalidate = 300
 
+// ─── SEO ──────────────────────────────────────────────────────────────────────
 export const metadata: Metadata = {
   title: 'Movie Database Dashboard | TamilCinemaHub',
   description:
@@ -47,7 +48,7 @@ const normaliseOTT = (raw: string) => OTT_ALIAS[raw.toLowerCase().trim()] ?? raw
 // ─── Movie type ───────────────────────────────────────────────────────────────
 type Movie = {
   title: string
-  year: number
+  year: number | string | null
   rating: number | string | null
   genre: string[]
   ottPlatform?: string
@@ -65,27 +66,52 @@ async function getStats() {
       const from = page * PAGE_SIZE
       const to = from + PAGE_SIZE
       const batch = await client.fetch<Movie[]>(
-        `*[_type == "movie"][${from}...${to}]{ title, year, rating, genre, ottPlatform, director }`
+        `*[_type == "movie"][${from}...${to}]{
+          title,
+          "year": coalesce(year, 0),
+          rating,
+          genre,
+          ottPlatform,
+          director
+        }`
       )
+      console.log(`Page ${page}: fetched ${batch.length} movies | sample year:`, batch[0]?.year, typeof batch[0]?.year)
       allMovies = [...allMovies, ...batch]
       if (batch.length < PAGE_SIZE) break
       page++
     }
 
+    console.log(`✅ Total movies fetched: ${allMovies.length}`)
+
     const movies = allMovies
-    const total = movies.length
+    const total  = movies.length
 
-    // Year
+    // ─── Year ─────────────────────────────────────────────────────────────
     const yearMap = new Map<number, number>()
-    movies.forEach(m => { if (m.year) yearMap.set(m.year, (yearMap.get(m.year) || 0) + 1) })
-    const years = Array.from(yearMap.entries()).map(([year, count]) => ({ year, count })).sort((a, b) => a.year - b.year)
+    movies.forEach(m => {
+      const y = Number(m.year)
+      if (y && !isNaN(y) && y > 1900 && y <= 2030) {
+        yearMap.set(y, (yearMap.get(y) || 0) + 1)
+      }
+    })
+    const years = Array.from(yearMap.entries())
+      .map(([year, count]) => ({ year, count }))
+      .sort((a, b) => a.year - b.year)
 
-    // Genre
+    console.log('✅ Year map sample:', Array.from(yearMap.entries()).slice(0, 5))
+
+    // ─── Genre ────────────────────────────────────────────────────────────
     const genreMap = new Map<string, number>()
-    movies.forEach(m => { (m.genre || []).forEach(g => { if (g) genreMap.set(g, (genreMap.get(g) || 0) + 1) }) })
-    const genres = Array.from(genreMap.entries()).map(([genre, count]) => ({ genre, count })).sort((a, b) => b.count - a.count)
+    movies.forEach(m => {
+      (m.genre || []).forEach(g => {
+        if (g) genreMap.set(g, (genreMap.get(g) || 0) + 1)
+      })
+    })
+    const genres = Array.from(genreMap.entries())
+      .map(([genre, count]) => ({ genre, count }))
+      .sort((a, b) => b.count - a.count)
 
-    // Rating
+    // ─── Rating ───────────────────────────────────────────────────────────
     const ratingBuckets = [0, 0, 0, 0, 0]
     let ratingSum = 0, ratingCount = 0
     movies.forEach(m => {
@@ -101,7 +127,7 @@ async function getStats() {
     })
     const avgRating = ratingCount ? (ratingSum / ratingCount).toFixed(1) : 'N/A'
 
-    // OTT
+    // ─── OTT ──────────────────────────────────────────────────────────────
     const ottMap = new Map<string, number>()
     movies.forEach(m => {
       if (m.ottPlatform) {
@@ -114,7 +140,7 @@ async function getStats() {
       .sort((a, b) => b.count - a.count)
       .slice(0, 8)
 
-    // Directors
+    // ─── Directors ────────────────────────────────────────────────────────
     const directorMap = new Map<string, number>()
     movies.forEach(m => {
       const d = m.director?.trim()
