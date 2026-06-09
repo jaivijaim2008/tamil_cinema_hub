@@ -170,10 +170,10 @@ export default function TamilCinemaHubChatbot() {
   }
 
   return (
-    <div className="fixed inset-0 z-[200] pointer-events-none">
+    <>
       {isOpen && (
         <div
-          className="absolute inset-0 md:inset-auto md:bottom-[88px] md:right-6 md:w-[390px] md:max-w-[calc(100vw-48px)] md:h-[min(520px,calc(100dvh-120px))] md:rounded-2xl md:shadow-[0_24px_64px_rgba(0,0,0,0.75)] flex flex-col overflow-hidden pointer-events-auto"
+          className="fixed inset-0 z-[200] md:inset-auto md:bottom-[88px] md:right-6 md:w-[390px] md:max-w-[calc(100vw-48px)] md:h-[min(520px,calc(100dvh-120px))] md:rounded-2xl md:shadow-[0_24px_64px_rgba(0,0,0,0.75)] flex flex-col overflow-hidden"
           style={{
             background: '#0f1117',
             border: 'none',
@@ -425,7 +425,7 @@ export default function TamilCinemaHubChatbot() {
       {!isOpen && (
       <button
         onClick={() => setIsOpen(true)}
-        className="absolute bottom-6 right-6 w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 active:scale-95 hover:scale-105 pointer-events-auto"
+        className="fixed bottom-6 right-6 z-[200] w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 active:scale-95 hover:scale-105"
         style={{
           background: '#4f46e5',
           boxShadow: '0 8px 32px rgba(79,70,229,0.45)',
@@ -440,6 +440,6 @@ export default function TamilCinemaHubChatbot() {
         </svg>
       </button>
       )}
-    </div>
+    </>
   )
 }
