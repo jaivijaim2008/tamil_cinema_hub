@@ -90,16 +90,27 @@ export default function TamilCinemaHubChatbot() {
     }
   }, [isOpen])
 
-  // ── Drag handlers (desktop only) ──
+  // ── Drag handlers (mouse + touch) ──
   const getDefaultPos = useCallback(() => ({ x: window.innerWidth - 440, y: window.innerHeight - 600 }), [])
-  const handleDragStart = useCallback((e: React.MouseEvent) => {
-    if (window.innerWidth < 768) return // no drag on mobile
-    e.preventDefault()
+
+  const startDrag = useCallback((clientX: number, clientY: number) => {
     const rect = chatWindowRef.current?.getBoundingClientRect()
     const currentPos = dragPos || (rect ? { x: rect.left, y: rect.top } : getDefaultPos())
-    dragRef.current = { dragging: true, startX: e.clientX, startY: e.clientY, origX: currentPos.x, origY: currentPos.y }
+    dragRef.current = { dragging: true, startX: clientX, startY: clientY, origX: currentPos.x, origY: currentPos.y }
     setIsDragging(true)
   }, [dragPos, getDefaultPos])
+
+  const handleDragStart = useCallback((e: React.MouseEvent) => {
+    if (window.innerWidth < 768) return // no drag on small mobile
+    e.preventDefault()
+    startDrag(e.clientX, e.clientY)
+  }, [startDrag])
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (window.innerWidth < 768) return // no drag on small mobile
+    const touch = e.touches[0]
+    startDrag(touch.clientX, touch.clientY)
+  }, [startDrag])
 
   useEffect(() => {
     if (!isDragging) return
@@ -113,7 +124,19 @@ export default function TamilCinemaHubChatbot() {
       const newY = Math.max(0, Math.min(maxY, dragRef.current.origY + dy))
       setDragPos({ x: newX, y: newY })
     }
-    const handleMouseUp = () => {
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!dragRef.current.dragging) return
+      const touch = e.touches[0]
+      const dx = touch.clientX - dragRef.current.startX
+      const dy = touch.clientY - dragRef.current.startY
+      const maxX = window.innerWidth - 80
+      const maxY = window.innerHeight - 80
+      const newX = Math.max(0, Math.min(maxX, dragRef.current.origX + dx))
+      const newY = Math.max(0, Math.min(maxY, dragRef.current.origY + dy))
+      setDragPos({ x: newX, y: newY })
+      e.preventDefault() // prevent scroll while dragging
+    }
+    const handleDragEnd = () => {
       dragRef.current.dragging = false
       setIsDragging(false)
       setDragPos((prev) => {
@@ -124,10 +147,14 @@ export default function TamilCinemaHubChatbot() {
       })
     }
     document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
+    document.addEventListener('mouseup', handleDragEnd)
+    document.addEventListener('touchmove', handleTouchMove, { passive: false })
+    document.addEventListener('touchend', handleDragEnd)
     return () => {
       document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
+      document.removeEventListener('mouseup', handleDragEnd)
+      document.removeEventListener('touchmove', handleTouchMove)
+      document.removeEventListener('touchend', handleDragEnd)
     }
   }, [isDragging])
 
@@ -254,9 +281,10 @@ export default function TamilCinemaHubChatbot() {
               transition: isDragging ? 'none' : undefined,
             }}
           >
-            {/* ── Header — draggable on desktop ── */}
+            {/* ── Header — draggable on desktop/tablet ── */}
             <div
               onMouseDown={handleDragStart}
+              onTouchStart={handleTouchStart}
               className="relative flex items-center justify-between px-4 py-3.5 flex-shrink-0 overflow-hidden md:cursor-move"
               style={{ background: 'linear-gradient(135deg, #1a0510 0%, #2a0a18 50%, #1a0510 100%)' }}
             >
