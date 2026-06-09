@@ -32,18 +32,18 @@ interface MovieCardProps {
 const GRADIENT_CLASSES = ['mp-thriller', 'mp-drama', 'mp-romance', 'mp-fantasy', 'mp-comedy', 'mp-horror']
 const GLOW_COLORS = ['crimson', 'electric', 'rose', 'violet', 'gold', 'slate']
 
-const OTT_COLORS: Record<string, { bg: string; color: string }> = {
-  'Netflix': { bg: 'rgba(229,9,20,0.85)', color: '#E50914' },
-  'Amazon Prime': { bg: 'rgba(0,168,225,0.85)', color: '#00A8E1' },
-  'Prime Video': { bg: 'rgba(0,168,225,0.85)', color: '#00A8E1' },
-  'Disney+ Hotstar': { bg: 'rgba(17,35,80,0.85)', color: '#112350' },
-  'Hotstar': { bg: 'rgba(17,35,80,0.85)', color: '#112350' },
-  'ZEE5': { bg: 'rgba(30,60,114,0.85)', color: '#1E3C72' },
-  'SonyLIV': { bg: 'rgba(0,53,140,0.85)', color: '#00358C' },
-  'JioCinema': { bg: 'rgba(191,10,43,0.85)', color: '#BF0A2B' },
-  'Aha': { bg: 'rgba(255,51,51,0.85)', color: '#FF3333' },
-  'Sun NXT': { bg: 'rgba(255,102,0,0.85)', color: '#FF6600' },
-  'YouTube': { bg: 'rgba(255,0,0,0.85)', color: '#FF0000' },
+const OTT_COLORS: Record<string, string> = {
+  'Netflix': 'rgba(229,9,20,0.85)',
+  'Amazon Prime': 'rgba(0,168,225,0.85)',
+  'Prime Video': 'rgba(0,168,225,0.85)',
+  'Disney+ Hotstar': 'rgba(17,35,80,0.85)',
+  'Hotstar': 'rgba(17,35,80,0.85)',
+  'ZEE5': 'rgba(30,60,114,0.85)',
+  'SonyLIV': 'rgba(0,53,140,0.85)',
+  'JioCinema': 'rgba(191,10,43,0.85)',
+  'Aha': 'rgba(255,51,51,0.85)',
+  'Sun NXT': 'rgba(255,102,0,0.85)',
+  'YouTube': 'rgba(255,0,0,0.85)',
 }
 
 export default function MovieCard({ movie, index = 0 }: MovieCardProps) {
@@ -69,7 +69,7 @@ export default function MovieCard({ movie, index = 0 }: MovieCardProps) {
     router.push(`/movies?q=${encodeURIComponent(platform)}`)
   }
 
-  const ottColor = movie.ottPlatform ? OTT_COLORS[movie.ottPlatform] || { bg: 'rgba(212,41,26,0.85)', color: '#D4291A' } : null
+  const ottColor = movie.ottPlatform ? (OTT_COLORS[movie.ottPlatform] || 'rgba(212,41,26,0.85)') : null
 
   return (
     <TiltCard className="movie-card-dark" data-glow={glowColor} maxTilt={8} perspective={800} scale={1.02}>
@@ -78,7 +78,7 @@ export default function MovieCard({ movie, index = 0 }: MovieCardProps) {
           <div className="movie-card-image-dark">
             <Image src={imageUrl} alt={movie.title} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw" style={{ objectFit: 'cover' }} />
             {movie.genre?.[0] && <span className="genre-badge-dark" title={`Filter by ${movie.genre[0]}`} onClick={(e) => handleGenreClick(e, movie.genre![0])}>{movie.genre[0]}</span>}
-            {movie.ottPlatform && <span className="ott-badge-dark" title={`Search ${movie.ottPlatform}`} onClick={(e) => handleOttClick(e, movie.ottPlatform!)} style={ottColor ? { background: ottColor.bg } : undefined}>{movie.ottPlatform}</span>}
+            {movie.ottPlatform && <span className="ott-badge-dark" title={`Search ${movie.ottPlatform}`} onClick={(e) => handleOttClick(e, movie.ottPlatform!)} style={ottColor ? { background: ottColor } : undefined}>{movie.ottPlatform}</span>}
             <div className="poster-gradient-overlay-dark" />
           </div>
         ) : (
@@ -86,7 +86,7 @@ export default function MovieCard({ movie, index = 0 }: MovieCardProps) {
             <span className="initial">{initial}</span>
             <div className="perfs"><span /><span /><span /><span /><span /><span /></div>
             {movie.genre?.[0] && <span className="genre-badge-dark" title={`Filter by ${movie.genre[0]}`} onClick={(e) => handleGenreClick(e, movie.genre![0])}>{movie.genre[0]}</span>}
-            {movie.ottPlatform && <span className="ott-badge-dark" title={`Search ${movie.ottPlatform}`} onClick={(e) => handleOttClick(e, movie.ottPlatform!)} style={ottColor ? { background: ottColor.bg } : undefined}>{movie.ottPlatform}</span>}
+            {movie.ottPlatform && <span className="ott-badge-dark" title={`Search ${movie.ottPlatform}`} onClick={(e) => handleOttClick(e, movie.ottPlatform!)} style={ottColor ? { background: ottColor } : undefined}>{movie.ottPlatform}</span>}
             <div className="poster-gradient-overlay-dark" />
           </div>
         )}
