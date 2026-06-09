@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 
 export default function Footer() {
@@ -9,7 +11,6 @@ export default function Footer() {
             <span className="tamil">Tamil</span>CinemaHub
           </div>
           <p className="footer-tagline-dark">The ultimate destination for Tamil cinema lovers — reviews, news, and AI-powered recommendations.</p>
-
         </div>
         <div className="footer-col-dark">
           <div className="footer-col-label-dark">Explore</div>
@@ -19,16 +20,14 @@ export default function Footer() {
           <Link href="/blogs">News</Link>
         </div>
         <div className="footer-col-dark">
-          <div className="footer-col-label-dark">Company</div>
-          <Link href="/about">About Us</Link>
-          <Link href="/contact">Contact</Link>
-          <Link href="/privacy-policy">Privacy Policy</Link>
-          <Link href="/privacy-policy">Terms</Link>
+          <div className="footer-col-label-dark">Discover</div>
+          <Link href="/analytics">📊 Dashboard</Link>
+          <Link href="/recommendations">🎬 Recommendations</Link>
         </div>
         <div className="footer-col-dark">
           <div className="footer-col-label-dark">Get in Touch</div>
-          <a href="#">Chat with AI</a>
-          <a href="#">Suggest a Movie</a>
+          <Link href="/contact">Contact Us</Link>
+          <a href="#" onClick={(e) => { e.preventDefault(); window.dispatchEvent(new Event('open-chatbot')) }}>Chat with AI</a>
         </div>
       </div>
       <div className="footer-divider-dark" />

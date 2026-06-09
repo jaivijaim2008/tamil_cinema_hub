@@ -173,7 +173,7 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* Page Header */}
-      <div className="movie-detail-page-header" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingTop: 100 }}>
+      <div className="movie-detail-page-header" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 24px' }}>
           <Link href="/movies" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 500, marginBottom: 24, color: 'rgba(255,255,255,0.35)', transition: 'color 0.2s', textDecoration: 'none' }}>
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

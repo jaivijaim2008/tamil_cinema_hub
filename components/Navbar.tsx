@@ -71,6 +71,7 @@ export default function Navbar() {
     { name: 'Movies', href: '/movies' },
     { name: 'Blogs', href: '/blogs' },
     { name: 'Dashboard', href: '/analytics' },
+    { name: 'Discover', href: '/recommendations' },
     { name: 'About', href: '/about' },
   ]
 

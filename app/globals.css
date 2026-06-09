@@ -820,3 +820,10 @@ body::before {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   DASHBOARD & RECOMMENDATIONS — Hover & Mobile
+   ═══════════════════════════════════════════════════════════════ */
+.dashboard-card { transition: transform 0.2s, box-shadow 0.2s; }
+.dashboard-card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+.kpi-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+.dashboard-header-inner { padding: 48px 24px; }
