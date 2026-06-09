@@ -422,16 +422,18 @@ body::before {
 .movie-poster-dark .perfs span { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.15); }
 .genre-badge-dark {
   position: absolute; top: 10px; left: 10px; z-index: 2;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0,0,0,0.75);
   border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;
   padding: 3px 10px; font-family: 'Syne', sans-serif; font-size: 9px; font-weight: 700;
   text-transform: uppercase; color: #fff; letter-spacing: 0.1em;
+  max-width: calc(50% - 16px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .ott-badge-dark {
-  position: absolute; top: 10px; right: 10px; z-index: 2;
+  position: absolute; bottom: 10px; right: 10px; z-index: 2;
   background: var(--crimson); border-radius: 6px; padding: 3px 10px;
   font-family: 'Syne', sans-serif; font-size: 9px; font-weight: 700;
   text-transform: uppercase; color: #fff; letter-spacing: 0.08em;
+  max-width: calc(50% - 16px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .poster-gradient-overlay-dark {
   position: absolute; inset: 0;
@@ -707,6 +709,9 @@ body::before {
   .movie-director-dark { font-size: 10px; }
   .movie-year-dark { font-size: 10px; }
   .movie-rating-dark { font-size: 11px; }
+  .genre-badge-dark, .ott-badge-dark { font-size: 8px; padding: 2px 7px; border-radius: 4px; }
+  .genre-badge-dark { top: 6px; left: 6px; max-width: calc(50% - 12px); }
+  .ott-badge-dark { bottom: 6px; right: 6px; max-width: calc(50% - 12px); }
   /* Blogs Grid */
   .section-blogs { padding: 48px 0; }
   .blogs-grid-pill { grid-template-columns: 1fr; gap: 16px; }
@@ -759,6 +764,9 @@ body::before {
   .movies-grid-pill { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .movie-card-body-dark { padding: 8px 10px 10px; }
   .movie-title-dark { font-size: 12px; }
+  .genre-badge-dark, .ott-badge-dark { font-size: 7px; padding: 2px 6px; border-radius: 4px; }
+  .genre-badge-dark { top: 5px; left: 5px; }
+  .ott-badge-dark { bottom: 5px; right: 5px; }
   .blog-banner-1 { height: 140px; }
   .blog-banner-2, .blog-banner-3, .blog-banner-4, .blog-banner-5 { height: 120px; }
   .footer-logo-dark { font-size: 18px; }
