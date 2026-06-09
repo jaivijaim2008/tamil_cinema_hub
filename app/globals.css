@@ -754,16 +754,21 @@ body::before {
   .footer-bottom-dark { flex-direction: column; gap: 8px; text-align: center; padding: 0 16px; font-size: 12px; }
   .cursor-dot { display: none !important; }
   /* Detail page mobile */
-  .movie-detail-grid { grid-template-columns: 1fr; gap: 24px; padding: 24px 16px 0; }
-  .movie-header-row { flex-direction: column; align-items: center; gap: 20px; }
-  .movie-poster-wrap { width: 180px; }
-  .movie-info-col { padding-top: 0; text-align: center; }
-  .cast-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .related-blog-grid { grid-template-columns: 1fr; gap: 12px; }
-  .about-section-grid { grid-template-columns: 1fr; gap: 16px; }
-  .movies-grid-pill { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .movie-detail-page-header { padding-top: 80px !important; }
+  .movie-detail-page-header > div { padding: 16px 16px 0 !important; }
+  .movie-detail-grid { grid-template-columns: 1fr !important; gap: 24px !important; padding: 24px 16px 0 !important; }
+  .movie-header-row { flex-direction: column !important; align-items: center !important; gap: 16px !important; }
+  .movie-poster-wrap { width: 160px !important; flex-shrink: 0 !important; }
+  .movie-info-col { padding-top: 0 !important; text-align: center !important; }
+  .movie-info-col h1 { font-size: 28px !important; }
+  .cast-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
+  .related-blog-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .about-section-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+  .movies-grid-pill { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
   .dashboard-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
   .stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .movie-detail-sidebar { position: relative !important; top: auto !important; margin-top: 8px; }
+  .movie-detail-sidebar > div:first-child { border-radius: 12px; }
 }
 @media (max-width: 480px) {
   .hero-title .line { font-size: clamp(28px, 9vw, 40px); }
