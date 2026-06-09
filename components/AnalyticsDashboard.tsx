@@ -117,6 +117,7 @@ const RATING_DATA   = [
 const MEDAL = ['🥇', '🥈', '🥉']
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
+// Changed: 'all' now means ALL years (2000–2026), not just last 15
 type Decade = 'all' | '2000s' | '2010s' | '2020s'
 
 export default function AnalyticsDashboard({ stats }: { stats: Stats }) {
@@ -128,11 +129,13 @@ export default function AnalyticsDashboard({ stats }: { stats: Stats }) {
 
   useEffect(() => { const t = setTimeout(() => setAnimated(true), 150); return () => clearTimeout(t) }, [])
 
+  // FIX: 'all' now returns ALL years sorted ascending (no slice)
   const filteredYears = useCallback(() => {
     if (decade === '2000s') return stats.years.filter(y => y.year >= 2000 && y.year < 2010)
     if (decade === '2010s') return stats.years.filter(y => y.year >= 2010 && y.year < 2020)
     if (decade === '2020s') return stats.years.filter(y => y.year >= 2020)
-    return stats.years.slice(-15)
+    // 'all' → every year in the database, sorted ascending
+    return [...stats.years].sort((a, b) => a.year - b.year)
   }, [decade, stats.years])
 
   const years         = filteredYears()
@@ -181,6 +184,18 @@ export default function AnalyticsDashboard({ stats }: { stats: Stats }) {
         @media (hover: hover) {
           .bar-wrap:hover .tooltip-box { display: block; }
         }
+
+        /* ── Year chart: scrollable on mobile when many years shown ── */
+        .year-chart-scroll {
+          max-height: 480px;
+          overflow-y: auto;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255,255,255,0.1) transparent;
+          padding-right: 4px;
+        }
+        .year-chart-scroll::-webkit-scrollbar { width: 4px; }
+        .year-chart-scroll::-webkit-scrollbar-track { background: transparent; }
+        .year-chart-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
         /* ── KPI grid: 2×2 on mobile, 4 cols on desktop ── */
         .stat-grid {
@@ -342,43 +357,52 @@ export default function AnalyticsDashboard({ stats }: { stats: Stats }) {
               <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginBottom: 14 }}>Films released per year</p>
 
               <div className="decade-tabs">
-                {(['all', '2000s', '2010s', '2020s'] as Decade[]).map(d => (
+                {/* FIX: Changed label from "Last 15" to "All (2000–{maxYear})" */}
+                {([
+                  { key: 'all',   label: `All (${stats.minYear}–${stats.maxYear})` },
+                  { key: '2000s', label: '2000s' },
+                  { key: '2010s', label: '2010s' },
+                  { key: '2020s', label: '2020s' },
+                ] as { key: Decade; label: string }[]).map(d => (
                   <button
-                    key={d}
-                    className={`decade-btn${decade === d ? ' active' : ''}`}
-                    onClick={() => setDecade(d)}
+                    key={d.key}
+                    className={`decade-btn${decade === d.key ? ' active' : ''}`}
+                    onClick={() => setDecade(d.key)}
                     style={{
-                      background: decade === d ? 'var(--crimson)' : 'rgba(255,255,255,0.05)',
-                      color: decade === d ? '#fff' : 'rgba(255,255,255,0.45)',
+                      background: decade === d.key ? 'var(--crimson)' : 'rgba(255,255,255,0.05)',
+                      color: decade === d.key ? '#fff' : 'rgba(255,255,255,0.45)',
                     }}
                   >
-                    {d === 'all' ? 'Last 15' : d}
+                    {d.label}
                   </button>
                 ))}
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                {years.map((y, i) => (
-                  <div
-                    key={y.year}
-                    className="bar-row"
-                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 4px' }}
-                    onMouseEnter={() => setHoveredYear(i)}
-                    onMouseLeave={() => setHoveredYear(null)}
-                  >
-                    <span className="bar-label" style={{ color: hoveredYear === i ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.38)', width: 34, textAlign: 'right', flexShrink: 0, transition: 'color 0.2s', fontVariantNumeric: 'tabular-nums' }}>{y.year}</span>
-                    <div className="bar-wrap" style={{ flex: 1, height: 18, borderRadius: 4, background: 'rgba(255,255,255,0.04)', overflow: 'visible', position: 'relative' }}>
-                      <div className="bar-fill" style={{
-                        height: '100%', borderRadius: 4,
-                        width: animated ? `${(y.count / maxYearCount) * 100}%` : '0%',
-                        background: 'linear-gradient(90deg, var(--crimson) 0%, #E85D04 100%)',
-                        transitionDelay: `${i * 0.03}s`,
-                      }} />
-                      <Tooltip text={`${y.year}: ${y.count} films`} />
+              {/* Scrollable container so all years fit on mobile */}
+              <div className="year-chart-scroll">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {years.map((y, i) => (
+                    <div
+                      key={y.year}
+                      className="bar-row"
+                      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 4px' }}
+                      onMouseEnter={() => setHoveredYear(i)}
+                      onMouseLeave={() => setHoveredYear(null)}
+                    >
+                      <span className="bar-label" style={{ color: hoveredYear === i ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.38)', width: 34, textAlign: 'right', flexShrink: 0, transition: 'color 0.2s', fontVariantNumeric: 'tabular-nums' }}>{y.year}</span>
+                      <div className="bar-wrap" style={{ flex: 1, height: 18, borderRadius: 4, background: 'rgba(255,255,255,0.04)', overflow: 'visible', position: 'relative' }}>
+                        <div className="bar-fill" style={{
+                          height: '100%', borderRadius: 4,
+                          width: animated ? `${(y.count / maxYearCount) * 100}%` : '0%',
+                          background: 'linear-gradient(90deg, var(--crimson) 0%, #E85D04 100%)',
+                          transitionDelay: `${Math.min(i * 0.02, 0.5)}s`,
+                        }} />
+                        <Tooltip text={`${y.year}: ${y.count} films`} />
+                      </div>
+                      <span className="bar-label" style={{ fontWeight: 700, color: hoveredYear === i ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.4)', width: 26, textAlign: 'right', flexShrink: 0, transition: 'color 0.2s' }}>{y.count}</span>
                     </div>
-                    <span className="bar-label" style={{ fontWeight: 700, color: hoveredYear === i ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.4)', width: 26, textAlign: 'right', flexShrink: 0, transition: 'color 0.2s' }}>{y.count}</span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
 
