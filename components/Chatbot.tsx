@@ -273,12 +273,14 @@ export default function TamilCinemaHubChatbot() {
             ref={chatWindowRef}
             className={`z-[200] flex flex-col overflow-hidden ${
               isDragging ? 'select-none' : ''
-            } fixed inset-0 md:inset-auto md:w-[420px] md:max-w-[calc(100vw-28px)] md:h-[min(580px,calc(100dvh-80px))] md:shadow-[0_32px_100px_rgba(0,0,0,0.9)]`}
+            } fixed inset-3 md:inset-auto md:w-[420px] md:max-w-[calc(100vw-28px)] md:h-[min(580px,calc(100dvh-80px))] md:shadow-[0_32px_100px_rgba(0,0,0,0.9)]`}
             style={{
               ...desktopStyle,
               background: '#0A0008',
+              borderRadius: 16,
               paddingBottom: 'env(safe-area-inset-bottom, 0px)',
               transition: isDragging ? 'none' : undefined,
+              boxShadow: '0 24px 80px rgba(0,0,0,0.85)',
             }}
           >
             {/* ── Header — draggable on desktop/tablet ── */}

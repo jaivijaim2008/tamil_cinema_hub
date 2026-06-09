@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { urlFor } from '../sanity/lib/image'
 import TiltCard from './TiltCard'
 
@@ -40,22 +41,36 @@ export default function MovieCard({ movie, index = 0 }: MovieCardProps) {
   const glowColor = GLOW_COLORS[index % GLOW_COLORS.length]
   const initial = movie.title.charAt(0).toUpperCase()
 
+  const router = useRouter()
+
+  function handleGenreClick(e: React.MouseEvent, genre: string) {
+    e.preventDefault()
+    e.stopPropagation()
+    router.push(`/movies?genre=${encodeURIComponent(genre)}`)
+  }
+
+  function handleOttClick(e: React.MouseEvent, platform: string) {
+    e.preventDefault()
+    e.stopPropagation()
+    router.push(`/movies?q=${encodeURIComponent(platform)}`)
+  }
+
   return (
     <TiltCard className="movie-card-dark" data-glow={glowColor} maxTilt={8} perspective={800} scale={1.02}>
       <Link href={`/movies/${movie.slug}`} style={{ display: 'block', height: '100%' }}>
         {imageUrl ? (
           <div className="movie-card-image-dark">
             <Image src={imageUrl} alt={movie.title} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw" style={{ objectFit: 'cover' }} />
-            {movie.genre?.[0] && <span className="genre-badge-dark">{movie.genre[0]}</span>}
-            {movie.ottPlatform && <span className="ott-badge-dark">{movie.ottPlatform}</span>}
+            {movie.genre?.[0] && <span className="genre-badge-dark" onClick={(e) => handleGenreClick(e, movie.genre![0])}>{movie.genre[0]}</span>}
+            {movie.ottPlatform && <span className="ott-badge-dark" onClick={(e) => handleOttClick(e, movie.ottPlatform!)}>{movie.ottPlatform}</span>}
             <div className="poster-gradient-overlay-dark" />
           </div>
         ) : (
           <div className={`movie-poster-dark ${gradientClass}`}>
             <span className="initial">{initial}</span>
             <div className="perfs"><span /><span /><span /><span /><span /><span /></div>
-            {movie.genre?.[0] && <span className="genre-badge-dark">{movie.genre[0]}</span>}
-            {movie.ottPlatform && <span className="ott-badge-dark">{movie.ottPlatform}</span>}
+            {movie.genre?.[0] && <span className="genre-badge-dark" onClick={(e) => handleGenreClick(e, movie.genre![0])}>{movie.genre[0]}</span>}
+            {movie.ottPlatform && <span className="ott-badge-dark" onClick={(e) => handleOttClick(e, movie.ottPlatform!)}>{movie.ottPlatform}</span>}
             <div className="poster-gradient-overlay-dark" />
           </div>
         )}
