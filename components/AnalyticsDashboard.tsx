@@ -28,7 +28,7 @@ function Counter({ value, suffix = '' }: { value: number; suffix?: string }) {
     const startTime = performance.now()
     const tick = (now: number) => {
       const progress = Math.min((now - startTime) / duration, 1)
-      const eased = 1 - Math.pow(1 - progress, 4) // ease-out-quart
+      const eased = 1 - Math.pow(1 - progress, 4)
       setDisplay(Math.round(eased * value))
       if (progress < 1) requestAnimationFrame(tick)
     }
@@ -52,7 +52,7 @@ function ScrollProgress() {
   }, [])
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 3, zIndex: 999, background: 'rgba(255,255,255,0.06)' }}>
-      <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, var(--crimson), var(--violet, #7C3AED))', transition: 'width 0.1s linear' }} />
+      <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, var(--crimson), #7C3AED)', transition: 'width 0.1s linear' }} />
     </div>
   )
 }
@@ -71,17 +71,15 @@ function BackToTop() {
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
       aria-label="Back to top"
       style={{
-        position: 'fixed', bottom: 28, right: 24, zIndex: 50,
+        position: 'fixed', bottom: 28, right: 20, zIndex: 50,
         width: 44, height: 44, borderRadius: '50%',
-        background: 'linear-gradient(135deg, var(--crimson), var(--violet, #7C3AED))',
+        background: 'linear-gradient(135deg, var(--crimson), #7C3AED)',
         border: 'none', cursor: 'pointer', color: '#fff',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         boxShadow: '0 4px 20px rgba(212,41,26,0.45)',
         transition: 'transform 0.2s, box-shadow 0.2s',
         animation: 'fadeIn 0.25s ease',
       }}
-      onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.1) translateY(-2px)')}
-      onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
     >
       <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
@@ -90,7 +88,7 @@ function BackToTop() {
   )
 }
 
-// ─── Tooltip ──────────────────────────────────────────────────────────────────
+// ─── Tooltip (desktop only) ───────────────────────────────────────────────────
 function Tooltip({ text }: { text: string }) {
   return (
     <span className="tooltip-box" style={{
@@ -122,16 +120,14 @@ const MEDAL = ['🥇', '🥈', '🥉']
 type Decade = 'all' | '2000s' | '2010s' | '2020s'
 
 export default function AnalyticsDashboard({ stats }: { stats: Stats }) {
-  const [animated, setAnimated]       = useState(false)
-  const [decade, setDecade]           = useState<Decade>('all')
+  const [animated, setAnimated]         = useState(false)
+  const [decade, setDecade]             = useState<Decade>('all')
   const [hoveredGenre, setHoveredGenre] = useState<number | null>(null)
-  const [hoveredOTT, setHoveredOTT]   = useState<number | null>(null)
-  const [hoveredYear, setHoveredYear]  = useState<number | null>(null)
+  const [hoveredOTT, setHoveredOTT]     = useState<number | null>(null)
+  const [hoveredYear, setHoveredYear]   = useState<number | null>(null)
 
-  // Trigger bar animations shortly after mount
   useEffect(() => { const t = setTimeout(() => setAnimated(true), 150); return () => clearTimeout(t) }, [])
 
-  // Year filter
   const filteredYears = useCallback(() => {
     if (decade === '2000s') return stats.years.filter(y => y.year >= 2000 && y.year < 2010)
     if (decade === '2010s') return stats.years.filter(y => y.year >= 2010 && y.year < 2020)
@@ -150,65 +146,134 @@ export default function AnalyticsDashboard({ stats }: { stats: Stats }) {
     <>
       {/* ── Global CSS ────────────────────────────────────────────────────── */}
       <style>{`
-        @keyframes fadeUp    { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
-        @keyframes fadeIn    { from { opacity:0 } to { opacity:1 } }
-        @keyframes pulse     { 0%,100% { opacity:1 } 50% { opacity:0.5 } }
-        @keyframes glow      { 0%,100% { box-shadow:0 0 0 0 rgba(212,41,26,0) } 50% { box-shadow:0 0 20px 4px rgba(212,41,26,0.25) } }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
+        @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+        @keyframes glow   { 0%,100% { box-shadow:0 0 0 0 rgba(212,41,26,0) } 50% { box-shadow:0 0 20px 4px rgba(212,41,26,0.25) } }
+
+        * { box-sizing: border-box; }
 
         .kpi-card    { animation: fadeUp 0.5s ease both; transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s !important; }
-        .kpi-card:hover { transform: translateY(-5px) !important; box-shadow: 0 16px 40px rgba(0,0,0,0.45) !important; border-color: rgba(255,255,255,0.14) !important; }
+        .kpi-card:hover { transform: translateY(-4px) !important; box-shadow: 0 16px 40px rgba(0,0,0,0.45) !important; border-color: rgba(255,255,255,0.14) !important; }
         .kpi-card:nth-child(1) { animation-delay:0.05s }
         .kpi-card:nth-child(2) { animation-delay:0.12s }
         .kpi-card:nth-child(3) { animation-delay:0.19s }
         .kpi-card:nth-child(4) { animation-delay:0.26s }
 
-        .dash-card   { animation: fadeUp 0.6s ease both; transition: border-color 0.25s !important; }
+        .dash-card  { animation: fadeUp 0.6s ease both; transition: border-color 0.25s !important; }
         .dash-card:hover { border-color: rgba(255,255,255,0.1) !important; }
 
-        .bar-row     { transition: background 0.2s; border-radius: 6px; cursor: default; }
+        .bar-row    { transition: background 0.2s; border-radius: 6px; cursor: default; }
         .bar-row:hover { background: rgba(255,255,255,0.025) !important; }
-        .bar-fill    { transition: width 0.7s cubic-bezier(.4,0,.2,1), filter 0.2s !important; }
+        .bar-fill   { transition: width 0.7s cubic-bezier(.4,0,.2,1), filter 0.2s !important; }
         .bar-row:hover .bar-fill { filter: brightness(1.25) !important; }
 
-        .decade-btn  { transition: all 0.2s; cursor: pointer; border: none; outline: none; }
+        .decade-btn { transition: all 0.2s; cursor: pointer; border: none; outline: none; }
         .decade-btn:hover { background: rgba(255,255,255,0.08) !important; }
         .decade-btn.active { background: var(--crimson) !important; color: #fff !important; }
 
-        .dir-card    { transition: transform 0.2s, border-color 0.2s, background 0.2s; }
+        .dir-card   { transition: transform 0.2s, border-color 0.2s, background 0.2s; }
         .dir-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.1) !important; background: rgba(255,255,255,0.04) !important; }
 
+        /* Tooltip: hidden on touch, shown on hover for desktop */
         .tooltip-box { animation: fadeIn 0.15s ease; }
         .bar-wrap    { position: relative; }
         .bar-wrap .tooltip-box { display: none; }
-        .bar-wrap:hover .tooltip-box { display: block; }
+        @media (hover: hover) {
+          .bar-wrap:hover .tooltip-box { display: block; }
+        }
 
-        /* ── Responsive ─────────────────────────────────────────────────── */
-        @media (max-width: 960px) {
-          .stat-grid      { grid-template-columns: repeat(2, 1fr) !important; }
-          .dash-two-col   { grid-template-columns: 1fr !important; }
-          .dir-grid       { grid-template-columns: repeat(2, 1fr) !important; }
+        /* ── KPI grid: 2×2 on mobile, 4 cols on desktop ── */
+        .stat-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
+          margin-bottom: 32px;
         }
-        @media (max-width: 520px) {
-          .stat-grid      { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
-          .dir-grid       { grid-template-columns: 1fr 1fr !important; }
-          .page-header    { padding: 36px 16px 28px !important; }
-          .main-content   { padding: 20px 16px !important; }
-          .dash-card      { padding: 20px 16px !important; }
-          .decade-tabs    { gap: 6px !important; }
-          .decade-btn     { padding: 6px 12px !important; font-size: 11px !important; }
+        @media (min-width: 768px) {
+          .stat-grid {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 40px;
+          }
         }
+
+        /* ── Chart grid: stacked on mobile, side-by-side on desktop ── */
+        .dash-two-col {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 16px;
+          margin-bottom: 16px;
+        }
+        @media (min-width: 900px) {
+          .dash-two-col {
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+          }
+        }
+
+        /* ── Director grid ── */
+        .dir-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 10px;
+        }
+        @media (min-width: 640px) {
+          .dir-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (min-width: 960px) {
+          .dir-grid { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+        }
+
+        /* ── Page padding ── */
+        .page-header { padding: 36px 16px 28px; }
+        .main-content { padding: 20px 16px; }
+        .dash-card { padding: 20px 16px; }
+        @media (min-width: 640px) {
+          .page-header { padding: 52px 24px 44px; }
+          .main-content { padding: 36px 24px; }
+          .dash-card { padding: 28px; }
+        }
+
+        /* ── Decade tabs ── */
+        .decade-tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+        .decade-btn  { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; font-family: "'Syne', sans-serif"; }
+        @media (min-width: 480px) {
+          .decade-btn { padding: 6px 14px; font-size: 12px; }
+          .decade-tabs { gap: 8px; margin-bottom: 20px; }
+        }
+
+        /* ── Bar label text ── */
+        .bar-label { font-size: 10px; }
+        @media (min-width: 480px) { .bar-label { font-size: 11px; } }
+        @media (min-width: 640px) { .bar-label { font-size: 12px; } }
+
+        /* ── KPI value font ── */
+        .kpi-value { font-size: clamp(20px, 5vw, 36px) !important; }
+
+        /* ── OTT mini bar: shrink on mobile ── */
+        .ott-bar { width: 70px !important; }
+        @media (min-width: 480px) { .ott-bar { width: 100px !important; } }
+
+        /* ── Genre label width ── */
+        .genre-label { width: 64px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        @media (min-width: 480px) { .genre-label { width: 80px !important; } }
+
+        /* ── CTA section ── */
+        .cta-section { padding: 36px 16px !important; }
+        @media (min-width: 640px) { .cta-section { padding: 52px 24px !important; } }
       `}</style>
 
       <ScrollProgress />
 
-      <div style={{ background: 'var(--ink)', minHeight: '100vh', paddingBottom: 96 }}>
+      <div style={{ background: 'var(--ink)', minHeight: '100vh', paddingBottom: 80 }}>
 
         {/* ── HEADER ─────────────────────────────────────────────────────── */}
         <section style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.25)' }}>
-          <div className="page-header" style={{ maxWidth: 1280, margin: '0 auto', padding: '52px 24px 44px' }}>
+          <div className="page-header" style={{ maxWidth: 1280, margin: '0 auto' }}>
             <Link href="/movies" style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
-              fontSize: 13, fontWeight: 500, marginBottom: 28,
+              fontSize: 13, fontWeight: 500, marginBottom: 24,
               color: 'rgba(255,255,255,0.3)', textDecoration: 'none',
               transition: 'color 0.2s',
             }}
@@ -224,13 +289,13 @@ export default function AnalyticsDashboard({ stats }: { stats: Stats }) {
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--rose-light)', marginBottom: 10, fontFamily: "'Syne', sans-serif" }}>
               TamilCinemaHub · Analytics
             </p>
-            <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(28px, 6vw, 54px)', fontWeight: 800, lineHeight: 1.07, marginBottom: 14, color: 'rgba(255,255,255,0.93)' }}>
+            <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(24px, 6vw, 54px)', fontWeight: 800, lineHeight: 1.1, marginBottom: 12, color: 'rgba(255,255,255,0.93)' }}>
               Movie Database{' '}
               <span style={{ background: 'linear-gradient(90deg, var(--crimson) 0%, #7C3AED 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                 Dashboard
               </span>
             </h1>
-            <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.36)', maxWidth: 540, lineHeight: 1.65 }}>
+            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.36)', maxWidth: 540, lineHeight: 1.65 }}>
               Insights from{' '}
               <strong style={{ color: 'rgba(255,255,255,0.65)', fontWeight: 700 }}>
                 {stats.total.toLocaleString()} Tamil films
@@ -241,56 +306,50 @@ export default function AnalyticsDashboard({ stats }: { stats: Stats }) {
         </section>
 
         {/* ── MAIN ───────────────────────────────────────────────────────── */}
-        <main className="main-content" style={{ maxWidth: 1280, margin: '0 auto', padding: '36px 24px' }}>
+        <main className="main-content" style={{ maxWidth: 1280, margin: '0 auto' }}>
 
           {/* KPI CARDS */}
-          <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 40 }}>
+          <div className="stat-grid">
             {[
-              { label: 'Total Movies',  value: stats.total,     suffix: '',   icon: '🎬', color: 'var(--crimson)',        desc: 'Films in database' },
-              { label: 'Avg Rating',    value: null,            suffix: '',   icon: '⭐', color: '#F0B429',               desc: 'Community score out of 5' },
-              { label: 'Genres',        value: stats.genres.length, suffix:'',icon: '🎭', color: '#7C3AED',               desc: 'Unique categories' },
-              { label: 'OTT Platforms', value: stats.ottPlatforms.length, suffix:'',icon:'📺',color:'#0D9488',            desc: 'Streaming services' },
+              { label: 'Total Movies',  value: stats.total,              icon: '🎬', color: 'var(--crimson)', desc: 'Films in database' },
+              { label: 'Avg Rating',    value: null,                     icon: '⭐', color: '#F0B429',        desc: 'Score out of 5' },
+              { label: 'Genres',        value: stats.genres.length,      icon: '🎭', color: '#7C3AED',        desc: 'Unique categories' },
+              { label: 'OTT Platforms', value: stats.ottPlatforms.length,icon: '📺', color: '#0D9488',        desc: 'Streaming services' },
             ].map((k, i) => (
               <div key={k.label} className="kpi-card" style={{
-                borderRadius: 16, padding: '22px 20px',
+                borderRadius: 14, padding: '18px 14px',
                 background: 'rgba(255,255,255,0.03)',
                 border: '1px solid rgba(255,255,255,0.06)',
                 position: 'relative', overflow: 'hidden',
               }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${k.color}, transparent)`, borderRadius: '16px 16px 0 0' }} />
-                <div style={{ fontSize: 22, marginBottom: 10 }}>{k.icon}</div>
-                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(24px,3vw,36px)', fontWeight: 800, color: k.color, lineHeight: 1 }}>
-                  {i === 1
-                    ? <>{stats.avgRating}/5</>
-                    : <Counter value={k.value!} />
-                  }
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${k.color}, transparent)`, borderRadius: '14px 14px 0 0' }} />
+                <div style={{ fontSize: 20, marginBottom: 8 }}>{k.icon}</div>
+                <p className="kpi-value" style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, color: k.color, lineHeight: 1 }}>
+                  {i === 1 ? <>{stats.avgRating}/5</> : <Counter value={k.value!} />}
                 </p>
-                <p style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.65)', marginTop: 7 }}>{k.label}</p>
-                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.27)', marginTop: 2 }}>{k.desc}</p>
+                <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.65)', marginTop: 6 }}>{k.label}</p>
+                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.27)', marginTop: 2 }}>{k.desc}</p>
               </div>
             ))}
           </div>
 
           {/* ROW 1: Year + Genre */}
-          <div className="dash-two-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 24 }}>
+          <div className="dash-two-col">
 
             {/* Movies by Year */}
-            <div className="dash-card" style={{ borderRadius: 16, padding: 28, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', animationDelay: '0.1s' }}>
+            <div className="dash-card" style={{ borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', animationDelay: '0.1s' }}>
               <p style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 800, color: 'rgba(255,255,255,0.9)', marginBottom: 4 }}>Movies by Year</p>
-              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginBottom: 16 }}>Films released per year</p>
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginBottom: 14 }}>Films released per year</p>
 
-              {/* Decade tabs */}
-              <div className="decade-tabs" style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+              <div className="decade-tabs">
                 {(['all', '2000s', '2010s', '2020s'] as Decade[]).map(d => (
                   <button
                     key={d}
                     className={`decade-btn${decade === d ? ' active' : ''}`}
                     onClick={() => setDecade(d)}
                     style={{
-                      padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700,
                       background: decade === d ? 'var(--crimson)' : 'rgba(255,255,255,0.05)',
                       color: decade === d ? '#fff' : 'rgba(255,255,255,0.45)',
-                      fontFamily: "'Syne', sans-serif",
                     }}
                   >
                     {d === 'all' ? 'Last 15' : d}
@@ -298,17 +357,17 @@ export default function AnalyticsDashboard({ stats }: { stats: Stats }) {
                 ))}
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {years.map((y, i) => (
                   <div
                     key={y.year}
                     className="bar-row"
-                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '3px 6px' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 4px' }}
                     onMouseEnter={() => setHoveredYear(i)}
                     onMouseLeave={() => setHoveredYear(null)}
                   >
-                    <span style={{ fontSize: 11, color: hoveredYear === i ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.38)', width: 36, textAlign: 'right', flexShrink: 0, transition: 'color 0.2s', fontVariantNumeric: 'tabular-nums' }}>{y.year}</span>
-                    <div className="bar-wrap" style={{ flex: 1, height: 20, borderRadius: 4, background: 'rgba(255,255,255,0.04)', overflow: 'visible', position: 'relative' }}>
+                    <span className="bar-label" style={{ color: hoveredYear === i ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.38)', width: 34, textAlign: 'right', flexShrink: 0, transition: 'color 0.2s', fontVariantNumeric: 'tabular-nums' }}>{y.year}</span>
+                    <div className="bar-wrap" style={{ flex: 1, height: 18, borderRadius: 4, background: 'rgba(255,255,255,0.04)', overflow: 'visible', position: 'relative' }}>
                       <div className="bar-fill" style={{
                         height: '100%', borderRadius: 4,
                         width: animated ? `${(y.count / maxYearCount) * 100}%` : '0%',
@@ -317,31 +376,31 @@ export default function AnalyticsDashboard({ stats }: { stats: Stats }) {
                       }} />
                       <Tooltip text={`${y.year}: ${y.count} films`} />
                     </div>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: hoveredYear === i ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.4)', width: 28, textAlign: 'right', flexShrink: 0, transition: 'color 0.2s' }}>{y.count}</span>
+                    <span className="bar-label" style={{ fontWeight: 700, color: hoveredYear === i ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.4)', width: 26, textAlign: 'right', flexShrink: 0, transition: 'color 0.2s' }}>{y.count}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Genre Distribution */}
-            <div className="dash-card" style={{ borderRadius: 16, padding: 28, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', animationDelay: '0.15s' }}>
+            <div className="dash-card" style={{ borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', animationDelay: '0.15s' }}>
               <p style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 800, color: 'rgba(255,255,255,0.9)', marginBottom: 4 }}>Genre Distribution</p>
-              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginBottom: 22 }}>Top 10 most popular categories</p>
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginBottom: 18 }}>Top 10 most popular categories</p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                 {stats.genres.slice(0, 10).map((g, i) => {
                   const pct = Math.round((g.count / stats.total) * 100)
                   return (
                     <div
                       key={g.genre}
                       className="bar-row"
-                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '3px 6px' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 4px' }}
                       onMouseEnter={() => setHoveredGenre(i)}
                       onMouseLeave={() => setHoveredGenre(null)}
                     >
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: GENRE_COLORS[i], flexShrink: 0, transition: 'transform 0.2s', transform: hoveredGenre === i ? 'scale(1.5)' : 'scale(1)' }} />
-                      <span style={{ fontSize: 12, color: hoveredGenre === i ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.5)', width: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 0, textTransform: 'capitalize', transition: 'color 0.2s' }}>{g.genre}</span>
-                      <div className="bar-wrap" style={{ flex: 1, height: 20, borderRadius: 4, background: 'rgba(255,255,255,0.04)', overflow: 'visible', position: 'relative' }}>
+                      <div style={{ width: 7, height: 7, borderRadius: '50%', background: GENRE_COLORS[i], flexShrink: 0, transition: 'transform 0.2s', transform: hoveredGenre === i ? 'scale(1.5)' : 'scale(1)' }} />
+                      <span className="bar-label genre-label" style={{ color: hoveredGenre === i ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.5)', textTransform: 'capitalize', transition: 'color 0.2s' }}>{g.genre}</span>
+                      <div className="bar-wrap" style={{ flex: 1, height: 18, borderRadius: 4, background: 'rgba(255,255,255,0.04)', overflow: 'visible', position: 'relative' }}>
                         <div className="bar-fill" style={{
                           height: '100%', borderRadius: 4,
                           width: animated ? `${(g.count / maxGenreCount) * 100}%` : '0%',
@@ -351,7 +410,7 @@ export default function AnalyticsDashboard({ stats }: { stats: Stats }) {
                         }} />
                         <Tooltip text={`${g.genre}: ${g.count} films (${pct}%)`} />
                       </div>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', width: 32, textAlign: 'right', flexShrink: 0 }}>{g.count}</span>
+                      <span className="bar-label" style={{ fontWeight: 700, color: 'rgba(255,255,255,0.4)', width: 28, textAlign: 'right', flexShrink: 0 }}>{g.count}</span>
                     </div>
                   )
                 })}
@@ -360,14 +419,14 @@ export default function AnalyticsDashboard({ stats }: { stats: Stats }) {
           </div>
 
           {/* ROW 2: OTT + Rating */}
-          <div className="dash-two-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 24 }}>
+          <div className="dash-two-col">
 
             {/* Streaming Platforms */}
-            <div className="dash-card" style={{ borderRadius: 16, padding: 28, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', animationDelay: '0.2s' }}>
+            <div className="dash-card" style={{ borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', animationDelay: '0.2s' }}>
               <p style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 800, color: 'rgba(255,255,255,0.9)', marginBottom: 4 }}>Streaming Platforms</p>
-              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginBottom: 22 }}>Where Tamil movies are available</p>
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginBottom: 18 }}>Where Tamil movies are available</p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {stats.ottPlatforms.map((o, i) => {
                   const pct = Math.round((o.count / stats.total) * 100)
                   const isHovered = hoveredOTT === i
@@ -375,13 +434,13 @@ export default function AnalyticsDashboard({ stats }: { stats: Stats }) {
                     <div
                       key={o.name}
                       className="bar-row"
-                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '4px 6px', borderRadius: 8 }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '3px 4px', borderRadius: 8 }}
                       onMouseEnter={() => setHoveredOTT(i)}
                       onMouseLeave={() => setHoveredOTT(null)}
                     >
-                      <div style={{ width: 10, height: 10, borderRadius: 3, background: OTT_COLORS[i], flexShrink: 0, transition: 'transform 0.2s', transform: isHovered ? 'scale(1.3)' : 'scale(1)' }} />
-                      <span style={{ fontSize: 13, fontWeight: 600, color: isHovered ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.65)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', transition: 'color 0.2s' }}>{o.name}</span>
-                      <div className="bar-wrap" style={{ width: 100, height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.05)', overflow: 'visible', flexShrink: 0, position: 'relative' }}>
+                      <div style={{ width: 9, height: 9, borderRadius: 3, background: OTT_COLORS[i], flexShrink: 0, transition: 'transform 0.2s', transform: isHovered ? 'scale(1.3)' : 'scale(1)' }} />
+                      <span style={{ fontSize: 12, fontWeight: 600, color: isHovered ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.65)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', transition: 'color 0.2s' }}>{o.name}</span>
+                      <div className="bar-wrap ott-bar" style={{ height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.05)', overflow: 'visible', flexShrink: 0, position: 'relative' }}>
                         <div className="bar-fill" style={{
                           height: '100%', borderRadius: 4,
                           width: animated ? `${(o.count / maxOTT) * 100}%` : '0%',
@@ -390,7 +449,7 @@ export default function AnalyticsDashboard({ stats }: { stats: Stats }) {
                         }} />
                         <Tooltip text={`${o.count} films · ${pct}%`} />
                       </div>
-                      <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 13, fontWeight: 800, color: isHovered ? '#fff' : 'rgba(255,255,255,0.85)', width: 30, textAlign: 'right', flexShrink: 0, transition: 'color 0.2s' }}>{o.count}</span>
+                      <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 13, fontWeight: 800, color: isHovered ? '#fff' : 'rgba(255,255,255,0.85)', width: 28, textAlign: 'right', flexShrink: 0, transition: 'color 0.2s' }}>{o.count}</span>
                     </div>
                   )
                 })}
@@ -398,14 +457,14 @@ export default function AnalyticsDashboard({ stats }: { stats: Stats }) {
             </div>
 
             {/* Rating Distribution */}
-            <div className="dash-card" style={{ borderRadius: 16, padding: 28, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', animationDelay: '0.25s' }}>
+            <div className="dash-card" style={{ borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', animationDelay: '0.25s' }}>
               <p style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 800, color: 'rgba(255,255,255,0.9)', marginBottom: 4 }}>Rating Distribution</p>
-              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginBottom: 22 }}>
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginBottom: 18 }}>
                 Quality spread · <strong style={{ color: 'rgba(255,255,255,0.5)' }}>{totalRated.toLocaleString()}</strong> rated films
               </p>
 
               {/* Stacked bar */}
-              <div style={{ display: 'flex', height: 12, borderRadius: 6, overflow: 'hidden', marginBottom: 24, gap: 2 }}>
+              <div style={{ display: 'flex', height: 12, borderRadius: 6, overflow: 'hidden', marginBottom: 20, gap: 2 }}>
                 {RATING_DATA.map(r => {
                   const w = totalRated ? (stats.ratingBuckets[r.idx] / totalRated) * 100 : 0
                   return (
@@ -420,20 +479,20 @@ export default function AnalyticsDashboard({ stats }: { stats: Stats }) {
                 })}
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {RATING_DATA.map(r => {
                   const count = stats.ratingBuckets[r.idx]
                   const pct   = totalRated ? Math.round((count / totalRated) * 100) : 0
                   return (
                     <div key={r.label}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: r.color, width: 64 }}>{r.label}</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: r.color, width: 60 }}>{r.label}</span>
                           <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.26)' }}>{r.range}</span>
                         </div>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.45)' }}>{count.toLocaleString()} · {pct}%</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.45)' }}>{count.toLocaleString()} · {pct}%</span>
                       </div>
-                      <div style={{ height: 7, borderRadius: 4, background: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+                      <div style={{ height: 6, borderRadius: 4, background: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
                         <div style={{
                           height: '100%', borderRadius: 4,
                           width: animated ? `${(count / maxRating) * 100}%` : '0%',
@@ -449,34 +508,33 @@ export default function AnalyticsDashboard({ stats }: { stats: Stats }) {
           </div>
 
           {/* TOP DIRECTORS */}
-          <div className="dash-card" style={{ borderRadius: 16, padding: 28, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 32, animationDelay: '0.3s' }}>
+          <div className="dash-card" style={{ borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 24, animationDelay: '0.3s' }}>
             <p style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 800, color: 'rgba(255,255,255,0.9)', marginBottom: 4 }}>Top Directors</p>
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginBottom: 24 }}>Most prolific directors in the database</p>
-            <div className="dir-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: 12 }}>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginBottom: 20 }}>Most prolific directors in the database</p>
+            <div className="dir-grid">
               {stats.topDirectors.map((d, i) => (
                 <div
                   key={d.name}
                   className="dir-card"
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '12px 16px', borderRadius: 10,
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '10px 12px', borderRadius: 10,
                     background: 'rgba(255,255,255,0.02)',
                     border: '1px solid rgba(255,255,255,0.05)',
-                    animationDelay: `${0.3 + i * 0.04}s`,
                   }}
                 >
                   <div style={{
-                    width: 38, height: 38, borderRadius: '50%', flexShrink: 0,
+                    width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: i < 3 ? 20 : 14, fontWeight: 900,
+                    fontSize: i < 3 ? 18 : 13, fontWeight: 900,
                     background: i < 3 ? 'transparent' : i < 5 ? '#7C3AED' : 'rgba(255,255,255,0.07)',
                     color: '#fff', fontFamily: "'Syne', sans-serif",
                   }}>
                     {i < 3 ? MEDAL[i] : i + 1}
                   </div>
                   <div style={{ minWidth: 0 }}>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.88)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.name}</p>
-                    <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 1 }}>{d.count} film{d.count !== 1 ? 's' : ''}</p>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.88)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.name}</p>
+                    <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 1 }}>{d.count} film{d.count !== 1 ? 's' : ''}</p>
                   </div>
                 </div>
               ))}
@@ -484,18 +542,18 @@ export default function AnalyticsDashboard({ stats }: { stats: Stats }) {
           </div>
 
           {/* CTA */}
-          <div style={{
-            textAlign: 'center', padding: '52px 24px', borderRadius: 16,
+          <div className="cta-section" style={{
+            textAlign: 'center', borderRadius: 16,
             background: 'linear-gradient(135deg, rgba(124,58,237,0.09) 0%, rgba(212,41,26,0.09) 100%)',
             border: '1px solid rgba(255,255,255,0.06)',
           }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--rose-light)', marginBottom: 12, fontFamily: "'Syne', sans-serif" }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--rose-light)', marginBottom: 10, fontFamily: "'Syne', sans-serif" }}>
               Powered by AI · TF-IDF + Cosine Similarity
             </p>
-            <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(18px,3vw,24px)', fontWeight: 800, color: 'rgba(255,255,255,0.92)', marginBottom: 10 }}>
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(16px,3vw,24px)', fontWeight: 800, color: 'rgba(255,255,255,0.92)', marginBottom: 10 }}>
               Movie Recommendation Engine
             </h2>
-            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.36)', maxWidth: 480, margin: '0 auto 28px', lineHeight: 1.65 }}>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.36)', maxWidth: 440, margin: '0 auto 24px', lineHeight: 1.65 }}>
               Personalised picks based on genre, cast, and director patterns — for every film in the database.
             </p>
             <Link
@@ -504,7 +562,7 @@ export default function AnalyticsDashboard({ stats }: { stats: Stats }) {
                 display: 'inline-flex', alignItems: 'center', gap: 8,
                 background: 'linear-gradient(135deg, var(--crimson), #7C3AED)',
                 color: '#fff', fontFamily: "'Syne', sans-serif", fontSize: 14, fontWeight: 700,
-                padding: '14px 32px', borderRadius: 12,
+                padding: '13px 28px', borderRadius: 12,
                 boxShadow: '0 8px 32px rgba(212,41,26,0.35)',
                 textDecoration: 'none', transition: 'transform 0.2s, box-shadow 0.2s',
                 animation: 'glow 3s ease-in-out infinite',

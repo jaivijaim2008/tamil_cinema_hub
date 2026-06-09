@@ -64,18 +64,26 @@ async function getStats() {
 
     while (true) {
       const from = page * PAGE_SIZE
-      const to = from + PAGE_SIZE
+      const to = from + PAGE_SIZE - 1
+
+      // KEY FIX: Use GROQ params ($from / $to) instead of string interpolation.
+      // String interpolation like `[${from}...${to}]` is treated as a static
+      // expression by the Sanity client and silently falls back to the default
+      // limit (60). Passing them as typed params forces the client to send the
+      // correct slice values.
       const batch = await client.fetch<Movie[]>(
-        `*[_type == "movie"][${from}...${to}]{
+        `*[_type == "movie"][$from...$to]{
           title,
           "year": coalesce(year, 0),
           rating,
           genre,
           ottPlatform,
           director
-        }`
+        }`,
+        { from, to }
       )
-      console.log(`Page ${page}: fetched ${batch.length} movies | sample year:`, batch[0]?.year, typeof batch[0]?.year)
+
+      console.log(`Page ${page} [${from}...${to}]: fetched ${batch.length} movies`)
       allMovies = [...allMovies, ...batch]
       if (batch.length < PAGE_SIZE) break
       page++
@@ -97,8 +105,6 @@ async function getStats() {
     const years = Array.from(yearMap.entries())
       .map(([year, count]) => ({ year, count }))
       .sort((a, b) => a.year - b.year)
-
-    console.log('✅ Year map sample:', Array.from(yearMap.entries()).slice(0, 5))
 
     // ─── Genre ────────────────────────────────────────────────────────────
     const genreMap = new Map<string, number>()
