@@ -55,7 +55,6 @@ export default function TamilCinemaHubChatbot() {
   useEffect(() => { return () => { if (streamRef.current.timer) clearInterval(streamRef.current.timer) } }, [])
   useEffect(() => { const h = () => setIsOpen(true); window.addEventListener('open-chatbot', h); return () => window.removeEventListener('open-chatbot', h) }, [])
 
-  // Lock body scroll when chat is open on mobile
   useEffect(() => {
     if (!isOpen) return
     const isMobile = window.innerWidth <= 479
@@ -154,11 +153,11 @@ export default function TamilCinemaHubChatbot() {
     while ((m = r.exec(text)) !== null) {
       if (m.index > li) parts.push(text.slice(li, m.index))
       if (m[1] !== undefined) {
-        parts.push(<span key={`p-${m.index}`} className="inline-block w-12 h-[72px] relative rounded-md mr-2 mb-1 align-middle overflow-hidden"><Image src={m[1]} alt="Poster" fill sizes="48px" style={{ objectFit: 'cover' }} unoptimized /></span>)
+        parts.push(<span key={`p-${m.index}`} className="inline-block w-12 h-[72px] relative rounded mr-2 mb-1 align-middle overflow-hidden border border-white/10"><Image src={m[1]} alt="Poster" fill sizes="48px" style={{ objectFit: 'cover' }} unoptimized /></span>)
       } else {
         const linkMatch = m[2]?.match(/\[([^\]]+)\]\(([^)]+)\)/)
         if (linkMatch) {
-          parts.push(<a key={`l-${m.index}`} href={linkMatch[2]} className="text-indigo-400 hover:underline">{linkMatch[1]}</a>)
+          parts.push(<a key={`l-${m.index}`} href={linkMatch[2]} className="underline decoration-dotted" style={{ color: '#F0B429' }}>{linkMatch[1]}</a>)
         } else {
           parts.push(m[0])
         }
@@ -171,240 +170,320 @@ export default function TamilCinemaHubChatbot() {
 
   return (
     <>
-      {/* ── Backdrop + Chat Panel ── */}
       {isOpen && (
         <>
           {/* Backdrop */}
           <div
             className="fixed inset-0 z-[199]"
-            style={{ background: 'rgba(0,0,0,0.55)' }}
+            style={{ background: 'rgba(5,0,8,0.7)' }}
             onClick={() => setIsOpen(false)}
           />
 
-          {/* Chat Window */}
+          {/* Chat Window — cinema ticket shape */}
           <div
-            className="fixed inset-0 z-[200] flex flex-col overflow-hidden md:inset-auto md:bottom-[88px] md:right-6 md:w-[400px] md:max-w-[calc(100vw-32px)] md:h-[min(540px,calc(100dvh-110px))] md:rounded-2xl md:border md:border-white/[0.08] md:shadow-[0_24px_80px_rgba(0,0,0,0.8)]"
+            className="fixed inset-0 z-[200] flex flex-col overflow-hidden md:inset-auto md:bottom-5 md:right-5 md:w-[420px] md:max-w-[calc(100vw-28px)] md:h-[min(580px,calc(100dvh-80px))] md:shadow-[0_32px_100px_rgba(0,0,0,0.9)]"
             style={{
-              background: '#111318',
+              background: '#0A0008',
               paddingBottom: 'env(safe-area-inset-bottom, 0px)',
             }}
           >
-            {/* ── Header ── */}
-            <div className="relative flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ background: '#16181e' }}>
-              {/* Gradient border bottom */}
-              <div className="absolute bottom-0 left-0 right-0 h-[1px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(99,102,241,0.4), rgba(168,85,247,0.3), transparent)' }} />
-              <div className="flex items-center gap-3">
-                {/* AI Avatar */}
-                <div className="relative">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)' }}>
-                    <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                      <path d="M2 17l10 5 10-5" />
-                      <path d="M2 12l10 5 10-5" />
-                    </svg>
-                  </div>
-                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2" style={{ borderColor: '#111318' }} />
+            {/* ── Header — crimson gradient with film grain texture ── */}
+            <div
+              className="relative flex items-center justify-between px-4 py-3.5 flex-shrink-0 overflow-hidden"
+              style={{ background: 'linear-gradient(135deg, #1a0510 0%, #2a0a18 50%, #1a0510 100%)' }}
+            >
+              {/* Film grain overlay */}
+              <div className="absolute inset-0 opacity-20" style={{ background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.02) 2px, rgba(255,255,255,0.02) 4px)' }} />
+              {/* Bottom accent line */}
+              <div className="absolute bottom-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #D4291A, #F0B429, #7C3AED, #F0B429, #D4291A)' }} />
+
+              <div className="flex items-center gap-3 relative z-10">
+                {/* Clapperboard icon */}
+                <div
+                  className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 relative"
+                  style={{ background: 'linear-gradient(135deg, #D4291A, #FF4D1C)', boxShadow: '0 4px 16px rgba(212,41,26,0.4)' }}
+                >
+                  <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2" />
+                    <path d="M2 8h20" />
+                    <path d="M8 4l2 4M14 4l2 4M5 4l1.5 4M17.5 4L19 4" />
+                  </svg>
+                  {/* Pulse ring */}
+                  <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full" style={{ background: '#2DD4BF', boxShadow: '0 0 8px rgba(45,212,191,0.6)' }} />
                 </div>
                 <div>
-                  <h3 className="text-white text-sm font-semibold tracking-tight">TamilCinemaHub AI</h3>
-                  <p className="text-[11px] text-emerald-400 font-medium">Online</p>
+                  <h3 className="text-sm font-bold tracking-wide" style={{ fontFamily: "'Syne', sans-serif", color: '#FFF8F0' }}>
+                    CINEMA AI
+                  </h3>
+                  <p className="text-[10px] font-medium tracking-wider uppercase" style={{ color: '#2DD4BF' }}>
+                    ● Now Showing
+                  </p>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5">
+
+              <div className="flex items-center gap-1 relative z-10">
                 <button
                   onClick={clearChat}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center transition-colors hover:bg-white/10"
-                  style={{ color: 'rgba(255,255,255,0.4)' }}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
+                  style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,248,240,0.4)' }}
                   title="Clear chat"
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
                 </button>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center transition-colors hover:bg-white/10"
-                  style={{ color: 'rgba(255,255,255,0.5)' }}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
+                  style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,248,240,0.5)' }}
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
             </div>
 
-            {/* ── Messages ── */}
+            {/* ── Messages area ── */}
             <div
-              className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
-              style={{ background: '#111318', scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.08) transparent' }}
+              className="flex-1 overflow-y-auto relative"
+              style={{ background: '#0A0008', scrollbarWidth: 'thin', scrollbarColor: 'rgba(212,41,26,0.2) transparent' }}
             >
-              {messages.map((msg, index) => {
-                if (msg.role === 'system') {
-                  return (
-                    <div key={index} className="flex justify-center">
-                      <div className="text-xs px-4 py-2 rounded-full" style={{ background: 'rgba(234,179,8,0.1)', color: 'rgba(253,224,71,0.8)' }}>
-                        ⏱ {msg.content}{index === messages.length - 1 && rateLimitCountdown > 0 ? ` (${rateLimitCountdown}s)` : ''}
-                      </div>
-                    </div>
-                  )
-                }
-
-                const isUser = msg.role === 'user'
-
-                return (
-                  <div key={index} className={`flex ${isUser ? 'justify-end' : 'justify-start'} gap-2.5`}>
-                    {!isUser && (
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)' }}>
-                        <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                          <path d="M2 17l10 5 10-5" />
-                          <path d="M2 12l10 5 10-5" />
-                        </svg>
-                      </div>
-                    )}
-                    <div className={`max-w-[80%] ${isUser ? 'items-end' : 'items-start'} flex flex-col`}>
-                      <div
-                        className={`px-3.5 py-2.5 text-[13px] leading-relaxed whitespace-pre-line ${
-                          isUser
-                            ? 'rounded-2xl rounded-br-md text-white'
-                            : 'rounded-2xl rounded-bl-md'
-                        }`}
-                        style={
-                          isUser
-                            ? { background: 'linear-gradient(135deg, #4f46e5, #6366f1)', color: '#fff' }
-                            : { background: '#1c1e2a', color: 'rgba(255,255,255,0.85)' }
-                        }
-                      >
-                        {isUser ? msg.content : renderMessageText(msg.content)}
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-
-              {/* Loading dots */}
-              {isLoading && !streamingText && (
-                <div className="flex justify-start gap-2.5">
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)' }}>
-                    <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                      <path d="M2 17l10 5 10-5" />
-                      <path d="M2 12l10 5 10-5" />
-                    </svg>
-                  </div>
-                  <div className="rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-1" style={{ background: '#1c1e2a' }}>
-                    <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#818cf8', animationDelay: '0ms' }} />
-                    <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#818cf8', animationDelay: '150ms' }} />
-                    <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#818cf8', animationDelay: '300ms' }} />
+              <div className="flex h-full">
+                {/* Left film perforations */}
+                <div className="hidden md:flex flex-col items-center justify-center flex-shrink-0" style={{ width: '12px' }}>
+                  <div className="flex flex-col gap-1.5 py-3 px-0.5">
+                    {Array.from({ length: 12 }).map((_, i) => (
+                      <div key={i} className="w-1 h-1 rounded-sm" style={{ background: 'rgba(240,180,41,0.15)' }} />
+                    ))}
                   </div>
                 </div>
-              )}
 
-              {/* Streaming text */}
-              {streamingText !== null && (
-                <div className="flex justify-start gap-2.5">
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)' }}>
-                    <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                      <path d="M2 17l10 5 10-5" />
-                      <path d="M2 12l10 5 10-5" />
-                    </svg>
-                  </div>
-                  <div className="max-w-[80%] flex flex-col items-start">
-                    <div
-                      className="px-3.5 py-2.5 text-[13px] leading-relaxed whitespace-pre-line rounded-2xl rounded-bl-md"
-                      style={{ background: '#1c1e2a', color: 'rgba(255,255,255,0.85)' }}
-                    >
-                      {renderMessageText(streamingText)}
-                      <span className="inline-block w-[2px] h-3.5 ml-0.5 align-text-bottom animate-pulse" style={{ background: '#818cf8' }} />
-                    </div>
-                  </div>
-                </div>
-              )}
+                {/* Messages */}
+                <div className="flex-1 px-4 py-4 space-y-4">
+                  {messages.map((msg, index) => {
+                    if (msg.role === 'system') {
+                      return (
+                        <div key={index} className="flex justify-center">
+                          <div
+                            className="text-[11px] px-4 py-2 rounded-full font-medium tracking-wide"
+                            style={{
+                              background: 'rgba(240,180,41,0.08)',
+                              color: '#F0B429',
+                              border: '1px solid rgba(240,180,41,0.15)',
+                            }}
+                          >
+                            ⏱ {msg.content}{index === messages.length - 1 && rateLimitCountdown > 0 ? ` (${rateLimitCountdown}s)` : ''}
+                          </div>
+                        </div>
+                      )
+                    }
 
-              {/* Suggestions from AI */}
-              {!isLoading && !streamingText && (() => {
-                for (let i = messages.length - 1; i >= 0; i--) {
-                  const msg = messages[i]
-                  if (msg.role === 'assistant' && msg.suggestions && msg.suggestions.length > 0) {
-                    const isLatest = !messages.slice(i + 1).some(m => m.role === 'assistant')
-                    if (!isLatest) break
+                    const isUser = msg.role === 'user'
+
                     return (
-                      <div className="flex justify-start gap-2.5 pl-[38px]">
-                        <div className="flex flex-wrap gap-1.5">
-                          {msg.suggestions.map((s) => (
-                            <button
-                              key={s}
-                              onClick={() => handleSuggestionClick(s)}
-                              className="text-xs px-3 py-1.5 rounded-full transition-all whitespace-nowrap active:scale-95 hover:bg-indigo-500/20"
-                              style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '#a5b4fc' }}
-                            >
-                              {s}
-                            </button>
-                          ))}
+                      <div key={index} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[82%] ${isUser ? 'items-end' : 'items-start'} flex flex-col`}>
+                          {/* Sender label */}
+                          {!isUser && (
+                            <span className="text-[9px] font-bold tracking-widest uppercase mb-1 ml-1" style={{ color: 'rgba(212,41,26,0.5)' }}>
+                              AI HOST
+                            </span>
+                          )}
+                          <div
+                            className={`px-4 py-3 text-[13px] leading-relaxed whitespace-pre-line ${
+                              isUser ? 'rounded-2xl rounded-br-sm' : 'rounded-2xl rounded-bl-sm'
+                            }`}
+                            style={
+                              isUser
+                                ? {
+                                    background: 'linear-gradient(135deg, #D4291A, #FF4D1C)',
+                                    color: '#fff',
+                                    boxShadow: '0 4px 20px rgba(212,41,26,0.25)',
+                                  }
+                                : {
+                                    background: 'rgba(255,255,255,0.04)',
+                                    color: 'rgba(255,248,240,0.85)',
+                                    border: '1px solid rgba(255,255,255,0.06)',
+                                  }
+                            }
+                          >
+                            {isUser ? msg.content : renderMessageText(msg.content)}
+                          </div>
+                          {/* Feedback for assistant messages */}
+                          {!isUser && msg.content && (
+                            <div className="flex gap-1 mt-1 ml-1">
+                              <button
+                                onClick={() => handleFeedback(index, 'up')}
+                                className="w-5 h-5 flex items-center justify-center rounded transition-colors"
+                                style={{
+                                  color: feedback[index] === 'up' ? '#2DD4BF' : 'rgba(255,248,240,0.15)',
+                                }}
+                              >
+                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14zM4 22H2V11h2v11z" /></svg>
+                              </button>
+                              <button
+                                onClick={() => handleFeedback(index, 'down')}
+                                className="w-5 h-5 flex items-center justify-center rounded transition-colors"
+                                style={{
+                                  color: feedback[index] === 'down' ? '#D4291A' : 'rgba(255,248,240,0.15)',
+                                }}
+                              >
+                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M10 15V19a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10zM20 2h2v11h-2V2z" /></svg>
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )
-                  }
-                }
-                return null
-              })()}
+                  })}
 
-              <div ref={messagesEndRef} />
+                  {/* Loading */}
+                  {isLoading && !streamingText && (
+                    <div className="flex justify-start">
+                      <div>
+                        <span className="text-[9px] font-bold tracking-widest uppercase mb-1 ml-1 block" style={{ color: 'rgba(212,41,26,0.5)' }}>
+                          AI HOST
+                        </span>
+                        <div
+                          className="px-4 py-3 rounded-2xl rounded-bl-sm flex items-center gap-1.5"
+                          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#D4291A', animationDelay: '0ms' }} />
+                          <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#F0B429', animationDelay: '150ms' }} />
+                          <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#7C3AED', animationDelay: '300ms' }} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Streaming */}
+                  {streamingText !== null && (
+                    <div className="flex justify-start">
+                      <div className="max-w-[82%]">
+                        <span className="text-[9px] font-bold tracking-widest uppercase mb-1 ml-1 block" style={{ color: 'rgba(212,41,26,0.5)' }}>
+                          AI HOST
+                        </span>
+                        <div
+                          className="px-4 py-3 text-[13px] leading-relaxed whitespace-pre-line rounded-2xl rounded-bl-sm"
+                          style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,248,240,0.85)', border: '1px solid rgba(255,255,255,0.06)' }}
+                        >
+                          {renderMessageText(streamingText)}
+                          <span className="inline-block w-[2px] h-3.5 ml-0.5 align-text-bottom animate-pulse" style={{ background: '#F0B429' }} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Suggestions */}
+                  {!isLoading && !streamingText && (() => {
+                    for (let i = messages.length - 1; i >= 0; i--) {
+                      const msg = messages[i]
+                      if (msg.role === 'assistant' && msg.suggestions && msg.suggestions.length > 0) {
+                        const isLatest = !messages.slice(i + 1).some(m => m.role === 'assistant')
+                        if (!isLatest) break
+                        return (
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            {msg.suggestions.map((s) => (
+                              <button
+                                key={s}
+                                onClick={() => handleSuggestionClick(s)}
+                                className="text-[11px] px-3 py-1.5 rounded-full transition-all whitespace-nowrap active:scale-95 hover:scale-105 font-medium"
+                                style={{
+                                  background: 'rgba(212,41,26,0.08)',
+                                  border: '1px solid rgba(212,41,26,0.2)',
+                                  color: '#FDA4AF',
+                                }}
+                              >
+                                {s}
+                              </button>
+                            ))}
+                          </div>
+                        )
+                      }
+                    }
+                    return null
+                  })()}
+
+                  <div ref={messagesEndRef} />
+                </div>
+
+                {/* Right film perforations */}
+                <div className="hidden md:flex flex-col items-center justify-center flex-shrink-0" style={{ width: '12px' }}>
+                  <div className="flex flex-col gap-1.5 py-3 px-0.5">
+                    {Array.from({ length: 12 }).map((_, i) => (
+                      <div key={`r-${i}`} className="w-1 h-1 rounded-sm" style={{ background: 'rgba(240,180,41,0.15)' }} />
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* ── Quick suggestions (first load) ── */}
+            {/* ── Quick suggestions — first load (ticket stub style) ── */}
             {messages.length === 1 && (
               <div
-                className="px-4 py-2 flex gap-2 overflow-x-auto flex-shrink-0"
-                style={{ background: '#111318', scrollbarWidth: 'none' }}
+                className="px-4 py-2.5 flex gap-2 overflow-x-auto flex-shrink-0"
+                style={{ background: '#0A0008', scrollbarWidth: 'none' }}
               >
-                {['Best 2026 movies', 'Vijay movies', 'Recommend thriller'].map((s) => (
+                {[{ label: '🎬 Best 2026 movies', value: 'Best 2026 movies' }, { label: '⭐ Vijay films', value: 'Vijay movies' }, { label: '🎯 Thriller picks', value: 'Recommend thriller' }].map((s) => (
                   <button
-                    key={s}
-                    onClick={() => setInput(s)}
-                    className="flex-shrink-0 text-xs px-3.5 py-1.5 rounded-full whitespace-nowrap transition-colors hover:bg-indigo-500/20"
-                    style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '#a5b4fc' }}
+                    key={s.value}
+                    onClick={() => setInput(s.value)}
+                    className="flex-shrink-0 text-[11px] px-3 py-1.5 rounded-full whitespace-nowrap transition-all hover:scale-105 active:scale-95 font-medium"
+                    style={{
+                      background: 'rgba(240,180,41,0.08)',
+                      border: '1px solid rgba(240,180,41,0.2)',
+                      color: '#F0B429',
+                    }}
                   >
-                    {s}
+                    {s.label}
                   </button>
                 ))}
               </div>
             )}
 
-            {/* ── Input Bar ── */}
-            <div className="relative px-3 py-3 flex-shrink-0" style={{ background: '#0d0f14' }}>
-              {/* Gradient border top */}
-              <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(99,102,241,0.2), transparent)' }} />
-              <div className="flex items-center gap-2">
-                <input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder={isLoading || streamingText ? 'Thinking...' : 'Ask about Tamil movies...'}
-                  disabled={isLoading || rateLimitCountdown > 0}
-                  className="flex-1 rounded-xl px-4 py-2.5 text-sm outline-none disabled:opacity-40 transition-all"
-                  style={{
-                    background: '#1c1e2a',
-                    color: '#e2e4f0',
-                    caretColor: '#818cf8',
-                    border: '1px solid rgba(255,255,255,0.06)',
-                  }}
-                />
+            {/* ── Input — cinema ticket bottom ── */}
+            <div
+              className="relative flex-shrink-0"
+              style={{ background: 'linear-gradient(180deg, #12000a, #0A0008)' }}
+            >
+              {/* Top accent */}
+              <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(212,41,26,0.3), rgba(240,180,41,0.2), transparent)' }} />
+              <div className="px-4 py-3 flex items-center gap-3">
+                <div className="flex-1 relative">
+                  <input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={isLoading || streamingText ? 'Now playing...' : 'Ask about Tamil cinema...'}
+                    disabled={isLoading || rateLimitCountdown > 0}
+                    className="w-full rounded-xl px-4 py-2.5 text-[13px] outline-none disabled:opacity-30 transition-all font-medium"
+                    style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      color: '#FFF8F0',
+                      caretColor: '#F0B429',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                    }}
+                  />
+                </div>
                 {(isLoading || streamingText) ? (
                   <button
                     onClick={stopGeneration}
-                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all active:scale-95"
-                    style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444' }}
+                    className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-all active:scale-90"
+                    style={{ background: 'rgba(212,41,26,0.15)', color: '#D4291A', border: '1px solid rgba(212,41,26,0.2)' }}
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="4" /></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="3" /></svg>
                   </button>
                 ) : (
                   <button
                     onClick={() => sendMessage()}
                     disabled={rateLimitCountdown > 0 || !input.trim()}
-                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all active:scale-95 disabled:opacity-20"
-                    style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', color: '#fff' }}
+                    className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-all active:scale-90 disabled:opacity-15"
+                    style={{
+                      background: 'linear-gradient(135deg, #D4291A, #FF4D1C)',
+                      color: '#fff',
+                      boxShadow: '0 4px 16px rgba(212,41,26,0.35)',
+                    }}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="22" y1="2" x2="11" y2="13" />
@@ -418,22 +497,21 @@ export default function TamilCinemaHubChatbot() {
         </>
       )}
 
-      {/* ── FAB ── */}
+      {/* ── FAB — cinema reel button ── */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-[200] w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 active:scale-95 hover:scale-105"
+          className="fixed bottom-6 right-6 z-[200] w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 active:scale-90 hover:scale-110"
           style={{
-            background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
-            boxShadow: '0 8px 32px rgba(79,70,229,0.5)',
-            color: '#fff',
+            background: 'linear-gradient(135deg, #D4291A, #FF4D1C)',
+            boxShadow: '0 8px 32px rgba(212,41,26,0.5), 0 0 0 2px rgba(255,77,28,0.2)',
           }}
           aria-label="Open TamilCinemaHub AI chat"
         >
-          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5z" />
-            <path d="M2 17l10 5 10-5" />
-            <path d="M2 12l10 5 10-5" />
+          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2" />
+            <path d="M2 8h20" />
+            <path d="M8 4l2 4M14 4l2 4M5 4l1.5 4M17.5 4L19 4" />
           </svg>
         </button>
       )}
