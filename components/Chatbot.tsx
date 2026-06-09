@@ -311,10 +311,10 @@ export default function TamilCinemaHubChatbot() {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold tracking-wide" style={{ fontFamily: "'Syne', sans-serif", color: '#FFF8F0' }}>
-                    CINEMA AI
+                    TAMILCINEMAHUB AI
                   </h3>
                   <p className="text-[10px] font-medium tracking-wider uppercase" style={{ color: '#2DD4BF' }}>
-                    ● Now Showing
+                    ● Your Cinema Guide
                   </p>
                 </div>
               </div>

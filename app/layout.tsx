@@ -45,11 +45,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&family=Noto+Serif+Tamil:wght@600&display=swap"
           rel="stylesheet"
         />
-        <Script
+        {/* AdSense — uncomment and replace YOUR_ADSENSE_ID when approved */}
+        {/* <Script
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_ADSENSE_ID"
           crossOrigin="anonymous"
           strategy="afterInteractive"
-        />
+        /> */}
       </head>
       <body className="antialiased" style={{ fontFamily: "'DM Sans', sans-serif" }}>
         <ClientShell />

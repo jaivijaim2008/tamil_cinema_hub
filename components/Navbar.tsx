@@ -70,6 +70,7 @@ export default function Navbar() {
     { name: 'Home', href: '/' },
     { name: 'Movies', href: '/movies' },
     { name: 'Blogs', href: '/blogs' },
+    { name: 'Dashboard', href: '/analytics' },
     { name: 'About', href: '/about' },
   ]
 

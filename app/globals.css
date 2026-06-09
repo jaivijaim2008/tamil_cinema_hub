@@ -754,13 +754,16 @@ body::before {
   .footer-bottom-dark { flex-direction: column; gap: 8px; text-align: center; padding: 0 16px; font-size: 12px; }
   .cursor-dot { display: none !important; }
   /* Detail page mobile */
-  .movie-detail-grid { grid-template-columns: 1fr; gap: 20px; padding: 0 16px; }
-  .movie-header-row { flex-direction: column; align-items: center; gap: 16px; }
-  .movie-poster-wrap { width: 160px; }
+  .movie-detail-grid { grid-template-columns: 1fr; gap: 24px; padding: 24px 16px 0; }
+  .movie-header-row { flex-direction: column; align-items: center; gap: 20px; }
+  .movie-poster-wrap { width: 180px; }
   .movie-info-col { padding-top: 0; text-align: center; }
   .cast-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .related-blog-grid { grid-template-columns: 1fr; gap: 12px; }
   .about-section-grid { grid-template-columns: 1fr; gap: 16px; }
+  .movies-grid-pill { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .dashboard-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+  .stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
 }
 @media (max-width: 480px) {
   .hero-title .line { font-size: clamp(28px, 9vw, 40px); }
