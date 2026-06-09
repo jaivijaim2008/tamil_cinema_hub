@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useTransition } from 'react'
 
-const CATEGORIES = ['All', 'Review', 'Top List', 'News', 'Actor', 'Director']
+const CATEGORIES = ['All', 'Review', 'Top List', 'News', 'Actor', 'Director', 'Feature']
 
 const CAT_STYLES: Record<string, { color: string; bg: string }> = {
   All:        { color: '#a78bfa', bg: 'rgba(124,58,237,0.2)' },
@@ -12,6 +12,7 @@ const CAT_STYLES: Record<string, { color: string; bg: string }> = {
   News:       { color: '#3B82F6', bg: 'rgba(59,130,246,0.2)' },
   Actor:      { color: '#7C3AED', bg: 'rgba(124,58,237,0.2)' },
   Director:   { color: '#0D9488', bg: 'rgba(13,148,136,0.2)' },
+  Feature:    { color: '#F43F5E', bg: 'rgba(244,63,94,0.2)' },
 }
 
 interface BlogFiltersProps {

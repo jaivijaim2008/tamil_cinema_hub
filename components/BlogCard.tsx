@@ -30,6 +30,7 @@ const CATEGORY_TAG_CLASS: Record<string, string> = {
   News: 'tag-news-dark',
   Actor: 'tag-actor-dark',
   Director: 'tag-director-dark',
+  Feature: 'tag-feature-dark',
 }
 
 const BANNER_CLASSES = ['blog-banner-1', 'blog-banner-2', 'blog-banner-3', 'blog-banner-4', 'blog-banner-5']

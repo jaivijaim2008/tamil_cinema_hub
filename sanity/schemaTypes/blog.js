@@ -9,7 +9,7 @@ export default {
  { name: 'author', title: 'Author', type: 'string' },
  { name: 'publishedAt', title: 'Published Date', type: 'datetime' },
  { name: 'category', title: 'Category', type: 'string',
- options: { list: ['Review','Top List','News','Actor','Director'] } },
+ options: { list: ['Review','Top List','News','Actor','Director','Feature'] } },
  { name: 'mainImage', title: 'Cover Image', type: 'image' },
  { name: 'excerpt', title: 'Short Description', type: 'text' },
  { name: 'body', title: 'Blog Content', type: 'array', of: [

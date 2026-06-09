@@ -39,6 +39,7 @@ export default {
           { title: 'News', value: 'News' },
           { title: 'Actor', value: 'Actor' },
           { title: 'Director', value: 'Director' },
+          { title: 'Feature', value: 'Feature' },
         ],
       },
     },

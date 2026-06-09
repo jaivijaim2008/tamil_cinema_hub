@@ -73,6 +73,7 @@ const CATEGORY_CONFIG: Record<string, { color: string; bg: string; label: string
   News:       { color: '#3B82F6', bg: 'rgba(59,130,246,0.15)', label: 'News' },
   Actor:      { color: '#7C3AED', bg: 'rgba(124,58,237,0.15)', label: 'Actor' },
   Director:   { color: '#0D9488', bg: 'rgba(13,148,136,0.15)', label: 'Director' },
+  Feature:    { color: '#F43F5E', bg: 'rgba(244,63,94,0.15)', label: 'Feature' },
 }
 
 const ptComponents = {
