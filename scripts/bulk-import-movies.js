@@ -163,7 +163,7 @@ async function main() {
       const batch = toCreate.slice(i, i + BATCH)
       const tx = sanity.transaction()
       for (const m of batch) {
-        tx.create({ _type: 'movie', title: m.title, slug: { _type: 'slug', current: makeSlug(m.title, m.year) }, year: m.year, director: m.director || '', cast: m.cast || [], synopsis: '', posterUrl: '', rating: 0, ottPlatform: '' })
+        tx.create({ _type: 'movie', title: m.title, slug: { _type: 'slug', current: makeSlug(m.title, m.year) }, year: m.year, director: m.director || '', cast: m.cast || [], genre: [], synopsis: '', posterUrl: '', rating: 0, ottPlatform: '' })
       }
       try { await tx.commit(); created += batch.length; process.stdout.write(`  ✅ [${i+batch.length}/${toCreate.length}]\r`) }
       catch {

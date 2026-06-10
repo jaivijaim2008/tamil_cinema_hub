@@ -75,6 +75,7 @@ async function phase1Import(years) {
           year: m.year,
           director: m.director || '',
           cast: Array.isArray(m.cast) ? m.cast : [],
+          genre: [],
           synopsis: '',
           posterUrl: '',
           rating: 0,
