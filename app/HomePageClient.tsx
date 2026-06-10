@@ -3,6 +3,7 @@
 import { useEffect, lazy, Suspense } from 'react'
 import Link from 'next/link'
 import MovieCard, { Movie } from '../components/MovieCard'
+import MovieCardErrorBoundary from '../components/MovieCardErrorBoundary'
 import BlogCard, { Blog } from '../components/BlogCard'
 
 const ChatWithAIButton = lazy(() => import('../components/ChatWithAIButton'))
@@ -119,7 +120,9 @@ export default function HomePageClient({ movies, blogs }: { movies: Movie[]; blo
           {displayMovies.length > 0 ? (
             <div className="movies-grid-pill reveal-group">
               {displayMovies.map((movie, i) => (
-                <MovieCard key={movie._id} movie={movie} index={i} />
+                <MovieCardErrorBoundary key={movie._id} title={movie.title}>
+                  <MovieCard movie={movie} index={i} />
+                </MovieCardErrorBoundary>
               ))}
             </div>
           ) : (
