@@ -10,7 +10,7 @@ import { urlFor } from '../../../sanity/lib/image'
 import MovieCard, { Movie } from '../../../components/MovieCard'
 import MovieCardErrorBoundary from '../../../components/MovieCardErrorBoundary'
 import CastPhoto from '../../../components/CastPhoto'
-import { Calendar, User, Tv, Star, ChevronLeft, Info, MessageSquare, Film } from 'lucide-react'
+import { Calendar, User, Tv, Star, ChevronLeft, Info, MessageSquare, Film, Globe, Clock } from 'lucide-react'
 
 interface MovieDetailProps {
   params: Promise<{ slug: string }>
@@ -30,20 +30,6 @@ type FullMovie = Movie & {
   cast?: CastMember[]
 }
 
-function getCastName(actor: CastMember): string {
-  return typeof actor === 'string' ? actor : actor.name || ''
-}
-function getCastCharacter(actor: CastMember): string {
-  return typeof actor === 'string' ? '' : actor.character || ''
-}
-function getCastInitial(actor: CastMember): string {
-  return getCastName(actor).charAt(0).toUpperCase()
-}
-function getCastPhoto(actor: CastMember): string | null {
-  if (typeof actor === 'string' || !actor.photo) return null
-  try { return urlFor(actor.photo).width(300).height(300).quality(90).fit('max').url() } catch { return null }
-}
-
 async function getMovieData(slug: string): Promise<FullMovie | null> {
   try {
     const movie = await client.fetch<FullMovie>(movieBySlugQuery, { slug })
@@ -55,13 +41,7 @@ async function getRecommendations(slug: string): Promise<Movie[]> {
   const base = process.env.RECOMMENDER_API_URL
   if (!base) return []
   try {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 5000)
-    const res = await fetch(`${base}/recommend/${slug}?n=6`, {
-      next: { revalidate: 3600 },
-      signal: controller.signal,
-    })
-    clearTimeout(timeout)
+    const res = await fetch(`${base}/recommend/${slug}?n=6`, { next: { revalidate: 3600 } })
     if (!res.ok) return []
     const data = await res.json()
     const recSlugs = data.recommendations?.map((r: any) => r.slug) || []
@@ -81,42 +61,21 @@ export async function generateMetadata({ params }: MovieDetailProps): Promise<Me
   const { slug } = await params
   const movie = await getMovieData(slug)
   if (!movie) return { title: 'Movie Not Found | TamilCinemaHub' }
-  const posterUrl = movie.poster
-    ? urlFor(movie.poster).width(600).height(900).quality(90).fit('max').url()
-    : movie.posterUrl || null
+  const posterUrl = movie.poster ? urlFor(movie.poster).width(600).url() : movie.posterUrl || null
   return {
-    title: `${movie.title} (${movie.year}) | TamilCinemaHub`,
-    description: movie.synopsis || `Full details, cast, rating and review for ${movie.title} (${movie.year}).`,
-    openGraph: {
-      title: `${movie.title} (${movie.year})`,
-      description: movie.synopsis || `Full details, cast, rating and review for ${movie.title} (${movie.year}).`,
-      type: 'video.movie',
-      url: `https://tamilcinemahub.xyz/movies/${slug}`,
-      images: posterUrl ? [{ url: posterUrl, width: 500, height: 750, alt: `${movie.title} movie poster` }] : [],
-    },
-    twitter: {
-      card: 'summary_large_image' as const,
-      title: `${movie.title} (${movie.year})`,
-      description: movie.synopsis || `Full details, cast, rating and review for ${movie.title} (${movie.year}).`,
-      images: posterUrl ? [posterUrl] : [],
-    },
+    title: `${movie.title} (${movie.year})`,
+    description: movie.synopsis || `Full details for ${movie.title}.`,
     alternates: { canonical: `https://tamilcinemahub.xyz/movies/${slug}` },
   }
 }
 
 const ptComponents = {
   block: {
-    h2: ({ children }: any) => (
-      <h2 className="font-display text-2xl font-extrabold mt-8 mb-4 text-white/90">{children}</h2>
-    ),
-    h3: ({ children }: any) => (
-      <h3 className="text-xl font-bold mt-6 mb-3 text-white/90">{children}</h3>
-    ),
-    normal: ({ children }: any) => (
-      <p className="leading-relaxed mb-4 text-base text-white/50">{children}</p>
-    ),
+    h2: ({ children }: any) => <h2 className="font-display text-3xl font-black mt-12 mb-6 uppercase tracking-tight text-white">{children}</h2>,
+    h3: ({ children }: any) => <h3 className="text-xl font-black mt-8 mb-4 uppercase tracking-wider text-white/90">{children}</h3>,
+    normal: ({ children }: any) => <p className="leading-relaxed mb-6 text-white/50 text-lg font-medium">{children}</p>,
     blockquote: ({ children }: any) => (
-      <blockquote className="border-l-4 border-crimson bg-crimson/5 pl-5 pr-4 py-4 my-6 italic rounded-r-xl text-white/60">
+      <blockquote className="border-l-4 border-crimson bg-white/[0.02] pl-8 pr-6 py-8 my-10 italic rounded-2xl text-white/40 text-xl leading-relaxed">
         {children}
       </blockquote>
     ),
@@ -128,229 +87,136 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
   const movie = await getMovieData(slug)
   if (!movie) notFound()
 
-  const posterUrl = movie.poster
-    ? urlFor(movie.poster).width(600).height(900).quality(90).fit('max').url()
-    : movie.posterUrl || null
-
+  const posterUrl = movie.poster ? urlFor(movie.poster).width(800).quality(90).url() : movie.posterUrl || null
   const rating = movie.rating || 0
-  const fullStars = Math.floor(rating)
-  const hasHalf = rating - fullStars >= 0.25
-
-  const jsonLd = [
-    {
-      '@context': 'https://schema.org',
-      '@type': 'Movie',
-      name: movie.title,
-      dateCreated: movie.year,
-      director: { '@type': 'Person', name: movie.director || 'Unknown' },
-      description: movie.synopsis || '',
-      image: posterUrl || '',
-      url: `https://tamilcinemahub.xyz/movies/${slug}`,
-      genre: movie.genre || [],
-      aggregateRating: { '@type': 'AggregateRating', ratingValue: rating, bestRating: '5', ratingCount: '1' },
-    },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://tamilcinemahub.xyz' },
-        { '@type': 'ListItem', position: 2, name: 'Movies', item: 'https://tamilcinemahub.xyz/movies' },
-        { '@type': 'ListItem', position: 3, name: movie.title },
-      ],
-    },
-  ]
 
   return (
-    <div className="bg-ink min-h-screen pb-20">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+    <div className="bg-ink min-h-screen pb-24 overflow-x-hidden">
+      
+      {/* ── LUXURY HERO ── */}
+      <div className="relative pt-40 pb-20 border-b border-white/5">
+        {/* Background depth blobs */}
+        <div className="absolute inset-0 pointer-events-none opacity-20">
+           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-crimson/5 to-transparent" />
+           <div className="absolute top-1/4 right-0 w-[600px] h-[600px] bg-violet/10 rounded-full blur-[150px]" />
+        </div>
 
-      {/* Hero Header */}
-      <div className="relative pt-32 pb-12 border-b border-white/5 overflow-hidden">
-        {/* Background Blur */}
-        <div className="absolute inset-0 z-0 opacity-20 blur-3xl" style={{ 
-          background: `radial-gradient(circle at 20% 30%, var(--crimson) 0%, transparent 50%), radial-gradient(circle at 80% 70%, var(--violet) 0%, transparent 50%)`
-        }} />
-        
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <Link href="/movies" className="inline-flex items-center gap-2 text-sm font-bold text-white/30 hover:text-white/70 transition-colors mb-8 group">
-            <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-            Back to Collection
+        <div className="section-container relative z-10">
+          <Link href="/movies" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-white/30 hover:text-white transition-all mb-12 group">
+            <ChevronLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+            Collection Index
           </Link>
 
-          <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start">
-            {/* Poster Card */}
-            <div className="w-48 md:w-64 flex-shrink-0 mx-auto md:mx-0">
-              <div className="aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl shadow-black/60 border border-white/10 relative group">
-                {posterUrl ? (
-                  <Image 
-                    src={posterUrl} 
-                    alt={movie.title} 
-                    width={256} 
-                    height={384} 
-                    sizes="(max-width: 768px) 192px, 256px"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                    priority
-                  />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-white/[0.04]">
-                    <Film size={48} className="text-white/20 mb-4" />
-                    <p className="font-bold text-lg text-white/90">{movie.title}</p>
-                    <p className="text-sm mt-2 text-white/30">{movie.year}</p>
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-            </div>
-
-            {/* Info Col */}
-            <div className="flex-1 text-center md:text-left">
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-4">
-                {movie.genre?.map(g => (
-                  <span key={g} className="px-3 py-1 rounded-full bg-crimson/10 border border-crimson/20 text-[10px] font-bold uppercase tracking-widest text-crimson">
-                    {g}
-                  </span>
-                ))}
-              </div>
-              
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-extrabold text-white tracking-tight leading-[0.9] mb-4">
-                {movie.title}
-              </h1>
-              
-              {movie.titleTanglish && movie.titleTanglish !== movie.title && (
-                <p className="text-xl md:text-2xl font-serif italic text-crimson mb-6">&quot;{movie.titleTanglish}&quot;</p>
-              )}
-
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-6 mt-8">
-                <div className="flex items-center gap-1.5">
-                  <div className="flex gap-0.5">
-                    {Array.from({ length: 5 }, (_, i) => (
-                      <Star 
-                        key={i} 
-                        size={18} 
-                        fill={i < fullStars ? "#F0B429" : "none"} 
-                        className={i < fullStars ? "text-accent" : "text-white/10"} 
-                      />
-                    ))}
-                  </div>
-                  <span className="ml-2 font-display font-extrabold text-2xl text-accent leading-none">{rating.toFixed(1)}</span>
-                  <span className="text-sm text-white/20 font-bold">/ 5.0</span>
-                </div>
-                
-                <div className="h-8 w-px bg-white/10 hidden md:block" />
-                
-                <div className="flex items-center gap-4">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest mb-1">Year</span>
-                    <span className="text-sm font-bold text-white/80">{movie.year}</span>
-                  </div>
-                  {movie.ottPlatform && (
-                    <div className="flex flex-col">
-                      <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest mb-1">Streaming</span>
-                      <span className="text-sm font-bold text-white/80">{movie.ottPlatform}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Content Grid */}
-      <div className="max-w-7xl mx-auto px-6 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
-          
-          {/* Main Info */}
-          <div className="lg:col-span-2 space-y-16">
+          <div className="flex flex-col lg:flex-row gap-16 items-start">
             
-            {/* Synopsis */}
-            <section>
-              <div className="flex items-center gap-2 mb-6">
-                <Info size={16} className="text-crimson" />
-                <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-white/40">The Story</h2>
-              </div>
-              <p className="text-lg md:text-xl leading-relaxed text-white/60 font-medium max-w-3xl">
-                {movie.synopsis || 'Plot details are currently being updated by our editors.'}
-              </p>
-            </section>
+            {/* 3D-Look Poster */}
+            <div className="w-full max-w-[320px] mx-auto lg:mx-0 flex-shrink-0">
+               <div className="aspect-[2/3] rounded-[2.5rem] overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.8)] border border-white/10 relative group perspective-container">
+                  {posterUrl ? (
+                    <Image src={posterUrl} alt={movie.title} fill sizes="320px" className="object-cover transition-transform duration-1000 group-hover:scale-105" priority />
+                  ) : (
+                    <div className="w-full h-full bg-white/[0.03] flex items-center justify-center"><Film size={64} className="text-white/5" /></div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-transparent to-transparent opacity-60" />
+               </div>
+            </div>
 
-            {/* Cast Grid */}
-            {movie.cast && movie.cast.length > 0 && (
-              <section>
-                <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-2">
-                    <User size={16} className="text-violet" />
-                    <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-white/40">Cast & Crew</h2>
-                  </div>
-                  <span className="text-[10px] font-bold px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/40 uppercase tracking-widest">
-                    {movie.cast.length} Members
-                  </span>
-                </div>
-                
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 md:gap-6">
-                  {movie.cast.map((actor, idx) => {
-                    const name = getCastName(actor)
-                    const character = getCastCharacter(actor)
-                    const photo = getCastPhoto(actor)
-                    const initial = getCastInitial(actor)
-                    return (
-                      <div key={idx} className="group">
-                        <div className="aspect-square rounded-2xl overflow-hidden bg-white/5 border border-white/5 mb-3 shadow-lg group-hover:border-violet/30 transition-colors">
-                          {photo ? (
-                            <Image src={photo} alt={name} width={200} height={200} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                          ) : (
-                            <CastPhoto photo={null} name={name} initial={initial} />
-                          )}
-                        </div>
-                        <p className="text-[11px] font-extrabold text-white/90 leading-tight truncate">{name}</p>
-                        {character && (
-                          <p className="text-[9px] text-white/30 font-bold truncate mt-0.5 italic">as {character}</p>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              </section>
-            )}
+            {/* Movie Info */}
+            <div className="flex-1 text-center lg:text-left">
+               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 mb-6">
+                  {movie.genre?.map(g => (
+                    <span key={g} className="px-4 py-1.5 rounded-full glass border-white/5 text-[9px] font-black uppercase tracking-widest text-white/60">
+                      {g}
+                    </span>
+                  ))}
+               </div>
 
-            {/* Review Section */}
-            {movie.review && (
-              <section className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 md:p-12">
-                <div className="flex items-center gap-2 mb-8">
-                  <MessageSquare size={16} className="text-accent" />
-                  <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-white/40">Critical Analysis</h2>
-                </div>
-                <div className="prose prose-invert max-w-none">
-                  <PortableText value={movie.review} components={ptComponents} />
-                </div>
-              </section>
-            )}
-          </div>
+               <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-black text-white leading-[0.85] uppercase mb-8">
+                 {movie.title}
+               </h1>
 
-          {/* Sidebar */}
-          <div className="space-y-8">
-            <div className="bg-white/[0.03] border border-white/5 rounded-3xl p-8 sticky top-32">
-              <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-white/20 mb-6 pb-4 border-b border-white/5">Technical Specs</h3>
-              <div className="space-y-6">
-                <SpecItem icon={<Calendar size={14} />} label="Release Year" value={String(movie.year)} />
-                <SpecItem icon={<User size={14} />} label="Director" value={movie.director || 'N/A'} />
-                <SpecItem icon={<Tv size={14} />} label="Platform" value={movie.ottPlatform || 'Theatrical'} />
-                <SpecItem icon={<Info size={14} />} label="Movie ID" value={movie._id.slice(-8).toUpperCase()} />
-              </div>
-              
-              <div className="mt-10 pt-8 border-t border-white/5 flex flex-wrap gap-2">
-                {movie.genre?.map(g => (
-                  <span key={g} className="text-[9px] font-bold px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-white/40 uppercase tracking-widest hover:text-white/70 transition-colors cursor-default">
-                    {g}
-                  </span>
-                ))}
-              </div>
+               {movie.titleTanglish && (
+                 <p className="text-2xl md:text-3xl font-serif italic text-crimson mb-10">&ldquo;{movie.titleTanglish}&rdquo;</p>
+               )}
+
+               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto lg:mx-0">
+                  <DetailStat icon={<Star className="text-gold fill-gold" />} label="Database Rating" value={`${rating.toFixed(1)} / 5.0`} />
+                  <DetailStat icon={<Calendar className="text-violet" />} label="Release Year" value={String(movie.year)} />
+                  <DetailStat icon={<Tv className="text-teal" />} label="Digital Platform" value={movie.ottPlatform || 'Theatrical'} />
+                  <DetailStat icon={<Globe className="text-crimson" />} label="Region" value="Tamil Nadu" />
+               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Recommendations */}
+      {/* ── BENTO CONTENT GRID ── */}
+      <div className="section-container">
+        <div className="bento-grid grid-fix">
+           
+           {/* Synopsis - Large Card */}
+           <div className="col-span-12 lg:col-span-8 bento-card p-10 md:p-16">
+              <div className="flex items-center gap-3 mb-10">
+                 <div className="w-10 h-10 rounded-xl bg-crimson/10 flex items-center justify-center text-crimson"><Info size={20} /></div>
+                 <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30">Narrative Arc</h2>
+              </div>
+              <p className="text-xl md:text-2xl leading-relaxed text-white/60 font-medium italic mb-12">
+                {movie.synopsis || 'Plot architecture is currently being documented by our archivists.'}
+              </p>
+              
+              {movie.review && (
+                <div className="mt-16 pt-16 border-t border-white/5">
+                   <div className="flex items-center gap-3 mb-10">
+                      <div className="w-10 h-10 rounded-xl bg-violet/10 flex items-center justify-center text-violet"><MessageSquare size={20} /></div>
+                      <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30">Critical Synthesis</h2>
+                   </div>
+                   <div className="prose max-w-none">
+                      <PortableText value={movie.review} components={ptComponents} />
+                   </div>
+                </div>
+              )}
+           </div>
+
+           {/* Technical Specs - Small Sidebar Card */}
+           <div className="col-span-12 lg:col-span-4 space-y-6">
+              <div className="bento-card p-10">
+                 <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 mb-8 pb-4 border-b border-white/5">Technical Log</h3>
+                 <div className="space-y-8">
+                    <SpecRow label="Director" value={movie.director || 'N/A'} />
+                    <SpecRow label="Status" value={movie.year > 2024 ? 'Upcoming' : 'Released'} />
+                    <SpecRow label="ID" value={movie._id.slice(-8).toUpperCase()} />
+                    <SpecRow label="Archived" value="Premium" />
+                 </div>
+              </div>
+
+              {/* Cast Snapshot */}
+              {movie.cast && movie.cast.length > 0 && (
+                <div className="bento-card p-10">
+                   <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 mb-8">Lead Personnel</h3>
+                   <div className="grid grid-cols-2 gap-4">
+                      {movie.cast.slice(0, 4).map((actor: CastMember, idx) => {
+                        const name = typeof actor === 'string' ? actor : actor.name
+                        return (
+                          <div key={idx} className="group">
+                             <div className="aspect-square rounded-2xl overflow-hidden glass border-white/5 mb-3">
+                                {typeof actor !== 'string' && actor.photo ? (
+                                  <Image src={urlFor(actor.photo).width(200).url()} alt={name} width={200} height={200} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-xl font-display font-black text-white/10 uppercase">{name.charAt(0)}</div>
+                                )}
+                             </div>
+                             <p className="text-[10px] font-black text-white/80 uppercase truncate">{name}</p>
+                          </div>
+                        )
+                      })}
+                   </div>
+                </div>
+              )}
+           </div>
+        </div>
+      </div>
+
+      {/* ── RECOMMENDATIONS ── */}
       <Suspense fallback={<RecommendationSkeleton />}>
         <MovieRecommendations slug={slug} />
       </Suspense>
@@ -358,28 +224,37 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
   )
 }
 
-function SpecItem({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) {
+function DetailStat({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) {
   return (
-    <div className="flex items-start gap-4">
-      <div className="text-white/20 pt-1">{icon}</div>
-      <div>
-        <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mb-1">{label}</p>
-        <p className="text-sm font-bold text-white/80 leading-tight">{value}</p>
-      </div>
+    <div className="p-5 rounded-3xl glass border-white/5 flex flex-col items-center lg:items-start text-center lg:text-left gap-3">
+       <div className="w-8 h-8 rounded-xl bg-white/[0.03] flex items-center justify-center">{icon}</div>
+       <div>
+          <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">{label}</div>
+          <div className="text-xs font-black text-white uppercase">{value}</div>
+       </div>
+    </div>
+  )
+}
+
+function SpecRow({ label, value }: { label: string, value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+       <span className="text-[9px] font-black uppercase tracking-widest text-white/10">{label}</span>
+       <span className="text-xs font-bold text-white/60 text-right uppercase truncate">{value}</span>
     </div>
   )
 }
 
 function RecommendationSkeleton() {
   return (
-    <section className="max-w-7xl mx-auto px-6 py-20 border-t border-white/5">
-      <div className="h-6 w-48 bg-white/5 rounded-full mb-8 animate-pulse" />
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="aspect-[2/3] bg-white/5 rounded-2xl animate-pulse" />
-        ))}
-      </div>
-    </section>
+    <div className="section-container">
+       <div className="h-24 w-64 bg-white/5 rounded-[2rem] animate-pulse mb-12" />
+       <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="aspect-[2/3] bg-white/5 rounded-[2rem] animate-pulse" />
+          ))}
+       </div>
+    </div>
   )
 }
 
@@ -388,13 +263,13 @@ async function MovieRecommendations({ slug }: { slug: string }) {
   if (!recommendations.length) return null
   
   return (
-    <section className="max-w-7xl mx-auto px-6 py-20 border-t border-white/5">
-      <div className="mb-10">
-        <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-crimson mb-2">Discovery</h2>
-        <h3 className="text-2xl font-display font-extrabold text-white">Similar Movies</h3>
+    <section className="section-container border-t border-white/5">
+      <div className="mb-16">
+        <div className="text-[10px] font-black uppercase tracking-[0.4em] text-crimson mb-4">Discovery</div>
+        <h3 className="text-4xl md:text-6xl font-display font-black text-white uppercase leading-[0.9]">Similar <span className="text-gradient">Narratives</span></h3>
       </div>
       
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
         {recommendations.map((rec, i) => (
           <MovieCardErrorBoundary key={rec._id} title={rec.title}>
             <MovieCard movie={rec} index={i} />

@@ -5,7 +5,7 @@ import MovieCard, { Movie } from '../../components/MovieCard'
 import MovieCardErrorBoundary from '../../components/MovieCardErrorBoundary'
 import MovieFilters from '../../components/MovieFilters'
 import Pagination from '../../components/Pagination'
-import AnalyticsLink from '../../components/AnalyticsLink'
+import { Film, Database, Sparkles } from 'lucide-react'
 
 export const revalidate = 60
 
@@ -15,30 +15,9 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   const params = await searchParams
   const genre = params.genre || 'All'
   const q = params.q?.replace(/\*$/, '') || ''
-
-  const title = q
-    ? `Search "${q}" Movies`
-    : genre !== 'All'
-      ? `${genre.charAt(0).toUpperCase() + genre.slice(1)} Tamil Movies`
-      : 'All Tamil Movies — Database'
-
   return {
-    title,
-    description: 'Browse and search Tamil movies from 2000 to 2026. Ratings, cast, reviews, and OTT availability.',
-    openGraph: {
-      title,
-      description: 'Browse and search Tamil movies from 2000 to 2026. Ratings, cast, reviews, and OTT availability.',
-      type: 'website',
-      url: 'https://tamilcinemahub.xyz/movies',
-      images: [{ url: 'https://tamilcinemahub.xyz/opengraph-image', width: 1200, height: 630, alt: 'TamilCinemaHub Movies Database' }],
-    },
-    twitter: {
-      card: 'summary_large_image' as const,
-      title,
-      description: 'Browse and search Tamil movies from 2000 to 2026. Ratings, cast, reviews, and OTT availability.',
-      images: ['https://tamilcinemahub.xyz/opengraph-image'],
-    },
-    alternates: { canonical: 'https://tamilcinemahub.xyz/movies' },
+    title: q ? `Search "${q}" | TamilCinemaHub` : `${genre} Movies | TamilCinemaHub`,
+    description: 'Explore the definitive archive of Tamil cinema.',
   }
 }
 
@@ -67,60 +46,68 @@ export default async function MoviesPage({ searchParams }: { searchParams: Promi
   const safePage = Math.min(page, totalPages || 1)
 
   return (
-    <div style={{ background: 'var(--ink)', minHeight: '100vh', paddingBottom: 96 }}>
-      {/* Page Header */}
-      <section style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '48px 0' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px' }}>
-          <div style={{ flexWrap: 'wrap' }} className="flex md:flex-row flex-col md:items-center items-start justify-between gap-5">
-            <div>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--rose-light)', marginBottom: 8, fontFamily: "'Syne', sans-serif" }}>
-                TamilCinemaHub
-              </p>
-              <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 800, color: 'rgba(255,255,255,0.92)', marginBottom: 8, lineHeight: 1.1 }}>
-                Movies Database
+    <div className="bg-ink min-h-screen pb-24">
+      
+      {/* ── HEADER ── */}
+      <section className="relative pt-40 pb-20 border-b border-white/5 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none opacity-10">
+           <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-crimson rounded-full blur-[120px]" />
+        </div>
+
+        <div className="section-container relative z-10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg glass border-white/10 mb-6">
+                <Database size={12} className="text-crimson" />
+                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40">Real-time Archive</span>
+              </div>
+              <h1 className="text-5xl md:text-7xl font-display font-black text-white leading-[0.9] uppercase mb-6">
+                Movie <span className="text-gradient">Database</span>
               </h1>
-              <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.4)' }}>
-                {totalMovieCount.toLocaleString()} Tamil movies from 2000 to 2026 — with ratings, cast, and reviews.
+              <p className="text-lg text-white/30 font-medium">
+                Sifting through <span className="text-white/60">{totalMovieCount.toLocaleString()}</span> indexed titles from 2000 to 2026.
               </p>
             </div>
-            <AnalyticsLink />
           </div>
         </div>
       </section>
 
-      <main style={{ maxWidth: 1280, margin: '0 auto', padding: '32px 24px 0' }}>
-        <Suspense fallback={<div style={{ height: 112, marginBottom: 16 }} />}>
-          <MovieFilters genres={genres} />
-        </Suspense>
-
-        <p style={{ fontSize: 12, textAlign: 'center', marginBottom: 24, color: 'rgba(255,255,255,0.35)' }}>
-          Showing page <span style={{ fontWeight: 700, color: 'var(--crimson)' }}>{safePage}</span> of {totalPages} · {filteredCount.toLocaleString()} movies{q ? ` matching "${q}"` : ''}
-        </p>
+      {/* ── FILTERS & GRID ── */}
+      <main className="section-container">
+        <div className="mb-20">
+          <Suspense fallback={<div className="h-32 bg-white/5 rounded-3xl animate-pulse" />}>
+            <MovieFilters genres={genres} />
+          </Suspense>
+        </div>
 
         {movies.length > 0 ? (
-          <div className="movies-grid-pill reveal-group">
+          <div className="bento-grid grid-fix">
             {movies.map((movie, i) => (
-              <MovieCardErrorBoundary key={movie._id} title={movie.title}>
-                <MovieCard movie={movie} index={i} />
-              </MovieCardErrorBoundary>
+              <div key={movie._id} className="col-span-12 md:col-span-6 lg:col-span-3">
+                <MovieCardErrorBoundary title={movie.title}>
+                  <MovieCard movie={movie} index={i} />
+                </MovieCardErrorBoundary>
+              </div>
             ))}
           </div>
         ) : (
-          <div style={{ textAlign: 'center', padding: '96px 24px', borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-            <p style={{ fontSize: 40, marginBottom: 16 }}>🎬</p>
-            <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 18, fontWeight: 800, color: 'rgba(255,255,255,0.92)', marginBottom: 8 }}>No Movies Found</h3>
-            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.35)', maxWidth: 320, margin: '0 auto' }}>
-              No results for{q ? ` "${q}"` : ''}{genre !== 'All' ? ` in ${genre}` : ''}. Try a different search or genre.
+          <div className="bento-card p-24 text-center">
+            <Film size={64} className="text-white/5 mx-auto mb-8" />
+            <h3 className="text-2xl font-display font-black text-white uppercase mb-4">Zero Matches Found</h3>
+            <p className="text-white/30 font-medium max-w-sm mx-auto">
+              Our archive doesn&apos;t contain records for {q ? `"${q}"` : 'this category'} yet. Try a broader search parameter.
             </p>
           </div>
         )}
 
-        <Pagination
-          currentPage={safePage}
-          totalPages={totalPages}
-          baseUrl="/movies"
-          params={{ genre: genre !== 'All' ? genre : '', q: rawQ }}
-        />
+        <div className="mt-20">
+          <Pagination
+            currentPage={safePage}
+            totalPages={totalPages}
+            baseUrl="/movies"
+            params={{ genre: genre !== 'All' ? genre : '', q: rawQ }}
+          />
+        </div>
       </main>
     </div>
   )

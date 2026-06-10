@@ -1,10 +1,11 @@
 'use client'
 
+import { useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import { urlFor } from '../sanity/lib/image'
-import TiltCard from './TiltCard'
+import { Star, Film, Monitor } from 'lucide-react'
 
 export interface Movie {
   _id: string
@@ -21,7 +22,6 @@ export interface Movie {
   backdropUrl?: string
   synopsis?: string
   ottPlatform?: string
-  tmdbId?: number
 }
 
 interface MovieCardProps {
@@ -29,76 +29,105 @@ interface MovieCardProps {
   index?: number
 }
 
-const GRADIENT_CLASSES = ['mp-thriller', 'mp-drama', 'mp-romance', 'mp-fantasy', 'mp-comedy', 'mp-horror']
-const GLOW_COLORS = ['crimson', 'electric', 'rose', 'violet', 'gold', 'slate']
-
-const OTT_COLORS: Record<string, string> = {
-  'Netflix': 'rgba(229,9,20,0.85)',
-  'Amazon Prime': 'rgba(0,168,225,0.85)',
-  'Prime Video': 'rgba(0,168,225,0.85)',
-  'Disney+ Hotstar': 'rgba(17,35,80,0.85)',
-  'Hotstar': 'rgba(17,35,80,0.85)',
-  'ZEE5': 'rgba(30,60,114,0.85)',
-  'SonyLIV': 'rgba(0,53,140,0.85)',
-  'JioCinema': 'rgba(191,10,43,0.85)',
-  'Aha': 'rgba(255,51,51,0.85)',
-  'Sun NXT': 'rgba(255,102,0,0.85)',
-  'YouTube': 'rgba(255,0,0,0.85)',
+const OTT_CONFIG: Record<string, { color: string; bg: string }> = {
+  'Netflix': { color: 'text-white', bg: 'bg-[#E50914]' },
+  'Amazon Prime': { color: 'text-white', bg: 'bg-[#00A8E1]' },
+  'Disney+ Hotstar': { color: 'text-white', bg: 'bg-[#112350]' },
+  'ZEE5': { color: 'text-white', bg: 'bg-[#1E3C72]' },
 }
 
 export default function MovieCard({ movie, index = 0 }: MovieCardProps) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  
+  // ── 3D Scroll-Linked Rotation ──
+  const { scrollYProgress } = useScroll({
+    target: cardRef,
+    offset: ["start end", "end start"]
+  })
+
+  const rotateX = useTransform(scrollYProgress, [0, 0.5, 1], [10, 0, -10])
+  const rotateY = useTransform(scrollYProgress, [0, 0.5, 1], [-5, 0, 5])
+  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.95, 1, 0.95])
+  
+  const springRotateX = useSpring(rotateX, { stiffness: 100, damping: 30 })
+  const springRotateY = useSpring(rotateY, { stiffness: 100, damping: 30 })
+  const springScale = useSpring(scale, { stiffness: 100, damping: 30 })
+
   const imageUrl = movie.poster
-    ? urlFor(movie.poster).width(400).height(600).quality(90).fit('max').url()
+    ? urlFor(movie.poster).width(500).height(750).quality(90).fit('max').url()
     : movie.posterUrl || null
 
-  const gradientClass = GRADIENT_CLASSES[index % GRADIENT_CLASSES.length]
-  const glowColor = GLOW_COLORS[index % GLOW_COLORS.length]
-  const initial = movie.title.charAt(0).toUpperCase()
-
-  const router = useRouter()
-
-  function handleGenreClick(e: React.MouseEvent, genre: string) {
-    e.preventDefault()
-    e.stopPropagation()
-    router.push(`/movies?genre=${encodeURIComponent(genre)}`)
-  }
-
-  function handleOttClick(e: React.MouseEvent, platform: string) {
-    e.preventDefault()
-    e.stopPropagation()
-    router.push(`/movies?q=${encodeURIComponent(platform)}`)
-  }
-
-  const ottColor = movie.ottPlatform ? (OTT_COLORS[movie.ottPlatform] || 'rgba(212,41,26,0.85)') : null
+  const ott = movie.ottPlatform ? (OTT_CONFIG[movie.ottPlatform] || { color: 'text-white', bg: 'bg-crimson' }) : null
 
   return (
-    <TiltCard className="movie-card-dark" data-glow={glowColor} maxTilt={8} perspective={800} scale={1.02}>
-      <Link href={`/movies/${movie.slug}`} style={{ display: 'block', height: '100%' }}>
-        {imageUrl ? (
-          <div className="movie-card-image-dark">
-            <Image src={imageUrl} alt={movie.title} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw" style={{ objectFit: 'cover' }} />
-            {movie.genre?.[0] && <span className="genre-badge-dark" title={`Filter by ${movie.genre[0]}`} onClick={(e) => handleGenreClick(e, movie.genre![0])}>{movie.genre[0]}</span>}
-            {movie.ottPlatform && <span className="ott-badge-dark" title={`Search ${movie.ottPlatform}`} onClick={(e) => handleOttClick(e, movie.ottPlatform!)} style={ottColor ? { background: ottColor } : undefined}>{movie.ottPlatform}</span>}
-            <div className="poster-gradient-overlay-dark" />
+    <motion.div
+      ref={cardRef}
+      style={{ 
+        rotateX: springRotateX, 
+        rotateY: springRotateY, 
+        scale: springScale,
+        perspective: 1000 
+      }}
+      className="group h-full"
+    >
+      <Link href={`/movies/${movie.slug}`} className="block h-full bento-card overflow-hidden group">
+        <div className="relative aspect-[2/3] overflow-hidden">
+          {imageUrl ? (
+            <Image 
+              src={imageUrl} 
+              alt={movie.title} 
+              fill 
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover transition-transform duration-700 group-hover:scale-110" 
+            />
+          ) : (
+            <div className="w-full h-full bg-white/[0.03] flex flex-col items-center justify-center p-8 text-center">
+               <Film size={40} className="text-white/10 mb-4" />
+               <span className="text-xs font-black uppercase tracking-widest text-white/20">{movie.title}</span>
+            </div>
+          )}
+
+          {/* Overlays */}
+          <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent opacity-80 group-hover:opacity-60 transition-opacity" />
+          
+          {/* Badges */}
+          <div className="absolute top-4 left-4 flex flex-col gap-2">
+            {movie.genre?.[0] && (
+              <span className="px-3 py-1 rounded-lg glass text-[8px] font-black uppercase tracking-widest text-white/80">
+                {movie.genre[0]}
+              </span>
+            )}
           </div>
-        ) : (
-          <div className={`movie-poster-dark ${gradientClass}`}>
-            <span className="initial">{initial}</span>
-            <div className="perfs"><span /><span /><span /><span /><span /><span /></div>
-            {movie.genre?.[0] && <span className="genre-badge-dark" title={`Filter by ${movie.genre[0]}`} onClick={(e) => handleGenreClick(e, movie.genre![0])}>{movie.genre[0]}</span>}
-            {movie.ottPlatform && <span className="ott-badge-dark" title={`Search ${movie.ottPlatform}`} onClick={(e) => handleOttClick(e, movie.ottPlatform!)} style={ottColor ? { background: ottColor } : undefined}>{movie.ottPlatform}</span>}
-            <div className="poster-gradient-overlay-dark" />
-          </div>
-        )}
-        <div className="movie-card-body-dark">
-          {movie.director && <p className="movie-director-dark">🎬 {movie.director}</p>}
-          <h3 className="movie-title-dark">{movie.title}</h3>
-          <div className="movie-meta-dark">
-            <span className="movie-year-dark">{movie.year}</span>
-            <span className="movie-rating-dark">★ {movie.rating.toFixed(1)}</span>
+
+          {ott && (
+            <div className={`absolute bottom-4 right-4 px-2 py-1 rounded-md ${ott.bg} ${ott.color} text-[7px] font-black uppercase tracking-widest shadow-xl`}>
+              {movie.ottPlatform}
+            </div>
+          )}
+
+          {/* Rating Floating */}
+          <div className="absolute bottom-4 left-4 flex items-center gap-1.5">
+             <div className="w-8 h-8 rounded-full glass flex items-center justify-center">
+                <Star size={12} className="text-gold fill-gold" />
+             </div>
+             <span className="text-sm font-black text-white">{movie.rating.toFixed(1)}</span>
           </div>
         </div>
+
+        {/* Content Body */}
+        <div className="p-6 bg-white/[0.02]">
+           <div className="flex items-center justify-between mb-2">
+              <span className="text-[9px] font-black uppercase tracking-widest text-white/20">{movie.year}</span>
+              <span className="text-[9px] font-black uppercase tracking-widest text-crimson">Kollywood</span>
+           </div>
+           <h3 className="text-lg md:text-xl font-display font-black text-white leading-[1.1] uppercase group-hover:text-gradient transition-all duration-300">
+             {movie.title}
+           </h3>
+           <p className="mt-3 text-[10px] font-bold text-white/30 truncate uppercase tracking-wider">
+             Dir. {movie.director || 'Unknown'}
+           </p>
+        </div>
       </Link>
-    </TiltCard>
+    </motion.div>
   )
 }

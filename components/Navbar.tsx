@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Search, MessageSquare, Menu, X, ChevronRight, Film, Calendar } from 'lucide-react'
+import { Search, MessageSquare, Menu, X, ChevronRight, Film, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
@@ -90,88 +90,98 @@ export default function Navbar() {
   return (
     <nav 
       className={cn(
-        "fixed top-0 left-0 right-0 z-[100] transition-all duration-500",
-        scrolled ? "py-3 bg-ink/80 backdrop-blur-xl border-b border-white/5 shadow-2xl" : "py-6 bg-transparent"
+        "fixed top-0 left-0 right-0 z-[100] transition-all duration-700 ease-in-out px-4 md:px-8",
+        scrolled ? "py-4" : "py-8"
       )}
     >
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between gap-8">
+      <div className={cn(
+        "max-w-7xl mx-auto flex items-center justify-between gap-4 md:gap-8 px-5 py-3 md:py-4 rounded-[2rem] transition-all duration-500",
+        scrolled 
+          ? "bg-ink/60 backdrop-blur-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]" 
+          : "bg-white/[0.02] backdrop-blur-md border border-white/5"
+      )}>
         
-        {/* Brand */}
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-crimson to-violet flex items-center justify-center shadow-lg shadow-crimson/20 group-hover:scale-110 transition-transform">
-            <Film size={18} className="text-white" />
+        {/* Brand - Restored TamilCinemaHub */}
+        <Link href="/" className="flex items-center gap-3 group flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-crimson to-violet flex items-center justify-center shadow-lg shadow-crimson/20 group-hover:rotate-[10deg] transition-transform">
+            <Film size={22} className="text-white" />
           </div>
           <div className="flex flex-col">
-            <span className="text-lg font-display font-black tracking-tighter leading-none text-white">
-              TAMIL<span className="text-crimson">HUB</span>
+            <span className="text-lg md:text-xl font-display font-black tracking-tighter leading-none text-white">
+              TamilCinema<span className="text-transparent bg-clip-text bg-gradient-to-r from-crimson to-gold">Hub</span>
             </span>
-            <span className="text-[8px] font-bold tracking-[0.3em] uppercase text-white/30 leading-none mt-0.5">Cinema Archive</span>
+            <span className="text-[9px] font-bold tracking-[0.4em] uppercase text-white/20 leading-none mt-1">Premium Archive</span>
           </div>
         </Link>
 
-        {/* Desktop Links */}
-        <div className="hidden lg:flex items-center gap-1 bg-white/[0.03] border border-white/5 p-1 rounded-full backdrop-blur-md">
+        {/* Desktop Links - Modern Minimal */}
+        <div className="hidden lg:flex items-center gap-2">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                "px-5 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all",
+                "relative px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300",
                 isActive(link.href) 
-                  ? "bg-white text-ink shadow-lg" 
-                  : "text-white/40 hover:text-white/70 hover:bg-white/[0.05]"
+                  ? "text-white" 
+                  : "text-white/30 hover:text-white/60"
               )}
             >
+              {isActive(link.href) && (
+                <motion.div 
+                  layoutId="nav-active"
+                  className="absolute inset-0 bg-white/[0.05] rounded-full border border-white/10 -z-10"
+                />
+              )}
               {link.name}
             </Link>
           ))}
         </div>
 
-        {/* Search & Actions */}
-        <div className="hidden md:flex items-center gap-4 flex-1 max-w-md" ref={searchRef}>
+        {/* Search & AI Actions */}
+        <div className="hidden md:flex items-center gap-4 flex-1 max-w-sm ml-auto" ref={searchRef}>
           <form onSubmit={handleSearchSubmit} className="relative w-full">
             <div className="relative group">
               <Search 
-                size={16} 
+                size={14} 
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-crimson transition-colors" 
               />
               <input
                 type="text"
-                placeholder="Search catalog..."
+                placeholder="Find movies..."
                 value={searchQuery}
                 onChange={handleSearch}
                 onFocus={() => searchQuery && setShowResults(true)}
-                className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-2.5 pl-11 pr-4 text-xs font-bold text-white outline-none focus:bg-white/[0.06] focus:border-white/10 transition-all placeholder:text-white/10 placeholder:font-medium"
+                className="w-full bg-white/[0.03] border border-white/5 rounded-full py-2.5 pl-11 pr-4 text-[11px] font-bold text-white outline-none focus:bg-white/[0.06] focus:border-crimson/20 transition-all placeholder:text-white/10"
               />
             </div>
 
             <AnimatePresence>
               {showResults && (
                 <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full mt-3 w-[400px] right-0 bg-ink/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 shadow-2xl shadow-black max-h-[480px] overflow-y-auto"
+                  initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 15, scale: 0.95 }}
+                  className="absolute top-full mt-4 w-[380px] right-0 bg-ink/95 backdrop-blur-3xl border border-white/10 rounded-3xl p-3 shadow-[0_30px_100px_rgba(0,0,0,0.8)] max-h-[480px] overflow-y-auto"
                 >
                   {isSearching ? (
-                    <div className="p-8 text-center text-white/20 text-[10px] font-bold uppercase tracking-widest animate-pulse">
-                      Searching archive...
+                    <div className="p-10 text-center flex flex-col items-center gap-3">
+                      <div className="w-6 h-6 border-2 border-crimson/30 border-t-crimson rounded-full animate-spin" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-white/20">Scanning Archive...</span>
                     </div>
                   ) : searchResults.length > 0 ? (
-                    <div className="space-y-1">
+                    <div className="grid gap-2">
                       {searchResults.map((movie) => (
                         <button
                           key={movie._id}
                           onClick={() => { router.push(`/movies/${movie.slug?.current || movie._id}`); setSearchQuery(''); setShowResults(false) }}
-                          className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all text-left group"
+                          className="w-full flex items-center gap-4 p-3 rounded-2xl hover:bg-white/5 transition-all text-left group"
                         >
-                          <div className="w-10 h-14 bg-white/5 rounded-lg overflow-hidden flex-shrink-0 border border-white/5">
-                            <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-white/10 uppercase italic">
-                              {movie.title.charAt(0)}
-                            </div>
+                          <div className="w-10 h-14 bg-white/5 rounded-xl overflow-hidden flex-shrink-0 border border-white/5 flex items-center justify-center">
+                            <Film size={14} className="text-white/10" />
                           </div>
-                          <div>
-                            <div className="text-xs font-bold text-white group-hover:text-crimson transition-colors">{movie.title}</div>
+                          <div className="min-w-0">
+                            <div className="text-xs font-bold text-white group-hover:text-crimson transition-colors truncate">{movie.title}</div>
                             <div className="flex items-center gap-2 mt-1">
                               <span className="text-[10px] font-medium text-white/20">{movie.year}</span>
                               <span className="w-1 h-1 rounded-full bg-white/10" />
@@ -183,14 +193,8 @@ export default function Navbar() {
                       ))}
                     </div>
                   ) : (
-                    <div className="p-8 text-center">
+                    <div className="p-10 text-center">
                       <p className="text-[10px] font-bold uppercase tracking-widest text-white/20">No titles found</p>
-                      <button 
-                        onClick={() => router.push('/movies')}
-                        className="mt-2 text-[9px] font-bold text-crimson uppercase tracking-widest hover:underline"
-                      >
-                        Browse all movies
-                      </button>
                     </div>
                   )}
                 </motion.div>
@@ -201,68 +205,80 @@ export default function Navbar() {
           <button 
             onClick={() => window.dispatchEvent(new Event('open-chatbot'))}
             aria-label="Ask AI Assistant"
-            className="w-11 h-11 rounded-2xl bg-crimson flex items-center justify-center shadow-lg shadow-crimson/20 hover:scale-105 active:scale-95 transition-all group"
+            className="w-10 h-10 rounded-xl bg-crimson flex items-center justify-center shadow-lg shadow-crimson/20 hover:scale-110 active:scale-95 transition-all group overflow-hidden relative"
           >
-            <MessageSquare size={18} className="text-white group-hover:rotate-12 transition-transform" />
+            <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+            <Sparkles size={18} className="text-white" />
           </button>
         </div>
 
-        {/* Mobile Hamburger */}
-        <button 
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label={isOpen ? "Close Menu" : "Open Menu"}
-          className="lg:hidden w-11 h-11 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center text-white"
-        >
-          {isOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        {/* Mobile Actions */}
+        <div className="flex lg:hidden items-center gap-3">
+           <button 
+            onClick={() => window.dispatchEvent(new Event('open-chatbot'))}
+            className="w-9 h-9 rounded-lg bg-crimson flex items-center justify-center shadow-lg text-white"
+          >
+            <Sparkles size={16} />
+          </button>
+          <button 
+            onClick={() => setIsOpen(!isOpen)}
+            aria-label={isOpen ? "Close Menu" : "Open Menu"}
+            className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white"
+          >
+            {isOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
+        </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu - Full Screen Overlay */}
       <AnimatePresence>
         {isOpen && (
           <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            className="fixed inset-0 z-[99] bg-ink pt-28 px-6 lg:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[99] bg-ink/95 backdrop-blur-3xl lg:hidden flex flex-col items-center justify-center px-8"
           >
-            <div className="space-y-4">
-              {links.map((link) => (
-                <Link 
-                  key={link.href} 
-                  href={link.href} 
-                  onClick={() => setIsOpen(false)}
-                  className={cn(
-                    "block p-6 rounded-3xl border text-xl font-display font-black tracking-tight transition-all",
-                    isActive(link.href)
-                      ? "bg-white text-ink border-white"
-                      : "bg-white/[0.02] text-white/40 border-white/5 hover:border-white/10"
-                  )}
+            <div className="w-full max-w-sm space-y-6">
+              {links.map((link, i) => (
+                <motion.div
+                  key={link.href}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
                 >
-                  {link.name}
-                </Link>
+                  <Link 
+                    href={link.href} 
+                    onClick={() => setIsOpen(false)}
+                    className={cn(
+                      "block text-center py-6 text-3xl font-display font-black tracking-tight transition-all",
+                      isActive(link.href)
+                        ? "text-white"
+                        : "text-white/20"
+                    )}
+                  >
+                    {link.name}
+                  </Link>
+                </motion.div>
               ))}
               
-              <div className="pt-8 space-y-4">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: links.length * 0.05 }}
+                className="pt-10"
+              >
                 <form onSubmit={handleSearchSubmit} className="relative">
-                  <Search size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" />
+                  <Search size={20} className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" />
                   <input
                     type="text"
                     placeholder="Search movies..."
                     value={searchQuery}
                     onChange={handleSearch}
-                    className="w-full bg-white/[0.02] border border-white/5 rounded-3xl py-5 pl-14 pr-6 text-base font-bold text-white outline-none focus:border-crimson/30 transition-all"
+                    className="w-full bg-white/5 border border-white/10 rounded-[2rem] py-5 pl-16 pr-8 text-lg font-bold text-white outline-none focus:border-crimson/30 transition-all"
                   />
                 </form>
-                
-                <button 
-                  onClick={() => { setIsOpen(false); window.dispatchEvent(new Event('open-chatbot')) }}
-                  className="w-full bg-crimson p-6 rounded-3xl flex items-center justify-center gap-3 shadow-xl shadow-crimson/20"
-                >
-                  <MessageSquare size={20} className="text-white" />
-                  <span className="text-lg font-display font-black text-white uppercase tracking-tight">Ask Kollywood AI</span>
-                </button>
-              </div>
+              </motion.div>
             </div>
           </motion.div>
         )}

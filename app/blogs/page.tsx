@@ -4,6 +4,7 @@ import { paginatedBlogsQuery, blogsCountQuery } from '../../lib/queries'
 import BlogCard, { Blog } from '../../components/BlogCard'
 import BlogFilters from '../../components/BlogFilters'
 import Pagination from '../../components/Pagination'
+import { Newspaper, Sparkles, Hash } from 'lucide-react'
 
 export const revalidate = 60
 
@@ -11,32 +12,9 @@ const PAGE_SIZE = 12
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ page?: string; category?: string; q?: string }> }) {
   const params = await searchParams
-  const category = params.category || 'All'
-  const q = params.q?.replace(/\*$/, '') || ''
-
-  const title = q
-    ? `Search "${q}" Articles`
-    : category !== 'All'
-      ? `${category} Articles`
-      : 'Reviews & Blogs'
-
   return {
-    title,
-    description: 'Tamil movie reviews, top lists, actor spotlights, and cinema news — all in one place.',
-    openGraph: {
-      title,
-      description: 'Tamil movie reviews, top lists, actor spotlights, and cinema news — all in one place.',
-      type: 'website',
-      url: 'https://tamilcinemahub.xyz/blogs',
-      images: [{ url: 'https://tamilcinemahub.xyz/opengraph-image', width: 1200, height: 630, alt: 'TamilCinemaHub Reviews & Blogs' }],
-    },
-    twitter: {
-      card: 'summary_large_image' as const,
-      title,
-      description: 'Tamil movie reviews, top lists, actor spotlights, and cinema news — all in one place.',
-      images: ['https://tamilcinemahub.xyz/opengraph-image'],
-    },
-    alternates: { canonical: 'https://tamilcinemahub.xyz/blogs' },
+    title: 'Editorial | TamilCinemaHub',
+    description: 'Expert reviews and cinema news.',
   }
 }
 
@@ -62,53 +40,64 @@ export default async function BlogsPage({ searchParams }: { searchParams: Promis
   const safePage = Math.min(page, totalPages || 1)
 
   return (
-    <div style={{ background: 'var(--ink)', minHeight: '100vh', paddingBottom: 96 }}>
-      {/* Page Header */}
-      <section style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '48px 0' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px' }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--rose-light)', marginBottom: 8, fontFamily: "'Syne', sans-serif" }}>
-            TamilCinemaHub
-          </p>
-          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 800, color: 'rgba(255,255,255,0.92)', marginBottom: 8, lineHeight: 1.1 }}>
-            Reviews & Blogs
-          </h1>
-          <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.4)' }}>
-            Tamil movie reviews, top lists, actor spotlights, and cinema news — all in one place.
-          </p>
+    <div className="bg-ink min-h-screen pb-24">
+      
+      {/* ── HEADER ── */}
+      <section className="relative pt-40 pb-20 border-b border-white/5 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none opacity-10">
+           <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-violet rounded-full blur-[120px]" />
+        </div>
+
+        <div className="section-container relative z-10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg glass border-white/10 mb-6">
+                <Newspaper size={12} className="text-violet" />
+                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40">Editorial Columns</span>
+              </div>
+              <h1 className="text-5xl md:text-7xl font-display font-black text-white leading-[0.9] uppercase mb-6">
+                The <span className="text-gradient">Review</span>
+              </h1>
+              <p className="text-lg text-white/30 font-medium">
+                Deep dives, critical analysis, and the latest news from the heart of Kollywood.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      <main style={{ maxWidth: 1280, margin: '0 auto', padding: '32px 24px 0' }}>
-        <Suspense fallback={<div style={{ height: 112, marginBottom: 16 }} />}>
-          <BlogFilters />
-        </Suspense>
-
-        <p style={{ fontSize: 12, textAlign: 'center', marginBottom: 24, color: 'rgba(255,255,255,0.35)' }}>
-          Showing page <span style={{ fontWeight: 700, color: 'var(--crimson)' }}>{safePage}</span> of {totalPages} · {totalCount.toLocaleString()} articles{q ? ` matching "${q}"` : ''}
-        </p>
+      {/* ── FILTERS & GRID ── */}
+      <main className="section-container">
+        <div className="mb-20">
+          <Suspense fallback={<div className="h-32 bg-white/5 rounded-3xl animate-pulse" />}>
+            <BlogFilters />
+          </Suspense>
+        </div>
 
         {blogs.length > 0 ? (
-          <div className="blogs-grid-pill reveal-group">
+          <div className="grid grid-cols-1 gap-6">
             {blogs.map((blog, i) => (
               <BlogCard key={blog._id} blog={blog} index={i} />
             ))}
           </div>
         ) : (
-          <div style={{ textAlign: 'center', padding: '96px 24px', borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-            <p style={{ fontSize: 40, marginBottom: 16 }}>✍️</p>
-            <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 18, fontWeight: 800, color: 'rgba(255,255,255,0.92)', marginBottom: 8 }}>No Articles Found</h3>
-            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.35)', maxWidth: 320, margin: '0 auto' }}>
-              No results{q ? ` for "${q}"` : ''}{category !== 'All' ? ` in ${category}` : ''}. Try a different search or category.
+          <div className="bento-card p-24 text-center">
+            <Hash size={64} className="text-white/5 mx-auto mb-8" />
+            <h3 className="text-2xl font-display font-black text-white uppercase mb-4">No Articles Found</h3>
+            <p className="text-white/30 font-medium max-w-sm mx-auto">
+              Our writers haven&apos;t covered this specific topic yet. Try searching for a director or actor name.
             </p>
           </div>
         )}
 
-        <Pagination
-          currentPage={safePage}
-          totalPages={totalPages}
-          baseUrl="/blogs"
-          params={{ category: category !== 'All' ? category : '', q: rawQ }}
-        />
+        <div className="mt-20">
+          <Pagination
+            currentPage={safePage}
+            totalPages={totalPages}
+            baseUrl="/blogs"
+            params={{ category: category !== 'All' ? category : '', q: rawQ }}
+          />
+        </div>
       </main>
     </div>
   )
