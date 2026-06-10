@@ -22,6 +22,21 @@ const cleanText = t => t ? he.decode(t.replace(/\[\d+\]/g, '').replace(/<[^>]*>/
 const makeSlug = (t, y) => t.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, '-').trim() + '-' + y
 const normalizeTitle = t => t.toLowerCase().replace(/[^a-z0-9]/g, '').trim()
 
+const KNOWN_GENRES = new Set([
+  'drama','romance','comedy','thriller','action','horror','fantasy','musical','crime',
+  'mystery','sci-fi','biopic','western','animation','documentary','adventure','suspense',
+  'family','sports','war','history','political','supernatural','psychological','period',
+  'epic','masala','cult','noir','satire','tragedy','mythological','devotional','social'
+])
+
+function isBadTitle(title) {
+  const t = title.toLowerCase().trim()
+  if (/^\d+$/.test(t)) return true
+  if (KNOWN_GENRES.has(t)) return true
+  if (t.split(/\s+/).length === 1 && t.length >= 2 && t.length <= 20 && !t.includes('-') && !t.includes('.')) return true
+  return false
+}
+
 async function wikiFetch(pageTitle, retries = 2) {
   for (let a = 1; a <= retries; a++) {
     try {

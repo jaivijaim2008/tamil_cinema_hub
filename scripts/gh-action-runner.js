@@ -24,10 +24,42 @@ const WIKI_API = 'https://en.wikipedia.org/w/api.php'
 const CURRENT_YEAR = new Date().getFullYear()
 const CACHE_FILE = path.join(__dirname, '..', 'tmdb-cache.json')
 
+const KNOWN_GENRES = new Set([
+  'drama','romance','comedy','thriller','action','horror','fantasy','musical','crime',
+  'mystery','sci-fi','biopic','western','animation','documentary','adventure','suspense',
+  'family','sports','war','history','political','supernatural','psychological','period',
+  'epic','masala','cult','noir','satire','tragedy','mythological','devotional','social'
+])
+
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 const cleanText = t => t ? he.decode(t.replace(/\[\d+\]/g, '').replace(/<[^>]*>/g, '')).trim() : ''
 const makeSlug = (t, y) => t.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, '-').trim() + '-' + y
 const normalizeTitle = t => t.toLowerCase().replace(/[^a-z0-9]/g, '').trim()
+
+// Filter out titles that are clearly not real movies
+function isBadTitle(title) {
+  const t = title.toLowerCase().trim()
+  // Numeric-only titles
+  if (/^\d+$/.test(t)) return true
+  // Exact genre names
+  if (KNOWN_GENRES.has(t)) return true
+  // Single word, short, no spaces — likely a person name or random word
+  if (t.split(/\s+/).length === 1 && t.length >= 2 && t.length <= 20 && !t.includes('-') && !t.includes('.')) return true
+  return false
+}
+
+// Normalized title similarity for TMDB matching
+function titleSimilarity(a, b) {
+  const na = normalizeTitle(a), nb = normalizeTitle(b)
+  if (na === nb) return 1
+  if (na.includes(nb) || nb.includes(na)) return 0.9
+  // Count matching words
+  const wa = na.split(/\s+/).filter(Boolean)
+  const wb = nb.split(/\s+/).filter(Boolean)
+  const matches = wa.filter(w => wb.includes(w)).length
+  const longer = Math.max(wa.length, wb.length)
+  return longer > 0 ? matches / longer : 0
+}
 
 const sanity = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
@@ -59,7 +91,7 @@ async function phase1Import(years) {
     const movies = await loadTitlesFromWiki(year)
     if (!movies.length) continue
 
-    const newMovies = movies.filter(m => !existingSet.has(normalizeTitle(m.title) + '-' + m.year))
+    const newMovies = movies.filter(m => !existingSet.has(normalizeTitle(m.title) + '-' + m.year) && !isBadTitle(m.title))
     if (!newMovies.length) { console.log(`  ${year}: 0 new`); continue }
 
     // Batch create
@@ -167,9 +199,10 @@ async function phase2PatchTMDB() {
   const movies = await sanity.fetch('*[_type == "movie"] { _id, title, year, director, cast, synopsis, posterUrl, poster, rating, ottPlatform }')
   console.log(`Total: ${movies.length}`)
 
-  // Filter to ones needing data
+  // Filter to ones needing data (skip bad titles)
   const needy = movies.filter(m => {
-    return (!m.posterUrl && !m.poster) || !m.synopsis || !m.rating || m.rating === 0 || !m.ottPlatform || !m.cast || m.cast.length === 0 || !m.director
+    if (isBadTitle(m.title)) return false // Skip suspicious entries
+    return (!m.posterUrl && !m.poster) || !m.synopsis || !m.rating || m.rating === 0 || !m.ottPlatform || !m.cast || m.cast.length === 0 || !m.director || !m.genre || m.genre.length === 0
   })
   console.log(`Need TMDB data: ${needy.length}`)
 
@@ -192,7 +225,18 @@ async function phase2PatchTMDB() {
         )
         if (!search?.results?.length) { cache[key] = { done: true, found: false }; notFound++; return }
 
+        // Verify the match — check year and title similarity
         const best = search.results[0]
+        
+        // Year must match (or be within 1 year for edge cases)
+        const matchYear = best.release_date ? parseInt(best.release_date.substring(0, 4)) : null
+        const yearDiff = matchYear ? Math.abs(matchYear - movie.year) : 99
+        if (yearDiff > 1) { cache[key] = { done: true, found: false }; notFound++; return }
+        
+        // Title should be reasonably similar
+        const sim = titleSimilarity(movie.title, best.title)
+        if (sim < 0.4) { cache[key] = { done: true, found: false }; notFound++; return }
+        
         const details = await tmdbFetch(
           `https://api.themoviedb.org/3/movie/${best.id}?api_key=${TMDB_KEY}&append_to_response=credits,watch/providers&language=en-US`
         )
@@ -202,14 +246,17 @@ async function phase2PatchTMDB() {
         const ottPlatforms = prov?.flatrate?.map(p => p.provider_name).join(', ') || ''
         const cast = details.credits?.cast?.slice(0, 10).map(c => c.name) || []
         const director = details.credits?.crew?.find(c => c.job === 'Director')?.name || ''
+        const genres = (details.genres || []).map(g => g.name)
 
-        const updates = {}
+        const updates = { tmdbId: best.id }
         if ((!movie.posterUrl && !movie.poster) && details.poster_path) updates.posterUrl = `${TMDB_IMG}${details.poster_path}`
         if (!movie.synopsis && details.overview) updates.synopsis = details.overview?.substring(0, 500) || ''
-        if ((!movie.rating || movie.rating === 0) && details.vote_average) updates.rating = details.vote_average
+        // Convert TMDB's 0-10 scale to 0-5
+        if ((!movie.rating || movie.rating === 0) && details.vote_average) updates.rating = Math.round((details.vote_average / 2) * 10) / 10
         if (!movie.ottPlatform && ottPlatforms) updates.ottPlatform = ottPlatforms
         if ((!movie.cast || movie.cast.length === 0) && cast.length) updates.cast = cast
         if (!movie.director && director) updates.director = director
+        if ((!movie.genre || movie.genre.length === 0) && genres.length) updates.genre = genres
 
         if (Object.keys(updates).length > 0) {
           await sanity.patch(movie._id).set(updates).commit()
