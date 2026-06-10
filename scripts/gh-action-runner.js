@@ -43,9 +43,11 @@ async function phase1Import(years) {
   console.log('PHASE 1: Import new titles from Wikipedia')
   console.log('═══════════════════════════════════\n')
 
-  // Use inline extraction (dedicated function below)
-  const yearList = years || []
-  for (let y = 2000; y <= CURRENT_YEAR; y++) yearList.push(y)
+  // Build year list
+  const yearList = (years && years.length > 0) ? years : []
+  if (yearList.length === 0) {
+    for (let y = 2000; y <= CURRENT_YEAR; y++) yearList.push(y)
+  }
   
   // Get all existing movie titles from Sanity
   const existing = await sanity.fetch('*[_type == "movie"] { title, year }')
@@ -172,7 +174,7 @@ async function phase2PatchTMDB() {
 
   if (!needy.length) { console.log('✅ All movies have data!'); return }
 
-  const CONCURRENCY = 20 // GitHub Actions has fast network
+  const CONCURRENCY = 30 // GitHub Actions has fast network
   let patched = 0, notFound = 0, errors = 0
 
   for (let i = 0; i < needy.length; i += CONCURRENCY) {
@@ -220,6 +222,9 @@ async function phase2PatchTMDB() {
     process.stdout.write(`  📊 [${done}/${needy.length}] P:${patched} N:${notFound} E:${errors}\r`)
 
     if (done % 200 === 0 || done >= needy.length) fs.writeFileSync(CACHE_FILE, JSON.stringify(cache))
+
+    // Delay between batches to avoid TMDB rate limiting
+    if (i + CONCURRENCY < needy.length) await sleep(1000)
   }
 
   fs.writeFileSync(CACHE_FILE, JSON.stringify(cache))
@@ -309,7 +314,7 @@ async function wikiFetch(title, retries = 2) {
   return null
 }
 
-async function tmdbFetch(url, retries = 2) {
+async function tmdbFetch(url, retries = 1) {
   for (let a = 1; a <= retries; a++) {
     try {
       const res = await fetch(url, { signal: AbortSignal.timeout(10000) })
@@ -338,6 +343,7 @@ function detectColumns($, $hr) {
 async function main() {
   const args = process.argv.slice(2)
   const onlyPhase = args.find(a => a.startsWith('--only='))?.split('=')[1]
+  const specificYears = args.find(a => a.startsWith('--years='))?.split('=')[1]
 
   console.log(`\n╔══════════════════════════════════════╗`)
   console.log(`║  GITHUB ACTIONS RUNNER              ║`)
@@ -346,7 +352,7 @@ async function main() {
 
   const phases = onlyPhase ? [parseInt(onlyPhase)] : [1, 2, 3]
 
-  if (phases.includes(1)) await phase1Import([])
+  if (phases.includes(1)) await phase1Import(specificYears)
   if (phases.includes(2)) await phase2PatchTMDB()
   if (phases.includes(3)) await phase3WikiFallback()
 
