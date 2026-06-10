@@ -8,6 +8,7 @@ import { client } from '../../../sanity/client'
 import { movieBySlugQuery } from '../../../lib/queries'
 import { urlFor } from '../../../sanity/lib/image'
 import MovieCard, { Movie } from '../../../components/MovieCard'
+import MovieCardErrorBoundary from '../../../components/MovieCardErrorBoundary'
 import CastPhoto from '../../../components/CastPhoto'
 
 interface MovieDetailProps {
@@ -360,7 +361,9 @@ async function MovieRecommendations({ slug }: { slug: string }) {
         </div>
         <div className="movies-grid-pill reveal-group">
           {recommendations.map((rec, i) => (
-            <MovieCard key={rec._id} movie={rec} index={i} />
+            <MovieCardErrorBoundary key={rec._id} title={rec.title}>
+              <MovieCard movie={rec} index={i} />
+            </MovieCardErrorBoundary>
           ))}
         </div>
       </div>
