@@ -1,4 +1,7 @@
-import Link from 'next/link'
+'use client'
+
+import { useRouter } from 'next/navigation'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface PaginationProps {
   currentPage: number
@@ -8,58 +11,40 @@ interface PaginationProps {
 }
 
 export default function Pagination({ currentPage, totalPages, baseUrl, params = {} }: PaginationProps) {
+  const router = useRouter()
+
   if (totalPages <= 1) return null
 
-  function getPageUrl(page: number) {
+  function goToPage(page: number) {
     const sp = new URLSearchParams()
-    for (const [k, v] of Object.entries(params)) {
-      if (v) sp.set(k, v)
-    }
-    sp.set('page', String(page))
-    return `${baseUrl}?${sp.toString()}`
+    Object.entries(params).forEach(([k, v]) => { if (v) sp.set(k, v) })
+    sp.set('page', page.toString())
+    router.push(`${baseUrl}?${sp.toString()}`)
   }
-
-  const pages: (number | 'dots')[] = []
-  if (totalPages <= 7) {
-    for (let i = 1; i <= totalPages; i++) pages.push(i)
-  } else {
-    pages.push(1)
-    if (currentPage > 3) pages.push('dots')
-    const start = Math.max(2, currentPage - 1)
-    const end = Math.min(totalPages - 1, currentPage + 1)
-    for (let i = start; i <= end; i++) pages.push(i)
-    if (currentPage < totalPages - 2) pages.push('dots')
-    pages.push(totalPages)
-  }
-
-  const base = { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: 36, height: 36, borderRadius: 6, fontSize: 14, fontWeight: 500, transition: 'all 0.2s', textDecoration: 'none' }
-  const active = { ...base, background: 'var(--crimson)', color: '#fff' }
-  const inactive = { ...base, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }
-  const disabled = { ...base, background: 'rgba(255,255,255,0.02)', color: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.04)', cursor: 'not-allowed' }
 
   return (
-    <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 48 }} aria-label="Pagination">
-      {currentPage > 1 ? (
-        <Link href={getPageUrl(currentPage - 1)} style={{ ...inactive, paddingLeft: 12, paddingRight: 12 }}>← Prev</Link>
-      ) : (
-        <span style={{ ...disabled, paddingLeft: 12, paddingRight: 12 }}>← Prev</span>
-      )}
+    <div className="flex items-center justify-center gap-6 py-12">
+      <button
+        onClick={() => goToPage(currentPage - 1)}
+        disabled={currentPage <= 1}
+        className="w-14 h-14 rounded-2xl glass-panel flex items-center justify-center text-white/40 hover:text-white disabled:opacity-10 transition-all"
+      >
+        <ChevronLeft size={24} />
+      </button>
 
-      {pages.map((p, i) =>
-        p === 'dots' ? (
-          <span key={`d${i}`} style={{ ...base, color: 'rgba(255,255,255,0.3)' }}>…</span>
-        ) : (
-          <Link key={p} href={getPageUrl(p)} style={p === currentPage ? active : inactive}>
-            {p}
-          </Link>
-        )
-      )}
+      <div className="glass-panel px-8 py-4 rounded-2xl">
+         <span className="text-sm font-black text-white uppercase tracking-widest">
+            Page <span className="text-crimson">{currentPage}</span> / {totalPages}
+         </span>
+      </div>
 
-      {currentPage < totalPages ? (
-        <Link href={getPageUrl(currentPage + 1)} style={{ ...inactive, paddingLeft: 12, paddingRight: 12 }}>Next →</Link>
-      ) : (
-        <span style={{ ...disabled, paddingLeft: 12, paddingRight: 12 }}>Next →</span>
-      )}
-    </nav>
+      <button
+        onClick={() => goToPage(currentPage + 1)}
+        disabled={currentPage >= totalPages}
+        className="w-14 h-14 rounded-2xl glass-panel flex items-center justify-center text-white/40 hover:text-white disabled:opacity-10 transition-all"
+      >
+        <ChevronRight size={24} />
+      </button>
+    </div>
   )
 }

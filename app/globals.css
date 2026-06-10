@@ -2,27 +2,18 @@
 @plugin "@tailwindcss/typography";
 
 /* ═══════════════════════════════════════════════════════════════
-   LUXURY DARK THEME — TamilCinemaHub
-   Fonts: Syne (display), Playfair Display (editorial), DM Sans (UI)
+   SPATIAL CINEMATIC SYSTEM — TamilCinemaHub
+   Design Philosophy: Extreme Depth, Physicality, Motion
    ═══════════════════════════════════════════════════════════════ */
 
 :root {
-  --ink: #050005;
-  --ink-light: #0A0008;
+  --ink: #000000;
+  --ink-depth: #080008;
   --crimson: #D4291A;
   --vermillion: #FF4D1C;
   --gold: #F0B429;
-  --gold-deep: #C8830A;
   --violet: #7C3AED;
-  --violet-light: #A78BFA;
   --teal: #0D9488;
-  --teal-light: #2DD4BF;
-  --rose: #F43F5E;
-  --rose-light: #FDA4AF;
-  --navy: #0F172A;
-  --electric: #3B82F6;
-  --lime: #84CC16;
-  --cream: #FFF8F0;
   --fog: #F1F0FF;
   
   /* Next.js Fonts */
@@ -42,169 +33,143 @@
 }
 
 /* ── Global Reset ────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+*, *::before, *::after { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+  cursor: none !important; /* Custom Cursor mandatory for Spatial UI */
+}
+
+html { 
+  scroll-behavior: smooth; 
+  -webkit-font-smoothing: antialiased; 
+  background: var(--ink);
+}
+
 body { 
   background: var(--ink); 
   color: var(--fog); 
   font-family: var(--font-sans); 
   font-size: 16px; 
-  line-height: 1.6; 
-  -webkit-font-smoothing: antialiased; 
   overflow-x: hidden;
-  padding: 0;
-  margin: 0;
 }
 
-/* Luxury Mesh Gradient Background */
-body::before {
-  content: '';
+/* ── The 3D Environment (The Stage) ─────────────────────────── */
+#spatial-stage {
   position: fixed;
   inset: 0;
-  z-index: -10;
-  background:
-    radial-gradient(circle at 10% 10%, rgba(212,41,26,0.08) 0%, transparent 40%),
-    radial-gradient(circle at 90% 90%, rgba(124,58,237,0.08) 0%, transparent 40%),
-    var(--ink);
+  perspective: 2000px;
+  z-index: -1;
   pointer-events: none;
 }
 
-a { text-decoration: none; color: inherit; }
-img { display: block; max-width: 100%; }
-button { font-family: inherit; cursor: pointer; border: none; background: none; }
-::selection { background: rgba(212,41,26,0.4); color: #fff; }
-*:focus-visible { outline: 2px solid var(--crimson); outline-offset: 3px; }
-
-/* ── Bento Grid Layouts ───────────────────────────────────────── */
-.bento-grid {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 1.5rem;
+.depth-layer {
+  position: absolute;
+  inset: -20%;
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 
-.bento-card {
-  background: rgba(255,255,255,0.02);
+/* Layer 1: Far Field (Bokeh) */
+.layer-far {
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(212,41,26,0.1) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(124,58,237,0.1) 0%, transparent 40%);
+  filter: blur(80px);
+}
+
+/* Layer 2: Mid Field (Volumetric Dust) */
+.layer-mid::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  mix-blend-mode: overlay;
+}
+
+/* ── Cinematic Components ────────────────────────────────────── */
+.glass-panel {
+  background: rgba(255,255,255,0.01);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255,255,255,0.05);
-  border-radius: 2rem;
-  overflow: hidden;
-  position: relative;
-  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow: 
+    0 8px 32px 0 rgba(0, 0, 0, 0.8),
+    inset 0 0 0 1px rgba(255,255,255,0.02);
 }
 
-.bento-card:hover {
-  background: rgba(255,255,255,0.04);
-  border-color: rgba(255,255,255,0.1);
-  transform: translateY(-5px);
-  box-shadow: 0 30px 60px rgba(0,0,0,0.5);
-}
-
-/* ── Trendy UI Elements ───────────────────────────────────────── */
-.glass {
-  background: rgba(255,255,255,0.03);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.05);
-}
-
-.text-gradient {
-  background: linear-gradient(135deg, var(--gold), var(--vermillion));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.title-3d {
+.text-spatial {
   font-family: var(--font-display);
   font-weight: 900;
-  letter-spacing: -0.04em;
-  line-height: 0.9;
   text-transform: uppercase;
+  letter-spacing: -0.05em;
+  line-height: 0.8;
+  color: white;
+  text-shadow: 0 20px 40px rgba(0,0,0,0.5);
 }
 
-/* ── Padding & Spacing Fixes ──────────────────────────────────── */
-.section-container {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 8rem 2rem;
-}
-
-@media (max-width: 768px) {
-  .section-container {
-    padding: 4rem 1.5rem;
-  }
-}
-
-/* ── 3D Scroll Utilities ─────────────────────────────────────── */
-.perspective-container {
-  perspective: 1200px;
-}
-
-.preserve-3d {
-  transform-style: preserve-3d;
-}
-
-/* ── Custom Animations ───────────────────────────────────────── */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
+.gradient-shimmer {
+  background: linear-gradient(135deg, var(--gold) 0%, var(--vermillion) 50%, var(--violet) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% auto;
+  animation: shimmer 8s linear infinite;
 }
 
 @keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  to { background-position: 200% center; }
 }
 
-.animate-shimmer {
-  position: relative;
-  overflow: hidden;
+/* ── Layout Safety ───────────────────────────────────────────── */
+.spatial-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 4rem;
 }
 
-.animate-shimmer::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-  animation: shimmer 2s infinite;
+@media (max-width: 768px) {
+  .spatial-container {
+    padding: 0 1.5rem;
+  }
+}
+
+/* ── Custom Cursor ───────────────────────────────────────────── */
+#custom-cursor {
+  position: fixed;
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10000;
+  mix-blend-mode: difference;
+  transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.cursor-follower {
+  position: fixed;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* ── Mobile Optimization ─────────────────────────────────────── */
+@media (max-width: 640px) {
+  *, *::before, *::after { cursor: auto !important; }
+  #custom-cursor, .cursor-follower { display: none; }
+  
+  .spatial-container { padding: 0 1rem; }
+  
+  /* Scale down massive spatial text on mobile */
+  .text-spatial {
+    font-size: 3.5rem !important;
+  }
 }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-/* ── Mobile Overlapping Fixes ────────────────────────────────── */
-.prevent-overlap {
-  position: relative;
-  z-index: 1;
-}
-
-.grid-fix {
-  display: grid;
-  gap: 1rem;
-}
-
-@media (max-width: 640px) {
-  .grid-fix {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   PROSE (for blog/movie detail pages)
-   ═══════════════════════════════════════════════════════════════ */
-.prose { 
-  --tw-prose-body: rgba(255,255,255,0.6); 
-  --tw-prose-headings: var(--fog); 
-  --tw-prose-links: var(--crimson); 
-  --tw-prose-bold: var(--fog); 
-  --tw-prose-counters: rgba(255,255,255,0.4); 
-  --tw-prose-bullets: var(--crimson); 
-  --tw-prose-hr: rgba(255,255,255,0.05); 
-  --tw-prose-quotes: var(--fog); 
-  --tw-prose-quote-borders: var(--crimson); 
-  --tw-prose-captions: rgba(255,255,255,0.4); 
-  --tw-prose-code: var(--crimson); 
-  --tw-prose-pre-bg: rgba(255,255,255,0.02); 
-  --tw-prose-pre-code: rgba(255,255,255,0.8); 
-}
