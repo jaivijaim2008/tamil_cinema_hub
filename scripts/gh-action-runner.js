@@ -117,7 +117,7 @@ async function phase1Import(years) {
       try { await tx.commit(); totalNew += batch.length }
       catch {
         for (const m of batch) {
-          try { await sanity.create({ _type: 'movie', title: m.title, slug: { _type: 'slug', current: makeSlug(m.title, m.year) }, year: m.year, director: m.director || '', cast: Array.isArray(m.cast) ? m.cast : [], synopsis: '', posterUrl: '', rating: 0, ottPlatform: '' }); totalNew++ } catch {}
+          try { await sanity.create({ _type: 'movie', title: m.title, slug: { _type: 'slug', current: makeSlug(m.title, m.year) }, year: m.year, director: m.director || '', cast: Array.isArray(m.cast) ? m.cast : [], genre: [], synopsis: '', posterUrl: '', rating: 0, ottPlatform: '' }); totalNew++ } catch {}
         }
       }
     }

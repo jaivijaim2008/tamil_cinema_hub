@@ -134,7 +134,8 @@ async function extractTitles(year) {
         castArray = raw.split(/,|\band\b|&|\//).map(s => s.trim()).filter(s => s.length > 1 && !['various','tba','tdb','n/a','unknown'].includes(s.toLowerCase()))
       }
 
-      movies.push({ title, year, director, cast: castArray })
+      // Skip clearly bad titles
+      if (!isBadTitle(title)) movies.push({ title, year, director, cast: castArray })
     })
   })
 
