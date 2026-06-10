@@ -2,34 +2,36 @@
 @plugin "@tailwindcss/typography";
 
 /* ═══════════════════════════════════════════════════════════════
-   SPATIAL CINEMATIC SYSTEM — TamilCinemaHub
-   Design Philosophy: Extreme Depth, Physicality, Motion
+   ULTRA-MODERN MINIMALIST LUXURY SYSTEM — TamilCinemaHub
+   Design Philosophy: Clarity, Hierarchy, Precision
    ═══════════════════════════════════════════════════════════════ */
 
 :root {
+  /* Core Palette (Monochromatic Luxury) */
   --ink: #000000;
-  --ink-depth: #080008;
-  --crimson: #D4291A;
-  --vermillion: #FF4D1C;
-  --gold: #F0B429;
-  --violet: #7C3AED;
-  --teal: #0D9488;
-  --fog: #F1F0FF;
+  --coal: #080808;
+  --iron: #111111;
+  --stone: #222222;
+  --mist: #888888;
+  --silver: #DDDDDD;
+  --pure: #FFFFFF;
   
+  /* Primary Accent */
+  --crimson: #D4291A;
+  --crimson-dim: rgba(212, 41, 26, 0.15);
+
   /* Next.js Fonts */
   --font-sans: var(--font-sans);
   --font-display: var(--font-display);
   --font-serif: var(--font-serif);
-  --font-tamil: var(--font-tamil);
 }
 
 @theme inline {
   --color-background: var(--ink);
-  --color-foreground: var(--fog);
+  --color-foreground: var(--pure);
   --font-sans: var(--font-sans);
   --font-display: var(--font-display);
   --font-serif: var(--font-serif);
-  --font-tamil: var(--font-tamil);
 }
 
 /* ── Global Reset ────────────────────────────────────────────── */
@@ -37,7 +39,7 @@
   box-sizing: border-box; 
   margin: 0; 
   padding: 0; 
-  cursor: none !important; /* Custom Cursor mandatory for Spatial UI */
+  cursor: crosshair; /* Premium editorial feel */
 }
 
 html { 
@@ -48,128 +50,86 @@ html {
 
 body { 
   background: var(--ink); 
-  color: var(--fog); 
+  color: var(--pure); 
   font-family: var(--font-sans); 
   font-size: 16px; 
+  line-height: 1.4; 
   overflow-x: hidden;
 }
 
-/* ── The 3D Environment (The Stage) ─────────────────────────── */
-#spatial-stage {
-  position: fixed;
-  inset: 0;
-  perspective: 2000px;
-  z-index: -1;
-  pointer-events: none;
+/* ── Luxury Components ───────────────────────────────────────── */
+
+/* High-precision Glass */
+.luxury-glass {
+  background: rgba(255, 255, 255, 0.01);
+  backdrop-filter: blur(50px);
+  -webkit-backdrop-filter: blur(50px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.depth-layer {
-  position: absolute;
-  inset: -20%;
-  transform-style: preserve-3d;
-  will-change: transform;
+/* Minimal Card */
+.luxury-card {
+  background: var(--coal);
+  border: 1px solid var(--iron);
+  border-radius: 1.5rem;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Layer 1: Far Field (Bokeh) */
-.layer-far {
-  background: 
-    radial-gradient(circle at 20% 30%, rgba(212,41,26,0.1) 0%, transparent 40%),
-    radial-gradient(circle at 80% 70%, rgba(124,58,237,0.1) 0%, transparent 40%);
-  filter: blur(80px);
+.luxury-card:hover {
+  border-color: var(--stone);
+  background: var(--iron);
+  transform: translateY(-4px);
 }
 
-/* Layer 2: Mid Field (Volumetric Dust) */
-.layer-mid::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  opacity: 0.03;
-  mix-blend-mode: overlay;
-}
-
-/* ── Cinematic Components ────────────────────────────────────── */
-.glass-panel {
-  background: rgba(255,255,255,0.01);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255,255,255,0.05);
-  box-shadow: 
-    0 8px 32px 0 rgba(0, 0, 0, 0.8),
-    inset 0 0 0 1px rgba(255,255,255,0.02);
-}
-
-.text-spatial {
+/* Typography Scale */
+.text-hero {
   font-family: var(--font-display);
   font-weight: 900;
+  font-size: clamp(3.5rem, 12vw, 10rem);
+  line-height: 0.85;
+  letter-spacing: -0.06em;
   text-transform: uppercase;
-  letter-spacing: -0.05em;
-  line-height: 0.8;
-  color: white;
-  text-shadow: 0 20px 40px rgba(0,0,0,0.5);
 }
 
-.gradient-shimmer {
-  background: linear-gradient(135deg, var(--gold) 0%, var(--vermillion) 50%, var(--violet) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-size: 200% auto;
-  animation: shimmer 8s linear infinite;
-}
-
-@keyframes shimmer {
-  to { background-position: 200% center; }
+.text-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2rem, 6vw, 5rem);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
 }
 
 /* ── Layout Safety ───────────────────────────────────────────── */
-.spatial-container {
-  max-width: 1440px;
+.main-container {
+  max-width: 1536px;
   margin: 0 auto;
-  padding: 0 4rem;
+  padding: 0 5rem;
 }
 
-@media (max-width: 768px) {
-  .spatial-container {
-    padding: 0 1.5rem;
-  }
+@media (max-width: 1024px) {
+  .main-container { padding: 0 2.5rem; }
 }
 
-/* ── Custom Cursor ───────────────────────────────────────────── */
-#custom-cursor {
-  position: fixed;
-  width: 12px;
-  height: 12px;
-  background: white;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 10000;
-  mix-blend-mode: difference;
-  transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-.cursor-follower {
-  position: fixed;
-  width: 40px;
-  height: 40px;
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9999;
-  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-/* ── Mobile Optimization ─────────────────────────────────────── */
 @media (max-width: 640px) {
-  *, *::before, *::after { cursor: auto !important; }
-  #custom-cursor, .cursor-follower { display: none; }
-  
-  .spatial-container { padding: 0 1rem; }
-  
-  /* Scale down massive spatial text on mobile */
-  .text-spatial {
-    font-size: 3.5rem !important;
-  }
+  .main-container { padding: 0 1.5rem; }
+}
+
+/* Utility to prevent any overlapping */
+.row-safe {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  position: relative;
+  z-index: 10;
 }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Selection */
+::selection {
+  background: var(--crimson);
+  color: white;
+}

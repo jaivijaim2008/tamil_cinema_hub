@@ -3,192 +3,174 @@
 import { useRef, lazy, Suspense } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
-import { ChevronRight, Sparkles, Database, TrendingUp, Zap, Film } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { ChevronRight, Sparkles, TrendingUp, Zap, Globe, Award, Film, Play } from 'lucide-react'
 import type { Movie } from '../components/MovieCard'
 import type { Blog } from '../components/BlogCard'
-import { urlFor } from '../sanity/lib/image'
+import MovieCard from '../components/MovieCard'
+import MovieCardErrorBoundary from '../components/MovieCardErrorBoundary'
+import BlogCard from '../components/BlogCard'
 
 const ChatWithAIButton = lazy(() => import('../components/ChatWithAIButton'))
 
 export default function HomePageClient({ movies, blogs }: { movies: Movie[]; blogs: Blog[] }) {
-  const containerRef = useRef<HTMLDivElement>(null)
   
-  // ── THE DIVING ENGINE ──
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"]
-  })
-
-  // We'll create a 4-movie "Dive" sequence
-  const diveMovies = movies.slice(0, 4)
+  const stats = [
+    { label: 'Movies Catalogued', value: '1,600+', icon: Film, color: 'text-crimson' },
+    { label: 'Years of History', value: '26+', icon: Globe, color: 'text-white' },
+    { label: 'AI Decisions', value: 'LIVE', icon: Sparkles, color: 'text-white' },
+    { label: 'Critical Reviews', value: '800+', icon: Award, color: 'text-white' },
+  ]
 
   return (
-    <div ref={containerRef} className="relative bg-black min-h-[500vh]">
+    <div className="bg-ink min-h-screen">
       
-      {/* ── 1. THE CINEMATIC TUNNEL ── */}
-      <section className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden perspective-container preserve-3d">
-         
-         {/* Background Atmospheric Depth */}
-         <div className="absolute inset-0 z-0">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-b from-crimson/5 via-transparent to-violet/5 opacity-50" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vh] border border-white/5 rounded-full blur-3xl" />
-         </div>
-
-         {/* Diving Sequence */}
-         {diveMovies.map((movie, i) => (
-           <DivingPoster key={movie._id} movie={movie} index={i} progress={scrollYProgress} />
-         ))}
-
-         {/* Center Brand Anchor */}
-         <motion.div 
-           style={{
-             scale: useTransform(scrollYProgress, [0, 0.1], [1, 0.5]),
-             opacity: useTransform(scrollYProgress, [0, 0.05], [1, 0]),
-           }}
-           className="relative z-50 text-center"
-         >
-            <h1 className="text-spatial text-7xl md:text-9xl mb-4 leading-none">
-              TamilCinema<br /><span className="gradient-shimmer">Hub.</span>
-            </h1>
-            <p className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20">The Spatial Archive Experience</p>
-         </motion.div>
-
-         {/* Scroll Hint */}
-         <motion.div 
-           style={{ opacity: useTransform(scrollYProgress, [0, 0.05], [1, 0]) }}
-           className="absolute bottom-12 flex flex-col items-center gap-4"
-         >
-            <div className="w-px h-16 bg-gradient-to-b from-white/20 to-transparent" />
-            <span className="text-[8px] font-black uppercase tracking-[0.4em] text-white/20">Scroll to Dive</span>
-         </motion.div>
-      </section>
-
-      {/* ── 2. THE SPATIAL BENTO GRID ── */}
-      <section className="relative z-50 pt-24 pb-48 bg-black">
-         <div className="spatial-container">
-            
-            <div className="flex flex-col md:flex-row items-end justify-between mb-24 gap-8">
-               <div className="max-w-2xl">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg glass-panel mb-6">
-                     <TrendingUp size={12} className="text-crimson" />
-                     <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white/40">Market Trends</span>
-                  </div>
-                  <h2 className="text-spatial text-5xl md:text-7xl leading-none">
-                     Recent <span className="gradient-shimmer">Artifacts</span>
-                  </h2>
-               </div>
-               <Link href="/movies" className="group flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.3em] text-white/30 hover:text-white transition-all">
-                  Archive Index <ChevronRight size={14} className="group-hover:translate-x-2 transition-transform" />
-               </Link>
+      {/* ── LUXURY HERO ── */}
+      <section className="relative min-h-screen flex flex-col justify-center pt-32 pb-20">
+        <div className="main-container relative z-10">
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full border border-white/5 bg-white/[0.02] mb-12">
+               <span className="w-1.5 h-1.5 rounded-full bg-crimson animate-pulse" />
+               <span className="text-[9px] font-black uppercase tracking-[0.4em] text-white/40">Kollywood&apos;s Premium Archive</span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-               {movies.slice(4, 12).map((movie, i) => (
-                 <motion.div 
-                   key={movie._id}
-                   initial={{ opacity: 0, y: 50 }}
-                   whileInView={{ opacity: 1, y: 0 }}
-                   viewport={{ once: true }}
-                   transition={{ delay: i * 0.05 }}
-                 >
-                    <MovieCardPlaceholder movie={movie} />
-                 </motion.div>
+            <h1 className="text-hero mb-12">
+              TamilCinema<br />
+              <span className="text-white/20">Archive</span><br />
+              <span className="text-crimson">Hub.</span>
+            </h1>
+
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-12 mt-12">
+               <p className="text-lg md:text-xl text-white/30 max-w-xl leading-relaxed font-medium">
+                  A high-fidelity digital archive documenting the evolution of Tamil cinema. Explore 1,600+ cinematic artifacts with precision analytics and neural-powered discovery.
+               </p>
+
+               <div className="flex items-center gap-4">
+                  <Link href="/movies" className="px-10 py-5 rounded-2xl bg-white text-black font-black uppercase tracking-widest text-xs hover:bg-silver transition-all shadow-2xl">
+                     Browse Archive
+                  </Link>
+                  <Link href="/recommendations" className="group flex items-center gap-4 px-10 py-5 rounded-2xl border border-white/10 text-white font-black uppercase tracking-widest text-xs hover:bg-white/5 transition-all">
+                     <Play size={14} className="fill-white" /> Smart Discover
+                  </Link>
+               </div>
+            </div>
+          </motion.div>
+
+        </div>
+
+        {/* Hero Background Decor */}
+        <div className="absolute inset-0 pointer-events-none opacity-20">
+           <div className="absolute top-1/4 right-0 w-[800px] h-[800px] bg-crimson rounded-full blur-[200px] -mr-96" />
+        </div>
+      </section>
+
+      {/* ── BENTO STATS ── */}
+      <section className="pb-40">
+        <div className="main-container">
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {stats.map((stat, i) => (
+                <motion.div 
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="luxury-card p-10 flex flex-col gap-6"
+                >
+                   <stat.icon size={24} className={stat.color} />
+                   <div>
+                      <div className="text-5xl font-display font-black text-white mb-1">{stat.value}</div>
+                      <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">{stat.label}</div>
+                   </div>
+                </motion.div>
+              ))}
+           </div>
+        </div>
+      </section>
+
+      {/* ── FEATURED MOVIES (BENTO) ── */}
+      <section className="pb-40">
+        <div className="main-container">
+           
+           <div className="flex flex-col md:flex-row items-end justify-between mb-24 gap-8">
+              <div>
+                 <div className="text-[10px] font-black uppercase tracking-[0.4em] text-crimson mb-6">Database Log</div>
+                 <h2 className="text-title">Recent <span className="text-white/20">Additions</span></h2>
+              </div>
+              <Link href="/movies" className="group flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.4em] text-white/20 hover:text-white transition-all">
+                 View Index <ChevronRight size={14} className="group-hover:translate-x-2 transition-transform" />
+              </Link>
+           </div>
+
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8">
+              {movies.slice(0, 6).map((movie, i) => (
+                <div 
+                  key={movie._id}
+                  className={i === 0 || i === 5 ? "lg:col-span-6" : "lg:col-span-3"}
+                >
+                   <MovieCardErrorBoundary title={movie.title}>
+                      <MovieCard movie={movie} index={i} />
+                   </MovieCardErrorBoundary>
+                </div>
+              ))}
+           </div>
+
+        </div>
+      </section>
+
+      {/* ── EDITORIAL PREVIEW ── */}
+      <section className="pb-40">
+         <div className="main-container">
+            
+            <div className="flex items-center justify-between mb-24">
+               <div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 mb-6">Critics Choice</div>
+                  <h2 className="text-title">Latest <span className="text-crimson">Reviews</span></h2>
+               </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+               {blogs.slice(0, 3).map((blog, i) => (
+                 <div key={blog._id} className={i === 0 ? "lg:col-span-12" : "lg:col-span-6"}>
+                    <BlogCard blog={blog} index={i} />
+                 </div>
                ))}
             </div>
 
          </div>
       </section>
 
-      {/* ── 3. AI SPATIAL CTA ── */}
-      <section className="relative z-50 pb-48">
-         <div className="spatial-container">
-            <div className="glass-panel rounded-[3rem] p-12 md:p-24 overflow-hidden relative">
-               <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-crimson/10 rounded-full blur-[120px] -mr-64 -mt-64" />
-               
+      {/* ── AI PERSPECTIVE ── */}
+      <section className="pb-40">
+         <div className="main-container">
+            <div className="luxury-glass rounded-[3rem] p-12 md:p-24 overflow-hidden relative">
                <div className="relative z-10 max-w-3xl">
-                  <div className="w-16 h-16 rounded-2xl bg-white text-black flex items-center justify-center mb-12 shadow-2xl">
-                     <Zap size={32} />
+                  <div className="w-16 h-16 rounded-[1.5rem] bg-white text-black flex items-center justify-center mb-12 shadow-2xl">
+                     <Zap size={32} fill="black" />
                   </div>
-                  <h2 className="text-spatial text-5xl md:text-7xl mb-8 leading-none">
-                     Neural <span className="gradient-shimmer">Search.</span>
+                  <h2 className="text-hero text-6xl md:text-8xl mb-10 leading-none">
+                     Neural<br />
+                     <span className="text-white/20">Match</span>
                   </h2>
-                  <p className="text-lg md:text-xl text-white/40 mb-12 leading-relaxed font-medium">
-                     The database is too vast for simple filtering. Communicate with our neural engine to find the exact cinematic signature you crave.
+                  <p className="text-xl text-white/40 mb-16 max-w-xl leading-relaxed font-medium">
+                     Uncertain where to dive next? Our neural engine cross-references 1,600+ cinematic vectors to find your perfect match.
                   </p>
                   <Suspense fallback={null}><ChatWithAIButton /></Suspense>
+               </div>
+
+               {/* Decor */}
+               <div className="absolute top-0 right-0 w-full h-full opacity-5 pointer-events-none">
+                  <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-crimson rounded-full blur-[150px]" />
                </div>
             </div>
          </div>
       </section>
 
     </div>
-  )
-}
-
-function DivingPoster({ movie, index, progress }: { movie: Movie, index: number, progress: any }) {
-  // Each movie takes a window of 0.2 units of scroll
-  const start = 0.05 + index * 0.2
-  const mid = start + 0.1
-  const end = start + 0.2
-
-  // Transform scroll progress to 3D space
-  const translateZ = useTransform(progress, [start, mid, end], [-2000, 0, 1000])
-  const opacity = useTransform(progress, [start, mid, mid + 0.05, end], [0, 1, 1, 0])
-  const rotateY = useTransform(progress, [start, mid, end], [index % 2 === 0 ? 20 : -20, 0, index % 2 === 0 ? -10 : 10])
-
-  const smoothZ = useSpring(translateZ, { stiffness: 100, damping: 30 })
-  const smoothOpacity = useSpring(opacity, { stiffness: 100, damping: 30 })
-
-  const imageUrl = movie.poster 
-    ? urlFor(movie.poster).width(800).url() 
-    : movie.posterUrl || null
-
-  return (
-    <motion.div
-      style={{ 
-        translateZ: smoothZ, 
-        opacity: smoothOpacity,
-        rotateY: rotateY,
-        zIndex: 40 - index
-      }}
-      className="absolute w-[350px] md:w-[450px] aspect-[2/3] rounded-[2rem] overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.9)] border border-white/10"
-    >
-      {imageUrl ? (
-        <Image src={imageUrl} alt={movie.title} fill className="object-cover" />
-      ) : (
-        <div className="w-full h-full bg-white/5 flex items-center justify-center text-4xl font-display font-black text-white/10">{movie.title.charAt(0)}</div>
-      )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-      <div className="absolute bottom-8 left-8 right-8">
-         <div className="flex items-center gap-2 mb-2 text-[8px] font-black text-crimson uppercase tracking-[0.3em]">
-            <Database size={10} /> Indexed Artifact {movie._id.slice(-4)}
-         </div>
-         <h3 className="text-3xl font-display font-black text-white uppercase leading-none">{movie.title}</h3>
-         <p className="mt-4 text-[9px] font-bold text-white/30 uppercase tracking-widest">{movie.year} • Dir. {movie.director}</p>
-      </div>
-    </motion.div>
-  )
-}
-
-function MovieCardPlaceholder({ movie }: { movie: Movie }) {
-  const imageUrl = movie.poster ? urlFor(movie.poster).width(400).url() : movie.posterUrl || null
-  return (
-    <Link href={`/movies/${movie.slug}`} className="block group">
-       <div className="aspect-[2/3] rounded-[1.5rem] overflow-hidden glass-panel mb-6 relative">
-          {imageUrl ? (
-            <Image src={imageUrl} alt={movie.title} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center"><Film size={32} className="text-white/5" /></div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
-             <span className="text-[10px] font-black text-white">{movie.rating.toFixed(1)}</span>
-             <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">{movie.year}</span>
-          </div>
-       </div>
-       <h4 className="text-sm font-black uppercase tracking-widest text-white/80 group-hover:text-crimson transition-colors">{movie.title}</h4>
-       <p className="text-[8px] font-bold text-white/20 uppercase tracking-[0.2em] mt-2">{movie.director}</p>
-    </Link>
   )
 }
