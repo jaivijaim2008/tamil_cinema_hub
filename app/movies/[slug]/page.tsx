@@ -10,7 +10,7 @@ import { urlFor } from '../../../sanity/lib/image'
 import MovieCard, { Movie } from '../../../components/MovieCard'
 import MovieCardErrorBoundary from '../../../components/MovieCardErrorBoundary'
 import CastPhoto from '../../../components/CastPhoto'
-import { Calendar, User, Tv, Star, ChevronLeft, Info, MessageSquare } from 'lucide-react'
+import { Calendar, User, Tv, Star, ChevronLeft, Info, MessageSquare, Film } from 'lucide-react'
 
 interface MovieDetailProps {
   params: Promise<{ slug: string }>

@@ -80,7 +80,7 @@ export default async function BlogsPage({ searchParams }: { searchParams: Promis
 
       <main style={{ maxWidth: 1280, margin: '0 auto', padding: '32px 24px 0' }}>
         <Suspense fallback={<div style={{ height: 112, marginBottom: 16 }} />}>
-          <BlogFilters totalCount={totalCount} />
+          <BlogFilters />
         </Suspense>
 
         <p style={{ fontSize: 12, textAlign: 'center', marginBottom: 24, color: 'rgba(255,255,255,0.35)' }}>
