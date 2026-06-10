@@ -199,9 +199,8 @@ async function phase2PatchTMDB() {
   const movies = await sanity.fetch('*[_type == "movie"] { _id, title, year, director, cast, synopsis, posterUrl, poster, rating, ottPlatform }')
   console.log(`Total: ${movies.length}`)
 
-  // Filter to ones needing data (skip bad titles)
+  // Filter to ones needing data
   const needy = movies.filter(m => {
-    if (isBadTitle(m.title)) return false // Skip suspicious entries
     return (!m.posterUrl && !m.poster) || !m.synopsis || !m.rating || m.rating === 0 || !m.ottPlatform || !m.cast || m.cast.length === 0 || !m.director || !m.genre || m.genre.length === 0
   })
   console.log(`Need TMDB data: ${needy.length}`)
