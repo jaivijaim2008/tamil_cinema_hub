@@ -42,3 +42,8 @@ next-env.d.ts
 
 .vercel
 nul
+
+# generated data
+wikipedia-movies.json
+wiki-patch-cache.json
+tmdb-cache.json
