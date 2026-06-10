@@ -19,16 +19,7 @@ export default function TamilCinemaHubChatbot() {
     role: 'assistant',
     content: 'Welcome! I am your Tamil cinema guide. Ask me about any movie, actor, director, or get personalized recommendations!',
   }
-  const [messages, setMessages] = useState<Message[]>(() => {
-    try {
-      const saved = localStorage.getItem('chatbot-messages')
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed
-      }
-    } catch {}
-    return [WELCOME_MSG]
-  })
+  const [messages, setMessages] = useState<Message[]>([WELCOME_MSG])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [rateLimitCountdown, setRateLimitCountdown] = useState(0)
@@ -41,23 +32,31 @@ export default function TamilCinemaHubChatbot() {
   const streamRef = useRef({ full: '', idx: 0, timer: null as any, provider: undefined as string | undefined, suggestions: undefined as string[] | undefined })
   const abortRef = useRef<AbortController | null>(null)
 
-  // ── Drag state (desktop only) — initialized from localStorage ──
-  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(() => {
-    if (typeof window === 'undefined') return null
-    try {
-      const saved = localStorage.getItem('chatbot-drag-pos')
-      if (saved) {
-        const p = JSON.parse(saved)
-        if (p && typeof p.x === 'number' && typeof p.y === 'number') return p
-      }
-    } catch {}
-    return null
-  })
+  // ── Drag state (desktop only) ──
+  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null)
   const dragRef = useRef({ dragging: false, startX: 0, startY: 0, origX: 0, origY: 0 })
   const chatWindowRef = useRef<HTMLDivElement>(null)
   const [isDragging, setIsDragging] = useState(false)
 
-  useEffect(() => { try { const s = localStorage.getItem('chatbot-feedback'); if (s) setFeedback(JSON.parse(s)) } catch {} }, [])
+  // Initialize from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedMessages = localStorage.getItem('chatbot-messages')
+      if (savedMessages) {
+        const parsed = JSON.parse(savedMessages)
+        if (Array.isArray(parsed) && parsed.length > 0) setMessages(parsed)
+      }
+      
+      const savedFeedback = localStorage.getItem('chatbot-feedback')
+      if (savedFeedback) setFeedback(JSON.parse(savedFeedback))
+
+      const savedPos = localStorage.getItem('chatbot-drag-pos')
+      if (savedPos) {
+        const p = JSON.parse(savedPos)
+        if (p && typeof p.x === 'number' && typeof p.y === 'number') setDragPos(p)
+      }
+    } catch {}
+  }, [])
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current)

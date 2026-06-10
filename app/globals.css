@@ -661,6 +661,28 @@ body::before {
 .prose { --tw-prose-body: rgba(255,255,255,0.7); --tw-prose-headings: var(--fog); --tw-prose-links: var(--crimson); --tw-prose-bold: var(--fog); --tw-prose-counters: rgba(255,255,255,0.4); --tw-prose-bullets: var(--crimson); --tw-prose-hr: rgba(255,255,255,0.1); --tw-prose-quotes: var(--fog); --tw-prose-quote-borders: var(--crimson); --tw-prose-captions: rgba(255,255,255,0.4); --tw-prose-code: var(--crimson); --tw-prose-pre-bg: rgba(255,255,255,0.05); --tw-prose-pre-code: rgba(255,255,255,0.8); }
 
 /* ═══════════════════════════════════════════════════════════════
+   CUSTOM ANIMATIONS
+   ═══════════════════════════════════════════════════════════════ */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.animate-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+  animation: shimmer 2s infinite;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ═══════════════════════════════════════════════════════════════
    MOBILE RESPONSIVE
    ═══════════════════════════════════════════════════════════════ */
 @media (hover: none) {

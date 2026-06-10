@@ -1,7 +1,14 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
+import { Search, X, Filter } from 'lucide-react'
+import { clsx, type ClassValue } from 'clsx'
+import { twMerge } from 'tailwind-merge'
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
 
 interface MovieFiltersProps {
   genres: string[]
@@ -16,6 +23,11 @@ export default function MovieFilters({ genres }: MovieFiltersProps) {
   const initialQ = searchParams.get('q')?.replace(/\*$/, '') || ''
   const [localQ, setLocalQ] = useState(initialQ)
 
+  // Synchronize local search with URL param (e.g. when clearing from navbar)
+  useEffect(() => {
+    setLocalQ(initialQ)
+  }, [initialQ])
+
   function updateParam(key: string, value: string) {
     const sp = new URLSearchParams(searchParams.toString())
     if (value) { sp.set(key, value) } else { sp.delete(key) }
@@ -25,64 +37,72 @@ export default function MovieFilters({ genres }: MovieFiltersProps) {
     })
   }
 
+  const allGenres = ['All', ...genres.filter(g => g !== 'All')]
+
   return (
-    <>
-      {/* Search bar */}
-      <div style={{ maxWidth: 512, margin: '0 auto 32px' }}>
-        <div style={{ position: 'relative' }}>
-          <svg style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'rgba(255,255,255,0.35)', pointerEvents: 'none' }} viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-          </svg>
+    <div className="space-y-8 mb-12">
+      {/* Search Bar */}
+      <div className="max-w-xl mx-auto px-4">
+        <div className="relative group">
+          <Search 
+            size={18} 
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-crimson transition-colors" 
+          />
           <input
             type="text"
             value={localQ}
             onChange={(e) => setLocalQ(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') updateParam('q', localQ.trim()) }}
-            placeholder="Search by title or director..."
-            style={{
-              width: '100%', borderRadius: 100, paddingLeft: 44, paddingRight: 20, paddingTop: 14, paddingBottom: 14,
-              fontSize: 14, color: '#fff', background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.08)', outline: 'none', fontFamily: "'DM Sans', sans-serif",
-              transition: 'border-color 0.2s, box-shadow 0.2s',
-            }}
-            onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(212,41,26,0.5)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(212,41,26,0.08)' }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow = 'none' }}
+            placeholder="Search by title, actor, or director..."
+            className="w-full bg-white/[0.04] border border-white/5 rounded-2xl py-4 pl-12 pr-12 text-sm font-medium text-white outline-none focus:bg-white/[0.08] focus:border-white/10 transition-all placeholder:text-white/10 shadow-xl"
           />
           {localQ && (
             <button
               onClick={() => { setLocalQ(''); updateParam('q', '') }}
-              style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.35)', border: 'none', background: 'none', cursor: 'pointer', fontSize: 14 }}
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-white/5 text-white/20 hover:text-white transition-all"
             >
-              ✕
+              <X size={16} />
             </button>
           )}
         </div>
       </div>
 
-      {/* Genre pills */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 40 }}>
-        {genres.map((genre) => {
-          const isActive = genre === activeGenre
-          return (
-            <button
-              key={genre}
-              onClick={() => updateParam('genre', genre === 'All' ? '' : genre)}
-              disabled={isPending && isActive}
-              style={{
-                borderRadius: 100, paddingLeft: 18, paddingRight: 18, paddingTop: 8, paddingBottom: 8,
-                fontSize: 13, fontWeight: 500, cursor: isPending ? 'wait' : 'pointer', border: 'none',
-                fontFamily: "'DM Sans', sans-serif", transition: 'all 0.2s',
-                ...(isActive
-                  ? { background: 'var(--crimson)', color: '#fff' }
-                  : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }
-                ),
-              }}
-            >
-              {genre.charAt(0).toUpperCase() + genre.slice(1)}
-            </button>
-          )
-        })}
+      {/* Genre Filter */}
+      <div className="flex flex-col items-center space-y-4">
+        <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white/20">
+          <Filter size={12} />
+          Filter by Genre
+        </div>
+        
+        <div className="flex flex-wrap items-center justify-center gap-2 px-4">
+          {allGenres.map((genre) => {
+            const isActive = genre === activeGenre
+            return (
+              <button
+                key={genre}
+                onClick={() => updateParam('genre', genre === 'All' ? '' : genre)}
+                disabled={isPending && isActive}
+                className={cn(
+                  "px-4 py-2 rounded-xl text-xs font-bold transition-all border",
+                  isActive
+                    ? "bg-crimson border-crimson text-white shadow-lg shadow-crimson/20"
+                    : "bg-white/[0.03] border-white/5 text-white/40 hover:text-white/70 hover:border-white/10 hover:bg-white/[0.05]"
+                )}
+              >
+                {genre}
+              </button>
+            )
+          })}
+        </div>
       </div>
-    </>
+
+      {isPending && (
+        <div className="flex justify-center">
+          <div className="h-1 w-24 bg-white/5 rounded-full overflow-hidden">
+            <div className="h-full bg-crimson animate-shimmer" style={{ width: '50%' }} />
+          </div>
+        </div>
+      )}
+    </div>
   )
 }

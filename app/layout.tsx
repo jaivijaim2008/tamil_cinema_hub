@@ -1,9 +1,38 @@
 import type { Metadata, Viewport } from 'next'
-import Script from 'next/script'
+import { Syne, DM_Sans, Playfair_Display, Noto_Serif_Tamil } from 'next/font/google'
 import './globals.css'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import ClientShell from '../components/ClientShell'
+
+const syne = Syne({
+  subsets: ['latin'],
+  variable: '--font-display',
+  weight: ['700', '800'],
+  display: 'swap',
+})
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+})
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-serif',
+  weight: ['700', '900'],
+  style: ['normal', 'italic'],
+  display: 'swap',
+})
+
+const notoTamil = Noto_Serif_Tamil({
+  subsets: ['tamil'],
+  variable: '--font-tamil',
+  weight: ['600'],
+  display: 'swap',
+})
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -37,22 +66,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&family=Noto+Serif+Tamil:wght@600&display=swap"
-          rel="stylesheet"
-        />
-        {/* AdSense — uncomment and replace YOUR_ADSENSE_ID when approved */}
-        {/* <Script
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_ADSENSE_ID"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        /> */}
-      </head>
-      <body className="antialiased" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <html lang="en" className={`${syne.variable} ${dmSans.variable} ${playfair.variable} ${notoTamil.variable}`}>
+      <body className="antialiased" style={{ fontFamily: "var(--font-sans)" }}>
         <ClientShell />
         <Navbar />
         <main className="flex-1">{children}</main>

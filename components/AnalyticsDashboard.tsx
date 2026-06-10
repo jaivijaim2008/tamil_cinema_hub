@@ -1,7 +1,16 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import LinkNext from 'next/link'
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar, Cell, PieChart, Pie, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
+  Legend
+} from 'recharts'
+import {
+  TrendingUp, Film, Star, Monitor, Users, Calendar,
+  ChevronLeft, BarChart3, PieChart as PieIcon, Activity
+} from 'lucide-react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Stats {
@@ -18,227 +27,308 @@ interface Stats {
 }
 
 // ─── Palettes ─────────────────────────────────────────────────────────────────
-const GENRE_COLORS = ['#D4291A','#7C3AED','#F0B429','#3B82F6','#0D9488','#F43F5E','#84CC16','#FF6B35','#A78BFA','#2DD4BF']
-const RATING_DATA  = [
-  { label: 'Excellent', range: '4.5–5.0', color: '#F0B429', idx: 4 },
-  { label: 'Great',     range: '3.5–4.4', color: '#FF8C00', idx: 3 },
-  { label: 'Good',      range: '2.5–3.4', color: '#FF4D1C', idx: 2 },
-  { label: 'Fair',      range: '1.5–2.4', color: '#D4291A', idx: 1 },
-  { label: 'Poor',      range: '0–1.4',   color: '#555555', idx: 0 },
-]
+const THEME = {
+  primary: '#D4291A', // Crimson
+  secondary: '#7C3AED', // Violet
+  accent: '#F0B429', // Gold
+  teal: '#0D9488',
+  rose: '#F43F5E',
+  ink: '#0A0008',
+  fog: '#F1F0FF',
+}
 
-// ─── Tooltip (desktop only) ───────────────────────────────────────────────────
-function Tooltip({ text }: { text: string }) {
-  return (
-    <span className="tooltip-box" style={{
-      position: 'absolute', top: '50%', left: '50%',
-      transform: 'translate(-50%, -140%)',
-      background: 'rgba(20,20,25,0.95)', color: 'rgba(255,255,255,0.92)',
-      fontSize: 11, fontWeight: 600, padding: '5px 10px', borderRadius: 6,
-      whiteSpace: 'nowrap', pointerEvents: 'none',
-      border: '1px solid rgba(255,255,255,0.1)',
-      boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
-      zIndex: 10,
-    }}>{text}</span>
-  )
+const COLORS = [THEME.primary, THEME.secondary, THEME.accent, THEME.teal, THEME.rose, '#3B82F6', '#84CC16', '#FF6B35', '#A78BFA', '#2DD4BF']
+
+const RATING_LABELS = ['Poor', 'Fair', 'Good', 'Great', 'Excellent']
+const RATING_COLORS = ['#555555', '#D4291A', '#FF4D1C', '#FF8C00', '#F0B429']
+
+// ─── Custom Tooltip ──────────────────────────────────────────────────────────
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-[#12000a] border border-white/10 p-3 rounded-lg shadow-2xl backdrop-blur-xl">
+        <p className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-1">{label}</p>
+        <p className="text-sm font-bold text-white">
+          {payload[0].value} <span className="text-white/40 font-medium">films</span>
+        </p>
+      </div>
+    )
+  }
+  return null
 }
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 export default function AnalyticsDashboard({ stats }: { stats: Stats }) {
-  const [animated, setAnimated]         = useState(false)
-  const [hoveredGenre, setHoveredGenre] = useState<number | null>(null)
+  const [mounted, setMounted] = useState(false)
 
-  useEffect(() => { const t = setTimeout(() => setAnimated(true), 150); return () => clearTimeout(t) }, [])
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
-  const safeGenres  = Array.isArray(stats?.genres)        ? stats.genres        : []
-  const safeBuckets = Array.isArray(stats?.ratingBuckets) ? stats.ratingBuckets : [0,0,0,0,0]
-  const safeTotal   = stats?.total ?? 0
-  const safeMinYear = stats?.minYear ?? 2000
-  const safeMaxYear = stats?.maxYear ?? new Date().getFullYear()
-  const totalRated  = stats?.totalRated ?? safeBuckets.reduce((a, b) => a + b, 0)
+  if (!mounted) return null
 
-  const maxGenreCount = Math.max(...safeGenres.slice(0, 10).map(g => g.count), 1)
-  const maxRating     = Math.max(...safeBuckets, 1)
+  // Prepare data for charts
+  const ratingData = stats.ratingBuckets.map((count, i) => ({
+    name: RATING_LABELS[i],
+    count: count,
+    fill: RATING_COLORS[i]
+  }))
+
+  const ottData = stats.ottPlatforms.slice(0, 6).map((ott, i) => ({
+    name: ott.name,
+    value: ott.count,
+    fill: COLORS[i % COLORS.length]
+  }))
+
+  const genreData = stats.genres.slice(0, 8).map((g) => ({
+    subject: g.genre,
+    A: g.count,
+    fullMark: Math.max(...stats.genres.map(g => g.count))
+  }))
+
+  const directorData = [...stats.topDirectors].slice(0, 8).reverse()
 
   return (
-    <>
-      <style>{`
-        @keyframes fadeUp { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
-        @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
-
-        * { box-sizing: border-box; }
-
-        .dash-card  { animation: fadeUp 0.6s ease both; transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s !important; }
-        .dash-card:hover { transform: translateY(-3px) !important; box-shadow: 0 20px 50px rgba(0,0,0,0.55) !important; }
-
-        .bar-row  { transition: background 0.2s; border-radius: 6px; cursor: default; }
-        .bar-row:hover { background: rgba(255,255,255,0.025) !important; }
-        .bar-fill { transition: width 0.7s cubic-bezier(.4,0,.2,1), filter 0.2s !important; }
-        .bar-row:hover .bar-fill { filter: brightness(1.25) !important; }
-
-        .tooltip-box { animation: fadeIn 0.15s ease; }
-        .bar-wrap    { position: relative; }
-        .bar-wrap .tooltip-box { display: none; }
-        @media (hover: hover) { .bar-wrap:hover .tooltip-box { display: block; } }
-
-        .dash-two-col {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 16px;
-        }
-        @media (min-width: 900px) {
-          .dash-two-col { grid-template-columns: 1fr 1fr; gap: 24px; }
-        }
-
-        .main-content { padding: 20px 16px; }
-        .dash-card    { padding: 20px 16px; }
-        @media (min-width: 640px) {
-          .main-content { padding: 36px 24px; }
-          .dash-card    { padding: 28px; }
-        }
-
-        .page-header { padding: 36px 16px 28px; }
-        @media (min-width: 640px) { .page-header { padding: 52px 24px 44px; } }
-
-        .bar-label { font-size: 10px; }
-        @media (min-width: 480px) { .bar-label { font-size: 11px; } }
-        @media (min-width: 640px) { .bar-label { font-size: 12px; } }
-
-        .genre-label { width: 64px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        @media (min-width: 480px) { .genre-label { width: 80px !important; } }
-      `}</style>
-
-      <div style={{ background: 'var(--ink)', minHeight: '100vh', paddingBottom: 80 }}>
-
-        {/* ── HEADER ─────────────────────────────────────────────────────── */}
-        <section style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.25)' }}>
-          <div className="page-header" style={{ maxWidth: 1280, margin: '0 auto' }}>
-            <Link href="/movies" style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              fontSize: 13, fontWeight: 500, marginBottom: 24,
-              color: 'rgba(255,255,255,0.3)', textDecoration: 'none',
-              transition: 'color 0.2s',
-            }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.7)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.3)')}
-            >
-              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-              </svg>
-              Back to Movies
-            </Link>
-
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--rose-light)', marginBottom: 10, fontFamily: "'Syne', sans-serif" }}>
-              TamilCinemaHub · Analytics
-            </p>
-            <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(24px, 6vw, 54px)', fontWeight: 800, lineHeight: 1.1, marginBottom: 12, color: 'rgba(255,255,255,0.93)' }}>
-              Movie Database{' '}
-              <span style={{ background: 'linear-gradient(90deg, var(--crimson) 0%, #7C3AED 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                Dashboard
-              </span>
-            </h1>
-            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.36)', maxWidth: 540, lineHeight: 1.65 }}>
-              Insights from{' '}
-              <strong style={{ color: 'rgba(255,255,255,0.65)', fontWeight: 700 }}>
-                {safeTotal.toLocaleString()} Tamil films
-              </strong>{' '}
-              spanning {safeMinYear}–{safeMaxYear}
+    <div className="min-h-screen bg-[#0A0008] text-[#F1F0FF] font-sans pb-20">
+      
+      {/* ── HEADER ── */}
+      <section className="border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <LinkNext href="/movies" className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-white/30 hover:text-white/70 transition-colors mb-4 group">
+              <ChevronLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+              Back to Database
+            </LinkNext>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-crimson to-violet flex items-center justify-center shadow-lg shadow-crimson/20" style={{ background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary})` }}>
+                <BarChart3 size={20} className="text-white" />
+              </div>
+              <h1 className="text-2xl md:text-3xl font-display font-extrabold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Cinema <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(to right, ${THEME.primary}, ${THEME.accent})` }}>Insights</span>
+              </h1>
+            </div>
+            <p className="text-sm text-white/40 max-w-md">
+              A data-driven analysis of <span className="text-white/70 font-bold">{stats.total.toLocaleString()}</span> Tamil movies from {stats.minYear} to {stats.maxYear}.
             </p>
           </div>
-        </section>
 
-        {/* ── MAIN ───────────────────────────────────────────────────────── */}
-        <main className="main-content" style={{ maxWidth: 1280, margin: '0 auto' }}>
-          <div className="dash-two-col">
-
-            {/* Genre Distribution */}
-            <div className="dash-card" style={{ borderRadius: 16, background: 'linear-gradient(145deg, rgba(124,58,237,0.04) 0%, rgba(13,148,136,0.01) 100%), rgba(255,255,255,0.01)', border: '1px solid rgba(124,58,237,0.18)', animationDelay: '0.1s' }}>
-              <p style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 800, color: 'rgba(255,255,255,0.9)', marginBottom: 4 }}>Genre Distribution</p>
-              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginBottom: 18 }}>Top 10 most popular categories</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                {safeGenres.slice(0, 10).map((g, i) => {
-                  const pct = safeTotal > 0 ? Math.round((g.count / safeTotal) * 100) : 0
-                  return (
-                    <div
-                      key={g.genre}
-                      className="bar-row"
-                      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 4px' }}
-                      onMouseEnter={() => setHoveredGenre(i)}
-                      onMouseLeave={() => setHoveredGenre(null)}
-                    >
-                      <div style={{ width: 7, height: 7, borderRadius: '50%', background: GENRE_COLORS[i] ?? '#888', flexShrink: 0, transition: 'transform 0.2s', transform: hoveredGenre === i ? 'scale(1.5)' : 'scale(1)' }} />
-                      <span className="bar-label genre-label" style={{ color: hoveredGenre === i ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.5)', textTransform: 'capitalize', transition: 'color 0.2s' }}>{g.genre}</span>
-                      <div className="bar-wrap" style={{ flex: 1, height: 18, borderRadius: 4, background: 'rgba(255,255,255,0.04)', overflow: 'visible', position: 'relative' }}>
-                        <div className="bar-fill" style={{
-                          height: '100%', borderRadius: 4,
-                          width: animated ? `${(g.count / maxGenreCount) * 100}%` : '0%',
-                          background: GENRE_COLORS[i] ?? '#888',
-                          opacity: hoveredGenre === i ? 1 : 0.8,
-                          transitionDelay: `${i * 0.04}s`,
-                        }} />
-                        <Tooltip text={`${g.genre}: ${g.count} films (${pct}%)`} />
-                      </div>
-                      <span className="bar-label" style={{ fontWeight: 700, color: 'rgba(255,255,255,0.4)', width: 28, textAlign: 'right', flexShrink: 0 }}>{g.count}</span>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Rating Distribution */}
-            <div className="dash-card" style={{ borderRadius: 16, background: 'linear-gradient(145deg, rgba(240,180,41,0.04) 0%, rgba(212,41,26,0.01) 100%), rgba(255,255,255,0.01)', border: '1px solid rgba(240,180,41,0.18)', animationDelay: '0.15s' }}>
-              <p style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 800, color: 'rgba(255,255,255,0.9)', marginBottom: 4 }}>Rating Distribution</p>
-              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginBottom: 18 }}>
-                Quality spread · <strong style={{ color: 'rgba(255,255,255,0.5)' }}>{totalRated.toLocaleString()}</strong> rated films
-              </p>
-
-              {/* Stacked bar */}
-              <div style={{ display: 'flex', height: 12, borderRadius: 6, overflow: 'hidden', marginBottom: 20, gap: 2 }}>
-                {RATING_DATA.map(r => {
-                  const count = safeBuckets[r.idx] ?? 0
-                  const w = totalRated > 0 ? (count / totalRated) * 100 : 0
-                  return (
-                    <div key={r.label} style={{
-                      height: '100%', borderRadius: 3,
-                      width: animated ? `${w}%` : '0%',
-                      background: r.color, opacity: 0.9,
-                      transition: `width 0.9s cubic-bezier(.4,0,.2,1) ${RATING_DATA.indexOf(r) * 0.07}s`,
-                      minWidth: w > 0 ? 2 : 0,
-                    }} title={`${r.label}: ${count} films`} />
-                  )
-                })}
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {RATING_DATA.map(r => {
-                  const count = safeBuckets[r.idx] ?? 0
-                  const pct   = totalRated > 0 ? Math.round((count / totalRated) * 100) : 0
-                  return (
-                    <div key={r.label}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: r.color, width: 60 }}>{r.label}</span>
-                          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.26)' }}>{r.range}</span>
-                        </div>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.45)' }}>{count.toLocaleString()} · {pct}%</span>
-                      </div>
-                      <div style={{ height: 6, borderRadius: 4, background: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
-                        <div style={{
-                          height: '100%', borderRadius: 4,
-                          width: animated ? `${maxRating > 0 ? (count / maxRating) * 100 : 0}%` : '0%',
-                          background: r.color, opacity: 0.85,
-                          transition: `width 0.7s cubic-bezier(.4,0,.2,1) ${RATING_DATA.indexOf(r) * 0.06}s`,
-                        }} />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
+          <div className="flex items-center gap-2 md:gap-4 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
+            <KPIItem icon={<Film size={14} />} label="Total Movies" value={stats.total.toLocaleString()} color="primary" />
+            <KPIItem icon={<Star size={14} />} label="Avg Rating" value={stats.avgRating} color="accent" />
+            <KPIItem icon={<Activity size={14} />} label="Movies Rated" value={stats.totalRated.toLocaleString()} color="teal" />
           </div>
-        </main>
+        </div>
+      </section>
+
+      {/* ── MAIN CONTENT ── */}
+      <main className="max-w-7xl mx-auto px-6 py-10 space-y-8">
+        
+        {/* Row 1: Yearly Trend */}
+        <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-6 md:p-8 overflow-hidden relative group">
+          <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
+            <TrendingUp size={120} />
+          </div>
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="text-lg font-display font-extrabold flex items-center gap-2" style={{ fontFamily: "var(--font-display)" }}>
+                <Calendar size={18} style={{ color: THEME.primary }} /> Yearly Release Trends
+              </h3>
+              <p className="text-xs text-white/30">Growth of Kollywood cinema output (2000–2026)</p>
+            </div>
+          </div>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={stats.years}>
+                <defs>
+                  <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={THEME.primary} stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor={THEME.primary} stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                <XAxis 
+                  dataKey="year" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 600 }} 
+                  dy={10}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 600 }} 
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Area 
+                  type="monotone" 
+                  dataKey="count" 
+                  stroke={THEME.primary} 
+                  strokeWidth={3}
+                  fillOpacity={1} 
+                  fill="url(#colorCount)" 
+                  animationDuration={2000}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Row 2: Two Columns */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          
+          {/* Genre Distribution */}
+          <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 flex flex-col">
+            <div className="mb-8">
+              <h3 className="text-lg font-display font-extrabold flex items-center gap-2" style={{ fontFamily: "var(--font-display)" }}>
+                <Users size={18} style={{ color: THEME.secondary }} /> Genre Landscape
+              </h3>
+              <p className="text-xs text-white/30">Diversity of themes in Tamil cinema</p>
+            </div>
+            <div className="flex-1 min-h-[300px] flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={genreData}>
+                  <PolarGrid stroke="rgba(255,255,255,0.05)" />
+                  <PolarAngleAxis 
+                    dataKey="subject" 
+                    tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: 700 }} 
+                  />
+                  <Radar
+                    name="Films"
+                    dataKey="A"
+                    stroke={THEME.secondary}
+                    fill={THEME.secondary}
+                    fillOpacity={0.4}
+                    animationDuration={1500}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Rating Spread */}
+          <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 flex flex-col">
+            <div className="mb-8">
+              <h3 className="text-lg font-display font-extrabold flex items-center gap-2" style={{ fontFamily: "var(--font-display)" }}>
+                <Star size={18} style={{ color: THEME.accent }} /> Quality Analysis
+              </h3>
+              <p className="text-xs text-white/30">Spread of audience and critic ratings</p>
+            </div>
+            <div className="flex-1 min-h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={ratingData} layout="vertical" margin={{ left: 20 }}>
+                  <XAxis type="number" hide />
+                  <YAxis 
+                    dataKey="name" 
+                    type="category" 
+                    axisLine={false} 
+                    tickLine={false}
+                    tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 11, fontWeight: 700 }}
+                  />
+                  <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+                  <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={24} animationDuration={1800}>
+                    {ratingData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+
+        {/* Row 3: Platform Share & Top Directors */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* OTT Share */}
+          <div className="lg:col-span-1 bg-white/[0.02] border border-white/5 rounded-3xl p-8 flex flex-col">
+            <div className="mb-6">
+              <h3 className="text-lg font-display font-extrabold flex items-center gap-2" style={{ fontFamily: "var(--font-display)" }}>
+                <Monitor size={18} style={{ color: THEME.teal }} /> Platform Share
+              </h3>
+              <p className="text-xs text-white/30">OTT digital distribution</p>
+            </div>
+            <div className="flex-1 min-h-[250px] relative">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={ottData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                    animationDuration={1500}
+                  >
+                    {ottData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Digital</span>
+                <span className="text-xl font-display font-extrabold text-white" style={{ fontFamily: "var(--font-display)" }}>OTT</span>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2 mt-4">
+              {ottData.map((item, i) => (
+                <div key={item.name} className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.fill }} />
+                  <span className="text-[10px] font-bold text-white/40 truncate uppercase tracking-tighter">{item.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Top Directors */}
+          <div className="lg:col-span-2 bg-white/[0.02] border border-white/5 rounded-3xl p-8 flex flex-col">
+            <div className="mb-6">
+              <h3 className="text-lg font-display font-extrabold flex items-center gap-2" style={{ fontFamily: "var(--font-display)" }}>
+                <Users size={18} style={{ color: THEME.rose }} /> Top Directors
+              </h3>
+              <p className="text-xs text-white/30">Filmmakers with most catalogued titles</p>
+            </div>
+            <div className="flex-1 min-h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={directorData} layout="vertical" margin={{ left: 60 }}>
+                  <XAxis type="number" hide />
+                  <YAxis 
+                    dataKey="name" 
+                    type="category" 
+                    axisLine={false} 
+                    tickLine={false}
+                    tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: 700 }}
+                    width={100}
+                  />
+                  <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+                  <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={18} animationDuration={2000}>
+                    {directorData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={index % 2 === 0 ? THEME.rose : THEME.rose + '88'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  )
+}
+
+function KPIItem({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string, color: keyof typeof THEME }) {
+  return (
+    <div className="flex-shrink-0 flex items-center gap-3 bg-white/[0.03] border border-white/5 px-4 py-3 rounded-2xl hover:bg-white/[0.06] transition-colors cursor-default">
+      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: THEME[color] + '22', color: THEME[color] }}>
+        {icon}
       </div>
-    </>
+      <div>
+        <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest leading-none mb-1">{label}</p>
+        <p className="text-lg font-display font-extrabold text-white leading-none" style={{ fontFamily: "var(--font-display)" }}>{value}</p>
+      </div>
+    </div>
   )
 }

@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 import logging
 import json
 import gc
+import os
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -15,45 +16,63 @@ logger = logging.getLogger(__name__)
 df = None
 tfidf_matrix = None
 slugs_to_idx = {}
+rec_cache = {} # Simple in-memory cache
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global df, tfidf_matrix, slugs_to_idx
+    global df, tfidf_matrix, slugs_to_idx, rec_cache
     try:
-        with open('movies.json', 'r', encoding='utf-8') as f:
+        data_path = 'movies.json'
+        if not os.path.exists(data_path):
+            logger.error(f"{data_path} not found.")
+            yield
+            return
+
+        with open(data_path, 'r', encoding='utf-8') as f:
             raw = json.load(f)
+        
+        if not raw:
+            logger.error("movies.json is empty.")
+            yield
+            return
+
         df = pd.DataFrame(raw)
 
+        # ── Data Normalization ──
         df['genre'] = df['genre'].apply(lambda x: x if isinstance(x, list) else [])
-
+        
         def normalize_cast(items):
-            if not isinstance(items, list):
-                return []
-            return [item.get('name', '') if isinstance(item, dict) else (item if isinstance(item, str) else '') for item in items if isinstance(item, (dict, str))]
+            if not isinstance(items, list): return []
+            return [item.get('name', '') if isinstance(item, dict) else str(item) for item in items if item]
 
         df['cast'] = df['cast'].apply(normalize_cast)
-        df['director'] = df['director'].apply(lambda x: str(x) if pd.notna(x) else 'unknown')
+        df['director'] = df['director'].apply(lambda x: str(x).lower().strip() if pd.notna(x) else 'unknown')
         df['title'] = df['title'].apply(lambda x: str(x) if pd.notna(x) else 'untitled')
+        df['synopsis'] = df['synopsis'].apply(lambda x: str(x).lower() if pd.notna(x) else '')
         df['year'] = df['year'].apply(lambda x: int(x) if pd.notna(x) else 0)
         df['slug'] = df['slug'].apply(lambda x: str(x) if pd.notna(x) else '')
 
+        # ── Feature Engineering ──
+        # We weigh genres more by repeating them, and add synopsis for context
         df['features'] = (
-            df['genre'].apply(lambda x: ' '.join(x)) + ' ' +
-            df['director'] + ' ' +
-            df['cast'].apply(lambda x: ' '.join(x))
+            df['genre'].apply(lambda x: ' '.join(x * 2)) + ' ' + 
+            df['director'] + ' ' + 
+            df['cast'].apply(lambda x: ' '.join(x)) + ' ' +
+            df['synopsis'].apply(lambda x: ' '.join(x.split()[:50])) # First 50 words of synopsis
         )
 
         vectorizer = TfidfVectorizer(stop_words='english', max_features=5000)
         tfidf_matrix = vectorizer.fit_transform(df['features'])
+        
+        # Free up memory
         del df["features"]
         slugs_to_idx = {slug: idx for idx, slug in enumerate(df['slug'])}
+        rec_cache = {}
 
         del vectorizer
         gc.collect()
-        logger.info(f"Loaded {len(df)} movies successfully (sparse mode)")
+        logger.info(f"Loaded {len(df)} movies successfully (enhanced mode)")
 
-    except FileNotFoundError:
-        logger.error("movies.json not found.")
     except Exception as e:
         logger.error(f"Failed to load movie data: {e}")
 
@@ -62,12 +81,13 @@ async def lifespan(app: FastAPI):
     df = None
     tfidf_matrix = None
     slugs_to_idx = {}
+    rec_cache = {}
     gc.collect()
 
 app = FastAPI(
     title="KollywoodAI Recommendation Engine",
     description="Tamil movie recommendation API",
-    version="1.0.0",
+    version="1.1.0",
     lifespan=lifespan
 )
 
@@ -95,9 +115,18 @@ def recommend(
     if movie_slug not in slugs_to_idx:
         raise HTTPException(status_code=404, detail=f"Movie '{movie_slug}' not found")
 
+    # Check cache
+    cache_key = f"{movie_slug}_{n}"
+    if cache_key in rec_cache:
+        return rec_cache[cache_key]
+
     idx = slugs_to_idx[movie_slug]
     movie_vector = tfidf_matrix[idx:idx+1]
+    
+    # Compute similarity
     scores = cosine_similarity(movie_vector, tfidf_matrix).flatten()
+    
+    # Get top N excluding the movie itself
     top_indices = np.argsort(scores)[::-1][1:n+1]
 
     recommendations = []
@@ -109,11 +138,15 @@ def recommend(
             "score": round(float(scores[i]), 2)
         })
 
-    return {
+    result = {
         "movie": movie_slug,
         "total_results": len(recommendations),
         "recommendations": recommendations
     }
+    
+    # Save to cache
+    rec_cache[cache_key] = result
+    return result
 
 @app.get("/movies")
 def list_movies(
@@ -140,3 +173,11 @@ def list_movies(
             for _, row in slice.iterrows()
         ]
     }
+
+@app.post("/reload")
+def reload_data():
+    # This would ideally trigger the lifespan again or a similar reload logic
+    # For simplicity, we just clear the cache here if the file changed
+    global rec_cache
+    rec_cache = {}
+    return {"message": "Cache cleared"}

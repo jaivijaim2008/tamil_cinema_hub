@@ -10,6 +10,7 @@ import { urlFor } from '../../../sanity/lib/image'
 import MovieCard, { Movie } from '../../../components/MovieCard'
 import MovieCardErrorBoundary from '../../../components/MovieCardErrorBoundary'
 import CastPhoto from '../../../components/CastPhoto'
+import { Calendar, User, Tv, Star, ChevronLeft, Info, MessageSquare } from 'lucide-react'
 
 interface MovieDetailProps {
   params: Promise<{ slug: string }>
@@ -55,7 +56,7 @@ async function getRecommendations(slug: string): Promise<Movie[]> {
   if (!base) return []
   try {
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 8000)
+    const timeout = setTimeout(() => controller.abort(), 5000)
     const res = await fetch(`${base}/recommend/${slug}?n=6`, {
       next: { revalidate: 3600 },
       signal: controller.signal,
@@ -106,28 +107,20 @@ export async function generateMetadata({ params }: MovieDetailProps): Promise<Me
 const ptComponents = {
   block: {
     h2: ({ children }: any) => (
-      <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800, marginTop: 32, marginBottom: 12, color: 'rgba(255,255,255,0.92)' }}>{children}</h2>
+      <h2 className="font-display text-2xl font-extrabold mt-8 mb-4 text-white/90">{children}</h2>
     ),
     h3: ({ children }: any) => (
-      <h3 style={{ fontSize: 20, fontWeight: 700, marginTop: 24, marginBottom: 8, color: 'rgba(255,255,255,0.92)' }}>{children}</h3>
+      <h3 className="text-xl font-bold mt-6 mb-3 text-white/90">{children}</h3>
     ),
     normal: ({ children }: any) => (
-      <p style={{ lineHeight: 1.8, marginBottom: 16, fontSize: 15, color: 'rgba(255,255,255,0.5)' }}>{children}</p>
+      <p className="leading-relaxed mb-4 text-base text-white/50">{children}</p>
     ),
     blockquote: ({ children }: any) => (
-      <blockquote style={{ borderLeft: '3px solid var(--crimson)', background: 'rgba(212,41,26,0.08)', paddingLeft: 20, paddingRight: 16, paddingTop: 12, paddingBottom: 12, margin: '24px 0', fontStyle: 'italic', borderRadius: '0 8px 8px 0', color: 'rgba(255,255,255,0.5)' }}>
+      <blockquote className="border-l-4 border-crimson bg-crimson/5 pl-5 pr-4 py-4 my-6 italic rounded-r-xl text-white/60">
         {children}
       </blockquote>
     ),
   },
-}
-
-function Pill({ children }: { children: React.ReactNode }) {
-  return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', borderRadius: 6, paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, fontSize: 12, fontWeight: 600, background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.06)' }}>
-      {children}
-    </span>
-  )
 }
 
 export default async function MovieDetailPage({ params }: MovieDetailProps) {
@@ -167,205 +160,246 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
     },
   ]
 
-  const t = (v: string) => v // helper
-
   return (
-    <div style={{ background: 'var(--ink)', minHeight: '100vh' }}>
+    <div className="bg-ink min-h-screen pb-20">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      {/* Page Header */}
-      <div className="movie-detail-page-header" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 24px' }}>
-          <Link href="/movies" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 500, marginBottom: 24, color: 'rgba(255,255,255,0.35)', transition: 'color 0.2s', textDecoration: 'none' }}>
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-            </svg>
-            Back to Movies
+      {/* Hero Header */}
+      <div className="relative pt-32 pb-12 border-b border-white/5 overflow-hidden">
+        {/* Background Blur */}
+        <div className="absolute inset-0 z-0 opacity-20 blur-3xl" style={{ 
+          background: `radial-gradient(circle at 20% 30%, var(--crimson) 0%, transparent 50%), radial-gradient(circle at 80% 70%, var(--violet) 0%, transparent 50%)`
+        }} />
+        
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <Link href="/movies" className="inline-flex items-center gap-2 text-sm font-bold text-white/30 hover:text-white/70 transition-colors mb-8 group">
+            <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+            Back to Collection
           </Link>
 
-          <div className="movie-header-row">
-            {/* Poster */}
-            <div className="movie-poster-wrap">
-              <div style={{ borderRadius: 16, overflow: 'hidden', aspectRatio: '2/3', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start">
+            {/* Poster Card */}
+            <div className="w-48 md:w-64 flex-shrink-0 mx-auto md:mx-0">
+              <div className="aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl shadow-black/60 border border-white/10 relative group">
                 {posterUrl ? (
-                  <Image src={posterUrl} alt={movie.title} width={208} height={312} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <Image 
+                    src={posterUrl} 
+                    alt={movie.title} 
+                    width={256} 
+                    height={384} 
+                    sizes="(max-width: 768px) 192px, 256px"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                    priority
+                  />
                 ) : (
-                  <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24, textAlign: 'center', background: 'rgba(255,255,255,0.04)' }}>
-                    <span style={{ fontSize: 40, marginBottom: 12 }}>🎬</span>
-                    <p style={{ fontWeight: 700, fontSize: 14, color: 'rgba(255,255,255,0.92)' }}>{movie.title}</p>
-                    <p style={{ fontSize: 12, marginTop: 4, color: 'rgba(255,255,255,0.35)' }}>{movie.year}</p>
+                  <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-white/[0.04]">
+                    <Film size={48} className="text-white/20 mb-4" />
+                    <p className="font-bold text-lg text-white/90">{movie.title}</p>
+                    <p className="text-sm mt-2 text-white/30">{movie.year}</p>
                   </div>
                 )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             </div>
 
-            {/* Title & meta */}
-            <div className="movie-info-col">
-              <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 800, color: 'rgba(255,255,255,0.92)', lineHeight: 1, letterSpacing: '-0.02em' }}>
+            {/* Info Col */}
+            <div className="flex-1 text-center md:text-left">
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-4">
+                {movie.genre?.map(g => (
+                  <span key={g} className="px-3 py-1 rounded-full bg-crimson/10 border border-crimson/20 text-[10px] font-bold uppercase tracking-widest text-crimson">
+                    {g}
+                  </span>
+                ))}
+              </div>
+              
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-extrabold text-white tracking-tight leading-[0.9] mb-4">
                 {movie.title}
               </h1>
+              
               {movie.titleTanglish && movie.titleTanglish !== movie.title && (
-                <p style={{ marginTop: 8, fontSize: 16, fontWeight: 500, fontStyle: 'italic', color: 'var(--crimson)' }}>&quot;{movie.titleTanglish}&quot;</p>
+                <p className="text-xl md:text-2xl font-serif italic text-crimson mb-6">&quot;{movie.titleTanglish}&quot;</p>
               )}
 
-              <div style={{ marginTop: 20, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  {Array.from({ length: 5 }, (_, i) => {
-                    const filled = i < fullStars
-                    const half = !filled && i === fullStars && hasHalf
-                    return (
-                      <svg key={i} width="20" height="20" viewBox="0 0 20 20" fill={filled ? '#C8973A' : 'none'} stroke={filled || half ? '#C8973A' : 'rgba(255,255,255,0.1)'} strokeWidth="1.5">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    )
-                  })}
-                  <span style={{ marginLeft: 8, fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 18, color: '#C8973A' }}>{rating.toFixed(1)}</span>
-                  <span style={{ fontSize: 14, marginLeft: 2, color: 'rgba(255,255,255,0.35)' }}>/5</span>
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-6 mt-8">
+                <div className="flex items-center gap-1.5">
+                  <div className="flex gap-0.5">
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <Star 
+                        key={i} 
+                        size={18} 
+                        fill={i < fullStars ? "#F0B429" : "none"} 
+                        className={i < fullStars ? "text-accent" : "text-white/10"} 
+                      />
+                    ))}
+                  </div>
+                  <span className="ml-2 font-display font-extrabold text-2xl text-accent leading-none">{rating.toFixed(1)}</span>
+                  <span className="text-sm text-white/20 font-bold">/ 5.0</span>
                 </div>
-                <Pill>{movie.year}</Pill>
-                {movie.ottPlatform && <Pill>📺 {movie.ottPlatform}</Pill>}
+                
+                <div className="h-8 w-px bg-white/10 hidden md:block" />
+                
+                <div className="flex items-center gap-4">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest mb-1">Year</span>
+                    <span className="text-sm font-bold text-white/80">{movie.year}</span>
+                  </div>
+                  {movie.ottPlatform && (
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest mb-1">Streaming</span>
+                      <span className="text-sm font-bold text-white/80">{movie.ottPlatform}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="movie-detail-grid" style={{ maxWidth: 1280, margin: '0 auto', padding: '48px 24px' }}>
-
-        {/* Left Column */}
-        <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 40 }}>
-          {/* Synopsis */}
-          <section>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 12, color: 'var(--rose-light)', fontFamily: "'Syne', sans-serif" }}>Synopsis</p>
-            <p style={{ fontSize: 15, lineHeight: 1.8, maxWidth: 640, color: 'rgba(255,255,255,0.5)' }}>
-              {movie.synopsis || 'Synopsis not available yet.'}
-            </p>
-          </section>
-
-          {/* Director */}
-          {movie.director && (
+      {/* Content Grid */}
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
+          
+          {/* Main Info */}
+          <div className="lg:col-span-2 space-y-16">
+            
+            {/* Synopsis */}
             <section>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 16, color: 'var(--rose-light)', fontFamily: "'Syne', sans-serif" }}>Director</p>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, borderRadius: 12, padding: '12px 16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <div style={{ width: 44, height: 44, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#fff', fontSize: 18, background: 'var(--crimson)', flexShrink: 0 }}>
-                  {movie.director.charAt(0)}
-                </div>
-                <div>
-                  <p style={{ fontWeight: 700, fontSize: 14, color: 'rgba(255,255,255,0.92)' }}>{movie.director}</p>
-                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>Director</p>
-                </div>
+              <div className="flex items-center gap-2 mb-6">
+                <Info size={16} className="text-crimson" />
+                <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-white/40">The Story</h2>
               </div>
+              <p className="text-lg md:text-xl leading-relaxed text-white/60 font-medium max-w-3xl">
+                {movie.synopsis || 'Plot details are currently being updated by our editors.'}
+              </p>
             </section>
-          )}
 
-          {/* Cast */}
-          {movie.cast && movie.cast.length > 0 && (
-            <section>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-                <div>
-                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', marginBottom: 4, color: 'var(--rose-light)', fontFamily: "'Syne', sans-serif" }}>Cast</p>
-                  <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 18, color: 'rgba(255,255,255,0.92)' }}>Meet the Actors</h3>
+            {/* Cast Grid */}
+            {movie.cast && movie.cast.length > 0 && (
+              <section>
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-2">
+                    <User size={16} className="text-violet" />
+                    <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-white/40">Cast & Crew</h2>
+                  </div>
+                  <span className="text-[10px] font-bold px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/40 uppercase tracking-widest">
+                    {movie.cast.length} Members
+                  </span>
                 </div>
-                <span style={{ fontSize: 11, fontWeight: 700, paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, borderRadius: 6, background: 'rgba(212,41,26,0.08)', color: 'var(--crimson)', border: '1px solid rgba(212,41,26,0.15)' }}>
-                  {movie.cast.length} members
-                </span>
-              </div>
-
-              <div className="cast-grid">
-                {movie.cast.map((actor, idx) => {
-                  const name = getCastName(actor)
-                  const character = getCastCharacter(actor)
-                  const photo = getCastPhoto(actor)
-                  const initial = getCastInitial(actor)
-                  return (
-                    <div key={idx} style={{ borderRadius: 12, overflow: 'hidden', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', transition: 'all 0.3s' }}>
-                      <div style={{ position: 'relative', aspectRatio: '1/1', overflow: 'hidden' }}>
-                        {photo ? (
-                          <Image src={photo} alt={name} width={300} height={300} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', transition: 'transform 0.5s' }} />
-                        ) : (
-                          <CastPhoto photo={null} name={name} initial={initial} />
+                
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 md:gap-6">
+                  {movie.cast.map((actor, idx) => {
+                    const name = getCastName(actor)
+                    const character = getCastCharacter(actor)
+                    const photo = getCastPhoto(actor)
+                    const initial = getCastInitial(actor)
+                    return (
+                      <div key={idx} className="group">
+                        <div className="aspect-square rounded-2xl overflow-hidden bg-white/5 border border-white/5 mb-3 shadow-lg group-hover:border-violet/30 transition-colors">
+                          {photo ? (
+                            <Image src={photo} alt={name} width={200} height={200} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                          ) : (
+                            <CastPhoto photo={null} name={name} initial={initial} />
+                          )}
+                        </div>
+                        <p className="text-[11px] font-extrabold text-white/90 leading-tight truncate">{name}</p>
+                        {character && (
+                          <p className="text-[9px] text-white/30 font-bold truncate mt-0.5 italic">as {character}</p>
                         )}
                       </div>
-                      <div style={{ padding: '10px 10px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                        <p style={{ fontSize: 11, fontWeight: 900, lineHeight: 1.2, color: 'rgba(255,255,255,0.92)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</p>
-                        {character ? (
-                          <p style={{ fontSize: 10, marginTop: 2, fontStyle: 'italic', color: 'rgba(255,255,255,0.35)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>as {character}</p>
-                        ) : (
-                          <p style={{ fontSize: 10, marginTop: 2, color: 'rgba(255,255,255,0.2)' }}>Actor</p>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </section>
-          )}
+                    )
+                  })}
+                </div>
+              </section>
+            )}
 
-          {/* Review */}
-          {movie.review && (
-            <section>
-              <div style={{ height: 1, width: '100%', marginBottom: 32, background: 'rgba(255,255,255,0.06)' }} />
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', marginBottom: 20, color: 'var(--rose-light)', fontFamily: "'Syne', sans-serif" }}>Full Review</p>
-              <div style={{ borderRadius: 16, padding: '24px 32px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <PortableText value={movie.review} components={ptComponents} />
-              </div>
-            </section>
-          )}
-        </div>
-
-        {/* Right Sidebar */}
-        <div className="movie-detail-sidebar" style={{ position: 'sticky', top: 96, height: 'fit-content' }}>
-          <div style={{ borderRadius: 16, padding: 20, display: 'flex', flexDirection: 'column', gap: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-            {[
-              { icon: '📅', label: 'Year', value: String(movie.year) },
-              { icon: '🎬', label: 'Director', value: movie.director || '—' },
-              { icon: '📺', label: 'Streaming', value: movie.ottPlatform || '—' },
-            ].map(({ icon, label, value }) => (
-              <div key={label} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, fontSize: 13, paddingBottom: 12, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                <span style={{ fontWeight: 500, whiteSpace: 'nowrap', color: 'rgba(255,255,255,0.35)' }}>{icon} {label}</span>
-                <span style={{ fontWeight: 700, textAlign: 'right', lineHeight: 1.3, color: 'rgba(255,255,255,0.92)' }}>{value}</span>
-              </div>
-            ))}
+            {/* Review Section */}
+            {movie.review && (
+              <section className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 md:p-12">
+                <div className="flex items-center gap-2 mb-8">
+                  <MessageSquare size={16} className="text-accent" />
+                  <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-white/40">Critical Analysis</h2>
+                </div>
+                <div className="prose prose-invert max-w-none">
+                  <PortableText value={movie.review} components={ptComponents} />
+                </div>
+              </section>
+            )}
           </div>
 
-          {movie.genre && movie.genre.length > 0 && (
-            <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {movie.genre.map((g, i) => (
-                <span key={i} style={{ borderRadius: 6, paddingLeft: 10, paddingRight: 10, paddingTop: 4, paddingBottom: 4, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', background: 'rgba(212,41,26,0.1)', color: 'var(--crimson)', border: '1px solid rgba(212,41,26,0.15)' }}>
-                  {g}
-                </span>
-              ))}
+          {/* Sidebar */}
+          <div className="space-y-8">
+            <div className="bg-white/[0.03] border border-white/5 rounded-3xl p-8 sticky top-32">
+              <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-white/20 mb-6 pb-4 border-b border-white/5">Technical Specs</h3>
+              <div className="space-y-6">
+                <SpecItem icon={<Calendar size={14} />} label="Release Year" value={String(movie.year)} />
+                <SpecItem icon={<User size={14} />} label="Director" value={movie.director || 'N/A'} />
+                <SpecItem icon={<Tv size={14} />} label="Platform" value={movie.ottPlatform || 'Theatrical'} />
+                <SpecItem icon={<Info size={14} />} label="Movie ID" value={movie._id.slice(-8).toUpperCase()} />
+              </div>
+              
+              <div className="mt-10 pt-8 border-t border-white/5 flex flex-wrap gap-2">
+                {movie.genre?.map(g => (
+                  <span key={g} className="text-[9px] font-bold px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-white/40 uppercase tracking-widest hover:text-white/70 transition-colors cursor-default">
+                    {g}
+                  </span>
+                ))}
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
 
       {/* Recommendations */}
-      <Suspense fallback={null}>
+      <Suspense fallback={<RecommendationSkeleton />}>
         <MovieRecommendations slug={slug} />
       </Suspense>
     </div>
   )
 }
 
+function SpecItem({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) {
+  return (
+    <div className="flex items-start gap-4">
+      <div className="text-white/20 pt-1">{icon}</div>
+      <div>
+        <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mb-1">{label}</p>
+        <p className="text-sm font-bold text-white/80 leading-tight">{value}</p>
+      </div>
+    </div>
+  )
+}
+
+function RecommendationSkeleton() {
+  return (
+    <section className="max-w-7xl mx-auto px-6 py-20 border-t border-white/5">
+      <div className="h-6 w-48 bg-white/5 rounded-full mb-8 animate-pulse" />
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="aspect-[2/3] bg-white/5 rounded-2xl animate-pulse" />
+        ))}
+      </div>
+    </section>
+  )
+}
+
 async function MovieRecommendations({ slug }: { slug: string }) {
   const recommendations = await getRecommendations(slug)
   if (!recommendations.length) return null
+  
   return (
-    <section style={{ padding: '64px 0', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px' }}>
-        <div style={{ marginBottom: 32 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', marginBottom: 4, color: 'var(--rose-light)', fontFamily: "'Syne', sans-serif" }}>You Might Like</p>
-          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800, color: 'rgba(255,255,255,0.92)' }}>Similar Movies</h2>
-        </div>
-        <div className="movies-grid-pill reveal-group">
-          {recommendations.map((rec, i) => (
-            <MovieCardErrorBoundary key={rec._id} title={rec.title}>
-              <MovieCard movie={rec} index={i} />
-            </MovieCardErrorBoundary>
-          ))}
-        </div>
+    <section className="max-w-7xl mx-auto px-6 py-20 border-t border-white/5">
+      <div className="mb-10">
+        <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-crimson mb-2">Discovery</h2>
+        <h3 className="text-2xl font-display font-extrabold text-white">Similar Movies</h3>
+      </div>
+      
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
+        {recommendations.map((rec, i) => (
+          <MovieCardErrorBoundary key={rec._id} title={rec.title}>
+            <MovieCard movie={rec} index={i} />
+          </MovieCardErrorBoundary>
+        ))}
       </div>
     </section>
   )

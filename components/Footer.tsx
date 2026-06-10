@@ -1,8 +1,15 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
 export default function Footer() {
+  const [year, setYear] = useState<number | string>(2026)
+
+  useEffect(() => {
+    setYear(new Date().getFullYear())
+  }, [])
+
   return (
     <footer className="footer-dark">
       <div className="footer-grid-dark">
@@ -32,7 +39,7 @@ export default function Footer() {
       </div>
       <div className="footer-divider-dark" />
       <div className="footer-bottom-dark">
-        <span>© {new Date().getFullYear()} TamilCinemaHub. All rights reserved.</span>
+        <span>© {year} TamilCinemaHub. All rights reserved.</span>
         <span>Made with <span className="heart">❤️</span> for Tamil cinema fans</span>
       </div>
     </footer>
