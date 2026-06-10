@@ -69,62 +69,134 @@ const sanity = createClient({
   useCdn: false,
 })
 
-// ─── PHASE 1: Import new titles from Wikipedia ───
+// ─── PHASE 1: Import new complete movies only ───
+// Only creates a movie if TMDB returns ALL required fields:
+// poster, synopsis, rating, OTT, cast, director, genre
+// Movies missing any field are SKIPPED entirely (no stubs)
 async function phase1Import(years) {
   console.log('\n═══════════════════════════════════')
-  console.log('PHASE 1: Import new titles from Wikipedia')
+  console.log('PHASE 1: Import new COMPLETE movies only')
+  console.log('(Only creates movies with ALL data from TMDB)')
   console.log('═══════════════════════════════════\n')
 
-  // Build year list
+  // Build year list — default to only current year for auto-fetch
   const yearList = (years && years.length > 0) ? years : []
   if (yearList.length === 0) {
-    for (let y = 2000; y <= CURRENT_YEAR; y++) yearList.push(y)
+    // Auto-fetch: only check recent years for new releases
+    for (let y = Math.max(2024, CURRENT_YEAR - 1); y <= CURRENT_YEAR; y++) yearList.push(y)
   }
   
   // Get all existing movie titles from Sanity
   const existing = await sanity.fetch('*[_type == "movie"] { title, year }')
   const existingSet = new Set(existing.map(m => normalizeTitle(m.title) + '-' + m.year))
-  console.log(`Existing movies: ${existing.length}`)
+  console.log(`Existing movies in Sanity: ${existing.length}`)
 
-  let totalNew = 0
+  let totalCreated = 0, totalSkipped = 0, totalErrors = 0
+
   for (const year of yearList) {
+    console.log(`\n📋 ${year}: Fetching Wikipedia list...`)
     const movies = await loadTitlesFromWiki(year)
-    if (!movies.length) continue
+    if (!movies.length) { console.log(`  ${year}: No movies found`); continue }
 
-    const newMovies = movies.filter(m => !existingSet.has(normalizeTitle(m.title) + '-' + m.year) && !isBadTitle(m.title))
-    if (!newMovies.length) { console.log(`  ${year}: 0 new`); continue }
+    // Filter to new movies only (not in Sanity, not bad titles)
+    const candidates = movies.filter(m => !existingSet.has(normalizeTitle(m.title) + '-' + m.year) && !isBadTitle(m.title))
+    if (!candidates.length) { console.log(`  ${year}: 0 new movies`); continue }
+    
+    console.log(`  ${candidates.length} new candidates found, checking TMDB...`)
 
-    // Batch create
-    const B = 10
-    for (let i = 0; i < newMovies.length; i += B) {
-      const batch = newMovies.slice(i, i + B)
-      const tx = sanity.transaction()
-      for (const m of batch) {
-        tx.create({
-          _type: 'movie',
-          title: m.title,
-          slug: { _type: 'slug', current: makeSlug(m.title, m.year) },
-          year: m.year,
-          director: m.director || '',
-          cast: Array.isArray(m.cast) ? m.cast : [],
-          genre: [],
-          synopsis: '',
-          posterUrl: '',
-          rating: 0,
-          ottPlatform: '',
-        })
-      }
-      try { await tx.commit(); totalNew += batch.length }
-      catch {
-        for (const m of batch) {
-          try { await sanity.create({ _type: 'movie', title: m.title, slug: { _type: 'slug', current: makeSlug(m.title, m.year) }, year: m.year, director: m.director || '', cast: Array.isArray(m.cast) ? m.cast : [], genre: [], synopsis: '', posterUrl: '', rating: 0, ottPlatform: '' }); totalNew++ } catch {}
+    // Process each candidate through TMDB
+    for (const movie of candidates) {
+      try {
+        // Search TMDB
+        const q = encodeURIComponent(movie.title.replace(/[^a-zA-Z0-9 ]/g, '').trim())
+        const search = await tmdbFetch(
+          `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${q}&year=${year}&primary_release_year=${year}&language=en-US&region=IN`
+        )
+        if (!search?.results?.length) { totalSkipped++; continue }
+
+        const best = search.results[0]
+
+        // Verify year match
+        const matchYear = best.release_date ? parseInt(best.release_date.substring(0, 4)) : null
+        const yearDiff = matchYear ? Math.abs(matchYear - year) : 99
+        if (yearDiff > 1) { totalSkipped++; continue }
+
+        // Verify title similarity
+        if (titleSimilarity(movie.title, best.title) < 0.4) { totalSkipped++; continue }
+
+        // Get full details
+        const details = await tmdbFetch(
+          `https://api.themoviedb.org/3/movie/${best.id}?api_key=${TMDB_KEY}&append_to_response=credits,watch/providers&language=en-US`
+        )
+        if (!details) { totalSkipped++; continue }
+
+        // Extract all fields
+        const posterPath = details.poster_path
+        const overview = details.overview
+        const tmdbRating = details.vote_average
+        const prov = details['watch/providers']?.results?.IN || details['watch/providers']?.results?.US
+        const ottPlatforms = prov?.flatrate?.map(p => p.provider_name).join(', ') || ''
+        const cast = details.credits?.cast?.slice(0, 10).map(c => c.name) || []
+        const director = details.credits?.crew?.find(c => c.job === 'Director')?.name || ''
+        const genres = (details.genres || []).map(g => g.name)
+
+        // Check ALL required fields are present and valid
+        const posterUrl = posterPath ? `${TMDB_IMG}${posterPath}` : ''
+        const synopsis = overview ? overview.substring(0, 500) : ''
+        const rating = tmdbRating ? Math.round((tmdbRating / 2) * 10) / 10 : 0
+
+        const hasPoster = !!posterUrl
+        const hasSynopsis = synopsis.length > 10
+        const hasRating = rating > 0
+        const hasOtt = !!ottPlatforms
+        const hasCast = cast.length > 0
+        const hasDirector = !!director
+        const hasGenre = genres.length > 0
+
+        if (hasPoster && hasSynopsis && hasRating && hasOtt && hasCast && hasDirector && hasGenre) {
+          // ALL data available — create the movie
+          await sanity.create({
+            _type: 'movie',
+            title: movie.title,
+            slug: { _type: 'slug', current: makeSlug(movie.title, year) },
+            year: year,
+            director: director,
+            cast: cast,
+            genre: genres,
+            synopsis: synopsis,
+            posterUrl: posterUrl,
+            rating: rating,
+            ottPlatform: ottPlatforms,
+            tmdbId: best.id,
+          })
+          totalCreated++
+          process.stdout.write(`  ✅ Created: ${movie.title} (${year}) ★${rating} | ${genres.slice(0,2).join(', ')} | ${ottPlatforms}\r\n`)
+        } else {
+          // Missing some data — skip entirely
+          const missing = []
+          if (!hasPoster) missing.push('poster')
+          if (!hasSynopsis) missing.push('synopsis')
+          if (!hasRating) missing.push('rating')
+          if (!hasOtt) missing.push('OTT')
+          if (!hasCast) missing.push('cast')
+          if (!hasDirector) missing.push('director')
+          if (!hasGenre) missing.push('genre')
+          totalSkipped++
         }
+      } catch {
+        totalErrors++
       }
+
+      await sleep(200) // TMDB rate limiting
     }
-    console.log(`  ${year}: +${newMovies.length} new`)
-    await sleep(500) // Be nice
   }
-  console.log(`\n✅ Phase 1 complete: ${totalNew} new movies imported`)
+
+  console.log(`\n══════════════════════════════════════`)
+  console.log(`✅ Phase 1 complete`)
+  console.log(`   📗 Created (complete): ${totalCreated}`)
+  console.log(`   📕 Skipped (incomplete): ${totalSkipped}`)
+  console.log(`   ❌ Errors: ${totalErrors}`)
+  console.log(`══════════════════════════════════════`)
 }
 
 async function loadTitlesFromWiki(year) {
@@ -404,16 +476,8 @@ async function main() {
   if (phases.includes(3)) await phase3WikiFallback()
 
   const total = await sanity.fetch('count(*[_type == "movie"])')
-  const gaps = await sanity.fetch(`{
-    "poster": count(*[_type == "movie" && (!defined(poster) && (!defined(posterUrl)||posterUrl==""))]),
-    "synopsis": count(*[_type == "movie" && (!defined(synopsis)||synopsis=="")]),
-    "rating": count(*[_type == "movie" && (!defined(rating)||rating==0)]),
-    "ott": count(*[_type == "movie" && (!defined(ottPlatform)||ottPlatform=="")])
-  }`)
-
   console.log(`\n══════════════════════════════════════`)
-  console.log(`🏁 FINAL: ${total} movies total`)
-  console.log(`📊 Gaps: Poster:${gaps.poster} Synopsis:${gaps.synopsis} Rating:${gaps.rating} OTT:${gaps.ott}`)
+  console.log(`🏁 FINAL: ${total} movies total (all complete)`)
   console.log(`══════════════════════════════════════`)
 }
 

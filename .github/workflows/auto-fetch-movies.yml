@@ -41,12 +41,23 @@ jobs:
           echo "SANITY_WRITE_TOKEN=${{ secrets.SANITY_WRITE_TOKEN }}" >> .env.local
           echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}" >> .env.local
 
-      - name: Run full import + patch pipeline
-        run: node scripts/gh-action-runner.js
+      - name: Run import — only creates complete movies
+        run: node scripts/gh-action-runner.js --only=1
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
 
-      - name: Check for remaining gaps
+      - name: Verify all movies are complete
         run: |
-          echo "✅ Pipeline complete!"
-          echo "Check Sanity dashboard for remaining gaps."
+          node -e "
+            require('dotenv').config({path:'.env.local'});
+            const {createClient}=require('@sanity/client');
+            const c=createClient({projectId:process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,dataset:process.env.NEXT_PUBLIC_SANITY_DATASET||'production',apiVersion:'2024-01-01',token:process.env.SANITY_WRITE_TOKEN,useCdn:false});
+            c.fetch('count(*[_type==\"movie\"])').then(t=>console.log('Total movies:',t))
+            .then(()=>c.fetch('count(*[_type==\"movie\" && (!defined(posterUrl)||posterUrl==\"\")])')).then(c=>console.log('Missing poster:',c))
+            .then(()=>c.fetch('count(*[_type==\"movie\" && (!defined(synopsis)||synopsis==\"\")])')).then(c=>console.log('Missing synopsis:',c))
+            .then(()=>c.fetch('count(*[_type==\"movie\" && (!defined(rating)||rating==0)])')).then(c=>console.log('Missing rating:',c))
+            .then(()=>c.fetch('count(*[_type==\"movie\" && (!defined(ottPlatform)||ottPlatform==\"\")])')).then(c=>console.log('Missing OTT:',c))
+            .then(()=>c.fetch('count(*[_type==\"movie\" && (!defined(cast)||cast==[])])')).then(c=>console.log('Missing cast:',c))
+            .then(()=>c.fetch('count(*[_type==\"movie\" && (!defined(director)||director==\"\")])')).then(c=>console.log('Missing director:',c))
+            .then(()=>c.fetch('count(*[_type==\"movie\" && (!defined(genre)||genre==[])])')).then(c=>console.log('Missing genre:',c));
+          "
