@@ -27,7 +27,7 @@ export default function RatingStars({ rating, maxStars = 5, size = 14, showValue
     <span className="inline-flex items-center gap-1">
       <span className="inline-flex gap-0.5">{stars}</span>
       {showValue && (
-        <span className="text-sm font-bold text-text-primary ml-1">{rating.toFixed(1)}</span>
+        <span className="text-sm font-bold text-text-primary ml-1">{Number(rating).toFixed(1)}</span>
       )}
     </span>
   )

@@ -74,7 +74,7 @@ export default function HomePageClient({
           <div className="flex items-center justify-center gap-6 md:gap-10 mt-10 md:mt-14">
             <StatPill icon={<Film size={14} />} value={totalMovies.toLocaleString()} label="Movies" />
             <StatPill icon={<BookOpen size={14} />} value={totalBlogs.toLocaleString()} label="Reviews" />
-            <StatPill icon={<Star size={14} />} value={avgRating.toFixed(1)} label="Avg Rating" />
+            <StatPill icon={<Star size={14} />} value={Number(avgRating).toFixed(1)} label="Avg Rating" />
           </div>
         </div>
       </section>

@@ -548,7 +548,7 @@ function fmtList(movies: any[], heading: string): string {
   movies.forEach((m, i) => {
     const cast = m.cast?.map((c: any) => c.name).filter(Boolean).join(', ') || 'N/A'
     const genres = m.genre?.join(', ') || 'N/A'
-    const rating = m.rating != null ? ` ⭐ ${m.rating.toFixed(1)}/5` : ''
+    const rating = m.rating != null ? ` ⭐ ${Number(m.rating).toFixed(1)}/5` : ''
     const ott = m.ottPlatform ? ` | 📺 ${m.ottPlatform}` : ''
     const poster = getPosterUrl(m)
     const img = poster ? `[poster:${poster}]` : ''
@@ -569,7 +569,7 @@ function fmtDetail(m: any): string {
   out += `🎭 Director: ${m.director || 'N/A'}\n`
   out += `👥 Cast: ${cast}\n`
   out += `🏷️ Genre: ${genres}\n`
-  if (m.rating != null) out += `⭐ Rating: ${m.rating.toFixed(1)}/5\n`
+  if (m.rating != null) out += `⭐ Rating: ${Number(m.rating).toFixed(1)}/5\n`
   if (m.ottPlatform) out += `📺 Streaming: ${m.ottPlatform}\n`
   if (m.synopsis) out += `\n📝 ${m.synopsis}\n`
   out += `\n[View full details →](/movies/${m.slug})`
@@ -863,7 +863,7 @@ async function generateResponse(
       if (!movies.length) return `No results found for ${label}.`
       let s = `── ${label} ──\n`
       movies.forEach(m => {
-        s += `• [${m.title}](/movies/${m.slug}) (${m.year})  ⭐ ${m.rating != null ? m.rating.toFixed(1) : 'N/A'}/5\n`
+        s += `• [${m.title}](/movies/${m.slug}) (${m.year})  ⭐ ${m.rating != null ? Number(m.rating).toFixed(1) : 'N/A'}/5\n`
         if (m.director) s += `  🎬 ${m.director}\n`
       })
       return s

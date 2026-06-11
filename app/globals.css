@@ -29,12 +29,9 @@
   --color-error: #ef4444;
   --color-warning: #f59e0b;
 
-  /* Fonts */
+  /* Fonts — Next.js sets --font-playfair, --font-inter, --font-mono on <html> */
   --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
   --font-display: var(--font-playfair), Georgia, serif;
-  --font-playfair: var(--font-playfair), Georgia, serif;
-  --font-inter: var(--font-inter), system-ui, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Animations */
   --animate-fade-in: fade-in 0.4s ease-out both;
@@ -91,6 +88,12 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+/* ── Font utilities (reference Next.js CSS variables on <html>) ──────────── */
+.font-playfair { font-family: var(--font-playfair), Georgia, serif; }
+.font-inter { font-family: var(--font-inter), system-ui, sans-serif; }
+.font-mono { font-family: var(--font-mono), ui-monospace, monospace; }
+.font-display { font-family: var(--font-playfair), Georgia, serif; }
 
 /* ── Utility classes ────────────────────────────────────────────────────────── */
 .text-gradient-gold {

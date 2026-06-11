@@ -26,7 +26,7 @@ export default function AIChatModal({ open, onClose }: Props) {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: q }),
+        body: JSON.stringify({ messages: [{ role: 'user', content: q }] }),
       })
       const data = await res.json()
       setMessages((prev) => [...prev, { role: 'ai', text: data.reply || data.error || 'No response.' }])
