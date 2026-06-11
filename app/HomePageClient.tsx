@@ -15,12 +15,19 @@ import CinemaBackground from '../components/graphics/CinemaBackground'
 import FilmStripDecoration from '../components/graphics/FilmStripDecoration'
 import TickerBar from '../components/graphics/TickerBar'
 
+interface GenreCount {
+  genre: string
+  count: number
+}
+
 interface Props {
   movies: Movie[]
   blogs: any[]
   recentTitles: string[]
   totalMovies: number
   totalBlogs: number
+  genreCounts: GenreCount[]
+  avgRating: number
 }
 
 const barColors = [
@@ -41,45 +48,26 @@ const statCards = [
   { label: 'AI Powered', suffix: '', color: 'rose' as const },
 ]
 
-export default function HomePageClient({ movies, blogs, recentTitles, totalMovies, totalBlogs }: Props) {
+export default function HomePageClient({ movies, blogs, recentTitles, totalMovies, totalBlogs, genreCounts, avgRating: serverAvgRating }: Props) {
   const section2Ref = useRef(null)
   const section2InView = useInView(section2Ref, { once: true, margin: '-100px' })
 
   const featuredBlog = blogs[0]
 
-  // Compute real genre stats from the fetched movies data
-  // Note: totalMovies/totalBlogs come from server-side count queries for accurate totals
-  const { genreStats, avgRating } = useMemo(() => {
-    const genreMap = new Map<string, number>()
-    let ratingSum = 0
-    let ratingCount = 0
-
-    movies.forEach((m) => {
-      const genres = Array.isArray(m.genre) ? m.genre : m.genre ? [m.genre] : []
-      genres.forEach((g) => {
-        if (g) genreMap.set(g, (genreMap.get(g) || 0) + 1)
-      })
-      if (m.rating) {
-        ratingSum += m.rating
-        ratingCount++
-      }
-    })
-
-    const sortedGenres = Array.from(genreMap.entries())
-      .sort((a, b) => b[1] - a[1])
+  // Use real server-provided genre counts and avg rating from the entire Sanity database
+  const genreStats = useMemo(() => {
+    const maxCount = Math.max(...genreCounts.map((g) => g.count), 1)
+    return genreCounts
       .slice(0, 8)
-      .map(([name, count], i) => ({
-        name,
-        count,
-        pct: Math.round((count / Math.max(...Array.from(genreMap.values()))) * 100),
+      .map((g, i) => ({
+        name: g.genre,
+        count: g.count,
+        pct: Math.round((g.count / maxCount) * 100),
         color: barColors[i % barColors.length],
       }))
+  }, [genreCounts])
 
-    return {
-      genreStats: sortedGenres,
-      avgRating: ratingCount > 0 ? Math.round((ratingSum / ratingCount) * 10) / 10 : 0,
-    }
-  }, [movies])
+  const avgRating = serverAvgRating
 
   return (
     <>

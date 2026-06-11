@@ -107,6 +107,15 @@ export const relatedBlogsQuery = `*[_type == "blog" && category == $category && 
 export const allMovieSlugsQuery = `*[_type == "movie"].slug.current`
 export const allBlogSlugsQuery = `*[_type == "blog"].slug.current`
 
+// ── Genre counts (server-side, for homepage) ─────────────────────────────────
+export const genreCountsQuery = `
+  array::compact(*[_type == "movie"].genre[]) 
+  | order(@) 
+  | { "genre": @, "count": count(*) }
+`
+
+export const avgRatingQuery = `math::avg(*[_type == "movie" && defined(rating)].rating)`
+
 // ── Paginated listings ────────────────────────────────────────────────────────
 
 const MOVIE_FIELDS = `_id, title, titleTanglish, "slug": slug.current, year, director, cast, genre, rating, poster, posterUrl, backdropUrl, synopsis, ottPlatform, tmdbId`
