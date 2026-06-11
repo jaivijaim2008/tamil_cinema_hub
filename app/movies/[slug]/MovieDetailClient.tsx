@@ -17,15 +17,16 @@ interface Props {
 export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Props) {
   return (
     <div className="min-h-screen pt-16 md:pt-20 pb-16">
-      {/* Backdrop */}
+      {/* Cinematic Full Screen Backdrop */}
       {backdropUrl && (
-        <div className="relative h-[30vh] md:h-[40vh] overflow-hidden">
-          <Image src={backdropUrl} alt="" fill className="object-cover" priority />
-          <div className="absolute inset-0 bg-gradient-to-t from-bg-primary via-bg-primary/60 to-transparent" />
+        <div className="fixed inset-0 z-[-1] pointer-events-none">
+          <Image src={backdropUrl} alt="" fill className="object-cover opacity-[0.15]" priority />
+          <div className="absolute inset-0 bg-gradient-to-b from-bg-primary/40 via-bg-primary/80 to-bg-primary" />
+          <div className="absolute inset-0 bg-gradient-to-t from-bg-primary via-bg-primary/90 to-transparent" />
         </div>
       )}
 
-      <div className={`max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 ${backdropUrl ? '-mt-24 relative' : 'pt-8'}`}>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         {/* Breadcrumb */}
         <Link
           href="/movies"
@@ -123,14 +124,17 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
               <div className="mb-6">
                 <h2 className="text-sm font-semibold text-text-primary mb-2 uppercase tracking-wide">Cast</h2>
                 <div className="flex flex-wrap gap-2">
-                  {movie.cast.map((name) => (
-                    <span
-                      key={name}
-                      className="text-sm text-text-secondary glassmorphism hover:bg-white/5 transition-colors rounded-lg px-3 py-1.5"
-                    >
-                      {name}
-                    </span>
-                  ))}
+                  {movie.cast.map((name: any, idx) => {
+                    const castName = typeof name === 'string' ? name : name?.name || 'Unknown';
+                    return (
+                      <span
+                        key={castName + idx}
+                        className="text-sm text-text-secondary glassmorphism hover:bg-white/5 transition-colors rounded-lg px-3 py-1.5"
+                      >
+                        {castName}
+                      </span>
+                    )
+                  })}
                 </div>
               </div>
             )}

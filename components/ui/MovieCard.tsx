@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Film, Star } from 'lucide-react'
 import type { Movie } from '@/lib/types'
+import { motion } from 'framer-motion'
 import { getRatingColor } from '@/lib/constants'
 import { urlFor } from '@/sanity/lib/image'
 
@@ -30,7 +31,7 @@ interface Props {
 }
 
 export default function MovieCard({ movie, index = 0 }: Props) {
-  const imageUrl = movie.poster
+  const imageUrl = movie.poster?.asset
     ? urlFor(movie.poster).width(500).height(750).url()
     : movie.posterUrl || null
 
@@ -39,27 +40,33 @@ export default function MovieCard({ movie, index = 0 }: Props) {
   return (
     <Link
       href={`/movies/${movie.slug}`}
-      className="group block"
-      style={{ animationDelay: `${index * 60}ms` }}
+      className="group block outline-none"
     >
-      {/* Poster */}
-      <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-bg-card border border-border group-hover:border-accent-gold/30 transition-all duration-300">
+      {/* Poster with 3D Hover & Glassmorphism */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-40px" }}
+        transition={{ duration: 0.6, delay: Math.min(index * 0.05, 0.5), ease: "easeOut" }}
+        whileHover={{ y: -8, scale: 1.03 }}
+        className="relative aspect-[2/3] rounded-xl overflow-hidden glass-card border border-white/5 group-hover:border-accent-gold/40 group-focus-visible:border-accent-gold/40 transition-colors duration-300 shadow-xl"
+      >
         {imageUrl ? (
           <Image
             src={imageUrl}
             alt={movie.title}
             fill
             sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 20vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-text-muted">
+          <div className="w-full h-full flex items-center justify-center text-text-muted bg-bg-surface">
             <Film size={32} />
           </div>
         )}
 
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
 
         {/* Rating badge */}
         {movie.rating != null && movie.rating > 0 && (
@@ -71,11 +78,11 @@ export default function MovieCard({ movie, index = 0 }: Props) {
 
         {/* Year tag */}
         <div className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <span className="text-[10px] font-bold text-white/80 bg-black/60 backdrop-blur-sm rounded-md px-2 py-1">
+          <span className="text-[10px] font-bold text-white/90 glassmorphism rounded-md px-2 py-1">
             {movie.year}
           </span>
         </div>
-      </div>
+      </motion.div>
 
       {/* Info */}
       <div className="mt-3 px-0.5">
