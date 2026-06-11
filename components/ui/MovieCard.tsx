@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Film, Star } from 'lucide-react'
@@ -31,9 +32,13 @@ interface Props {
 }
 
 export default function MovieCard({ movie, index = 0 }: Props) {
+  const [imageError, setImageError] = useState(false)
+  
   const imageUrl = movie.poster?.asset
     ? urlFor(movie.poster).width(500).height(750).url()
     : movie.posterUrl || null
+
+  const displayImage = !imageError && imageUrl
 
   const ratingColor = movie.rating ? getRatingColor(movie.rating) : '#666'
 
@@ -51,13 +56,14 @@ export default function MovieCard({ movie, index = 0 }: Props) {
         whileHover={{ y: -8, scale: 1.03 }}
         className="relative aspect-[2/3] rounded-xl overflow-hidden glass-card border border-white/5 group-hover:border-accent-gold/40 group-focus-visible:border-accent-gold/40 transition-colors duration-300 shadow-xl"
       >
-        {imageUrl ? (
+        {displayImage ? (
           <Image
-            src={imageUrl}
+            src={displayImage}
             alt={movie.title}
             fill
             sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 20vw"
             className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+            onError={() => setImageError(true)}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-text-muted bg-bg-surface">

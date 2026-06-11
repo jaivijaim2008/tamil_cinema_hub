@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Star, Calendar, User, Monitor, ArrowLeft, Film } from 'lucide-react'
@@ -15,12 +16,18 @@ interface Props {
 }
 
 export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Props) {
+  const [posterError, setPosterError] = useState(false)
+  const [backdropError, setBackdropError] = useState(false)
+
+  const displayPoster = !posterError && posterUrl
+  const displayBackdrop = !backdropError && backdropUrl
+
   return (
     <div className="min-h-screen pt-16 md:pt-20 pb-16">
       {/* Cinematic Full Screen Backdrop */}
-      {backdropUrl && (
+      {displayBackdrop && (
         <div className="fixed inset-0 z-[-1] pointer-events-none">
-          <Image src={backdropUrl} alt="" fill className="object-cover opacity-[0.15]" priority />
+          <Image src={displayBackdrop} alt="" fill className="object-cover opacity-[0.15]" priority onError={() => setBackdropError(true)} />
           <div className="absolute inset-0 bg-gradient-to-b from-bg-primary/40 via-bg-primary/80 to-bg-primary" />
           <div className="absolute inset-0 bg-gradient-to-t from-bg-primary via-bg-primary/90 to-transparent" />
         </div>
@@ -39,14 +46,15 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
           {/* Poster */}
           <div className="shrink-0 w-48 md:w-64 mx-auto md:mx-0">
             <div className="relative aspect-[2/3] rounded-xl overflow-hidden glass-card">
-              {posterUrl ? (
+              {displayPoster ? (
                 <Image
-                  src={posterUrl}
+                  src={displayPoster}
                   alt={movie.title}
                   fill
                   sizes="(max-width: 768px) 192px, 256px"
                   className="object-cover"
                   priority
+                  onError={() => setPosterError(true)}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-text-muted">
