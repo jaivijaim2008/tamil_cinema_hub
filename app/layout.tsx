@@ -1,36 +1,27 @@
 import type { Metadata, Viewport } from 'next'
-import { Syne, DM_Sans, Playfair_Display, Noto_Serif_Tamil } from 'next/font/google'
+import { Playfair_Display, Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
-import SpatialEnvironment from '../components/SpatialEnvironment'
-
-const syne = Syne({
-  subsets: ['latin'],
-  variable: '--font-display',
-  weight: ['700', '800'],
-  display: 'swap',
-})
-
-const dmSans = DM_Sans({
-  subsets: ['latin'],
-  variable: '--font-sans',
-  weight: ['400', '500', '700', '900'],
-  display: 'swap',
-})
+import Navbar from '../components/layout/Navbar'
+import Footer from '../components/layout/Footer'
+import BottomNav from '../components/layout/BottomNav'
+import AIChatBubble from '../components/ui/AIChatBubble'
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
-  variable: '--font-serif',
-  weight: ['700', '900'],
-  style: ['normal', 'italic'],
+  variable: '--font-playfair',
   display: 'swap',
 })
 
-const notoTamil = Noto_Serif_Tamil({
-  subsets: ['tamil'],
-  variable: '--font-tamil',
-  weight: ['600', '700'],
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+})
+
+const mono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  weight: ['400', '500', '700'],
   display: 'swap',
 })
 
@@ -38,26 +29,39 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover' as const,
-  themeColor: '#000000',
+  themeColor: '#E8B84B',
 }
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://tamilcinemahub.xyz'),
   title: {
-    default: 'TamilCinemaHub — Spatial Cinematic Database',
+    default: 'TamilCinemaHub — Tamil Cinema Archive',
     template: '%s | TamilCinemaHub',
   },
-  description: 'The definitive 3D archive of Tamil cinema. Experience films through spatial storytelling.',
+  description: 'A high-fidelity archive of 1,600+ Tamil films. Discover, explore, and rediscover Kollywood.',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'TamilCinemaHub',
+  },
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${syne.variable} ${dmSans.variable} ${playfair.variable} ${notoTamil.variable}`}>
-      <body className="antialiased">
-        <SpatialEnvironment />
+    <html lang="en" className={`${playfair.variable} ${inter.variable} ${mono.variable}`}>
+      <body className="bg-bg-primary text-text-primary font-inter antialiased overflow-x-hidden">
+        <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-accent-gold focus:text-text-inverse focus:px-4 focus:py-2 focus:rounded-lg">
+          Skip to content
+        </a>
+        <div id="top" />
         <Navbar />
-        <main id="spatial-root">{children}</main>
+        <main id="main" className="pb-[76px] lg:pb-0">
+          {children}
+        </main>
         <Footer />
+        <BottomNav />
+        <AIChatBubble />
       </body>
     </html>
   )
