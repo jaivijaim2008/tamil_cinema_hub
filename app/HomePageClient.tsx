@@ -8,6 +8,7 @@ import type { GenreCount } from '@/lib/types'
 import MovieCard from '@/components/ui/MovieCard'
 import BlogCard from '@/components/ui/BlogCard'
 import { urlFor } from '@/sanity/lib/image'
+import HeroBanner from '@/components/ui/HeroBanner'
 
 interface GenreCountItem {
   genre: string
@@ -34,50 +35,7 @@ export default function HomePageClient({
 }: Props) {
   return (
     <div className="min-h-screen">
-      {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-bg-primary pt-20 md:pt-24 pb-12 md:pb-16">
-        {/* Subtle background glow */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-accent-gold/5 rounded-full blur-[120px]" />
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="max-w-3xl mx-auto text-center">
-            <span className="inline-block text-[11px] font-bold uppercase tracking-[0.25em] text-accent-gold mb-4">
-              Tamil Cinema Archive
-            </span>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-text-primary leading-[1.1] mb-4">
-              Discover <span className="text-gradient-gold">Kollywood</span>
-            </h1>
-            <p className="text-base md:text-lg text-text-secondary max-w-xl mx-auto mb-8">
-              A curated archive of {totalMovies.toLocaleString()}+ Tamil films — from timeless classics to modern blockbusters.
-            </p>
-            <div className="flex items-center justify-center gap-3">
-              <Link
-                href="/movies"
-                className="inline-flex items-center gap-2 bg-accent-gold text-text-inverse px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-accent-gold-dim transition-colors"
-              >
-                <Film size={16} />
-                Browse Movies
-              </Link>
-              <Link
-                href="/analytics"
-                className="inline-flex items-center gap-2 bg-bg-card border border-border text-text-secondary px-5 py-2.5 rounded-xl text-sm font-semibold hover:text-text-primary hover:border-border-light transition-all"
-              >
-                <TrendingUp size={16} />
-                View Analytics
-              </Link>
-            </div>
-          </div>
-
-          {/* Stats row */}
-          <div className="flex items-center justify-center gap-6 md:gap-10 mt-10 md:mt-14">
-            <StatPill icon={<Film size={14} />} value={totalMovies.toLocaleString()} label="Movies" />
-            <StatPill icon={<BookOpen size={14} />} value={totalBlogs.toLocaleString()} label="Reviews" />
-            <StatPill icon={<Star size={14} />} value={Number(avgRating).toFixed(1)} label="Avg Rating" />
-          </div>
-        </div>
-      </section>
+      <HeroBanner title="Discover Kollywood" subtitle={`A curated archive of ${totalMovies.toLocaleString()}+ Tamil films — from timeless classics to modern blockbusters.`} backgroundUrl="/hero_banner_1781191195124.png" ctaText="Browse Movies" ctaHref="/movies" />
 
       {/* ── Latest Movies ─────────────────────────────────────────────────── */}
       {movies.length > 0 && (

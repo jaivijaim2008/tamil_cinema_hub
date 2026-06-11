@@ -37,7 +37,7 @@ export default function BlogCard({ blog, index = 0, variant = 'default' }: Props
   if (variant === 'featured') {
     return (
       <Link href={`/blogs/${blog.slug}`} className="group block">
-        <div className="relative aspect-[16/7] rounded-2xl overflow-hidden bg-bg-card border border-border group-hover:border-accent-gold/20 transition-all duration-300">
+        <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-bg-card border border-border group-hover:border-accent-gold/20 transition-all duration-300">
           {imageUrl && (
             <Image
               src={imageUrl}
@@ -84,7 +84,7 @@ export default function BlogCard({ blog, index = 0, variant = 'default' }: Props
 
   return (
     <Link href={`/blogs/${blog.slug}`} className="group block">
-      <div className="relative aspect-[16/9] rounded-xl overflow-hidden bg-bg-card border border-border group-hover:border-accent-gold/20 transition-all duration-300">
+      <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-bg-card border border-border group-hover:border-accent-gold/20 transition-all duration-300">
         {imageUrl && (
           <Image
             src={imageUrl}

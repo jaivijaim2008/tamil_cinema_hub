@@ -8,6 +8,7 @@ import type { Movie } from '@/lib/types'
 import { motion } from 'framer-motion'
 import { getRatingColor } from '@/lib/constants'
 import { urlFor } from '@/sanity/lib/image'
+import type { CastMember } from '@/lib/types'
 
 export interface MovieCardMovie {
   _id: string
@@ -20,7 +21,7 @@ export interface MovieCardMovie {
   poster?: any
   posterUrl?: string | null
   genre?: string[]
-  cast?: string[]
+  cast?: (string | CastMember)[]
 }
 
 // Re-export the core type that server pages import from here
