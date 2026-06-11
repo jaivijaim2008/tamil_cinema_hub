@@ -90,17 +90,6 @@ interface Props {
    CONSTANTS — Bar Colors & Film Trivia
    ═══════════════════════════════════════════════════════════════════════════════ */
 
-const barColors = [
-  'from-accent-gold to-accent-gold-dim',
-  'from-accent-red to-accent-red-bright',
-  'from-accent-rose to-accent-rose-bright',
-  'from-accent-emerald to-accent-emerald-bright',
-  'from-accent-purple to-accent-purple-bright',
-  'from-accent-blue to-accent-blue-bright',
-  'from-accent-teal to-accent-teal-bright',
-  'from-accent-amber to-accent-amber-bright',
-]
-
 const barColorSolid = [
   '#E8B84B',
   '#C0392B',
@@ -111,8 +100,6 @@ const barColorSolid = [
   '#06B6D4',
   '#F59E0B',
 ]
-
-/* ── Mail icon imported at top level ── */
 
 const filmTrivia = [
   { icon: '🎬', text: 'The first Tamil talkie film, Kalidas, was released in 1931' },
@@ -696,7 +683,6 @@ export default function HomePageClient({
       name: g.genre,
       count: g.count,
       pct: Math.round((g.count / maxCount) * 100),
-      color: barColors[i % barColors.length],
       colorSolid: barColorSolid[i % barColorSolid.length],
     }))
   }, [genreCounts])

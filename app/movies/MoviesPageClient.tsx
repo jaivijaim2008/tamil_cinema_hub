@@ -431,7 +431,6 @@ export default function MoviesPageClient({
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [sortMode, setSortMode] = useState<SortMode>('default')
   const [showGenreExplorer, setShowGenreExplorer] = useState(false)
-  const [localSearch, setLocalSearch] = useState('')
   const sentinelRef = useRef<HTMLDivElement>(null)
   const pageRef = useRef(currentPage)
 
@@ -527,12 +526,6 @@ export default function MoviesPageClient({
     })
     return counts
   }, [movies])
-
-  /* ── Filtered genres for search ────────────────────────────────────────────── */
-  const filteredGenres = useMemo(() => {
-    if (!localSearch) return genres
-    return genres.filter((g) => g.toLowerCase().includes(localSearch.toLowerCase()))
-  }, [genres, localSearch])
 
   const hasActiveFilters = !!selectedGenre || !!searchQuery
 
