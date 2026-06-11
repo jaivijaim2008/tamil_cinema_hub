@@ -41,12 +41,7 @@ const barColors = [
   'from-accent-amber to-accent-amber-bright',
 ]
 
-const statCards = [
-  { label: 'Movies', suffix: '+', color: 'gold' as const },
-  { label: 'Years', suffix: '+', color: 'teal' as const },
-  { label: 'Reviews', suffix: '+', color: 'purple' as const },
-  { label: 'AI Powered', suffix: '', color: 'rose' as const },
-]
+
 
 export default function HomePageClient({ movies, blogs, recentTitles, totalMovies, totalBlogs, genreCounts, avgRating: serverAvgRating }: Props) {
   const section2Ref = useRef(null)
