@@ -3,133 +3,119 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { Search } from 'lucide-react'
-import SearchOverlay from '../ui/SearchOverlay'
+import { Film, Search, Menu, X } from 'lucide-react'
 
-const navLinks = [
-  { href: '/movies', label: 'Movies' },
-  { href: '/blogs', label: 'Reviews' },
-  { href: '/analytics', label: 'Analytics' },
-  { href: '/recommendations', label: 'Recommendations' },
+const NAV_LINKS = [
+  { label: 'Movies', href: '/movies' },
+  { label: 'Reviews', href: '/blogs' },
+  { label: 'Analytics', href: '/analytics' },
+  { label: 'Recommendations', href: '/recommendations' },
+  { label: 'About', href: '/about' },
 ]
 
 export default function Navbar() {
-  const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
-  const [searchOpen, setSearchOpen] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const pathname = usePathname()
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 10)
+    const onScroll = () => setScrolled(window.scrollY > 32)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // Close mobile menu on route change
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault()
-        setSearchOpen(true)
-      }
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [])
+    setMobileOpen(false)
+  }, [pathname])
 
   return (
     <>
-      {/* Desktop Navbar (≥1024px) */}
       <header
-        className={`hidden lg:block sticky top-0 z-50 transition-all duration-300 ${
-          scrolled ? 'glass border-b border-border-subtle' : 'bg-transparent'
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled ? 'bg-bg-primary/90 backdrop-blur-xl border-b border-border' : 'bg-transparent'
         }`}
-        style={{ height: 64 }}
       >
-        <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 shrink-0">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-accent-gold animate-glowPulse">
-              <rect x="1" y="1" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="1.5" />
-              <rect x="11" y="1" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="1.5" />
-              <rect x="1" y="11" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="1.5" />
-              <rect x="11" y="11" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="1.5" />
-            </svg>
-            <span className="text-xl font-bold">
-              <span className="text-gradient-gold">Tamil</span>
-              <span className="text-text-primary">CinemaHub</span>
-            </span>
-          </Link>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14 md:h-16">
+            {/* Brand */}
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <div className="w-8 h-8 rounded-lg bg-accent-gold flex items-center justify-center group-hover:bg-accent-gold-dim transition-colors">
+                <Film size={16} className="text-text-inverse" strokeWidth={2.5} />
+              </div>
+              <span className="text-base font-bold text-text-primary tracking-tight">
+                Tamil<span className="text-accent-gold">Cinema</span>Hub
+              </span>
+            </Link>
 
-          {/* Nav Links */}
-          <nav className="flex items-center gap-1" aria-label="Main navigation">
-            {navLinks.map((link) => {
-              const active = pathname === link.href || pathname.startsWith(link.href + '/')
-              return (
+            {/* Desktop nav */}
+            <nav className="hidden md:flex items-center gap-1">
+              {NAV_LINKS.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`relative px-4 py-2 text-sm font-medium transition-colors ${
-                    active ? 'text-accent-gold' : 'text-text-secondary hover:text-text-primary'
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    pathname === link.href || pathname.startsWith(link.href + '/')
+                      ? 'text-accent-gold bg-accent-gold-muted'
+                      : 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated'
                   }`}
-                  aria-current={active ? 'page' : undefined}
                 >
                   {link.label}
-                  {active && (
-                    <motion.div
-                      layoutId="nav-indicator"
-                      className="absolute bottom-0 left-2 right-2 h-0.5 bg-accent-gold rounded-full"
-                      transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                    />
-                  )}
                 </Link>
-              )
-            })}
-          </nav>
+              ))}
+            </nav>
 
-          {/* Search */}
-          <button
-            onClick={() => setSearchOpen(true)}
-            className="rounded-full p-2 hover:bg-accent-gold-muted transition-colors"
-            aria-label="Search movies"
-          >
-            <Search size={18} className="text-text-secondary" />
-          </button>
-        </div>
-      </header>
+            {/* Right actions */}
+            <div className="flex items-center gap-2">
+              <Link
+                href="/movies"
+                className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-bg-card border border-border text-text-muted text-sm hover:text-text-primary hover:border-border-light transition-all"
+              >
+                <Search size={14} />
+                <span className="text-xs">Search</span>
+              </Link>
 
-      {/* Mobile/Tablet Navbar (<1024px) */}
-      <header
-        className={`lg:hidden fixed top-0 left-0 right-0 z-50 safe-top transition-all duration-300 ${
-          scrolled ? 'glass border-b border-border-subtle' : 'bg-transparent'
-        }`}
-        style={{ height: 56 }}
-      >
-        <div className="px-4 h-full flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" className="text-accent-gold">
-              <rect x="1" y="1" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="1.5" />
-              <rect x="11" y="1" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="1.5" />
-              <rect x="1" y="11" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="1.5" />
-              <rect x="11" y="11" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="1.5" />
-            </svg>
-            <span className="text-lg font-bold">
-              <span className="text-gradient-gold">Tamil</span>
-              <span className="text-text-primary">CinemaHub</span>
-            </span>
-          </Link>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="p-2 rounded-full hover:bg-accent-gold-muted transition-colors min-w-[48px] min-h-[48px] flex items-center justify-center"
-              aria-label="Search movies"
-            >
-              <Search size={18} className="text-text-secondary" />
-            </button>
+              <button
+                onClick={() => setMobileOpen(true)}
+                className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
+                aria-label="Open menu"
+              >
+                <Menu size={20} />
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
-      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-[60] md:hidden">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
+          <div className="absolute top-0 right-0 bottom-0 w-72 bg-bg-primary border-l border-border p-6 flex flex-col animate-slide-in-right">
+            <div className="flex items-center justify-between mb-8">
+              <span className="text-sm font-bold text-text-primary">Menu</span>
+              <button onClick={() => setMobileOpen(false)} className="text-text-muted hover:text-text-primary" aria-label="Close menu">
+                <X size={20} />
+              </button>
+            </div>
+            <nav className="flex flex-col gap-1">
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    pathname === link.href || pathname.startsWith(link.href + '/')
+                      ? 'text-accent-gold bg-accent-gold-muted'
+                      : 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
     </>
   )
 }

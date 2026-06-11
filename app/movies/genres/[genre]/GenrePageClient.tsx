@@ -1,0 +1,44 @@
+'use client'
+
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
+import type { Movie } from '@/lib/types'
+import MovieCard from '@/components/ui/MovieCard'
+import PageHeader from '@/components/ui/PageHeader'
+import EmptyState from '@/components/ui/EmptyState'
+
+interface Props {
+  genre: string
+  movies: Movie[]
+}
+
+export default function GenrePageClient({ genre, movies }: Props) {
+  return (
+    <div className="min-h-screen pt-20 md:pt-24 pb-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Link
+          href="/movies"
+          className="inline-flex items-center gap-1.5 text-xs text-text-muted hover:text-text-primary transition-colors mb-6"
+        >
+          <ArrowLeft size={12} /> All Movies
+        </Link>
+
+        <PageHeader
+          label="Genre"
+          title={genre}
+          description={`${movies.length} ${genre} films in the archive`}
+        />
+
+        {movies.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+            {movies.map((movie, i) => (
+              <MovieCard key={movie._id} movie={movie} index={i} />
+            ))}
+          </div>
+        ) : (
+          <EmptyState title={`No ${genre} movies found`} description="Check back later as the archive grows." />
+        )}
+      </div>
+    </div>
+  )
+}

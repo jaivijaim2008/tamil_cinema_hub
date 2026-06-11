@@ -1,82 +1,79 @@
 'use client'
 
 import Link from 'next/link'
-
-const footerLinks = {
-  Explore: [
-    { label: 'Movies', href: '/movies' },
-    { label: 'Reviews', href: '/blogs' },
-    { label: 'Analytics', href: '/analytics' },
-    { label: 'Recommendations', href: '/recommendations' },
-  ],
-  Company: [
-    { label: 'About', href: '/about' },
-    { label: 'Contact', href: '/contact' },
-    { label: 'Privacy Policy', href: '/privacy-policy' },
-  ],
-  Community: [
-    { label: 'GitHub', href: 'https://github.com' },
-    { label: 'Twitter', href: 'https://twitter.com' },
-  ],
-}
+import { Film } from 'lucide-react'
 
 export default function Footer() {
-  return (
-    <footer className="hidden lg:block bg-bg-secondary border-t border-border-subtle">
-      {/* Film strip ticker */}
-      <div className="w-full overflow-hidden py-3 bg-bg-secondary border-b border-border-subtle">
-        <div className="flex gap-8 animate-filmroll whitespace-nowrap" style={{ width: '200%' }}>
-          {Array.from({ length: 30 }).map((_, i) => (
-            <span key={i} className="text-text-muted font-mono text-xs tracking-widest uppercase shrink-0">
-              {i % 2 === 0 ? '◆' : '·'} TamilCinemaHub
-            </span>
-          ))}
-        </div>
-      </div>
+  const year = new Date().getFullYear()
 
-      <div className="max-w-7xl mx-auto px-8 py-16">
-        <div className="grid grid-cols-4 gap-12">
+  return (
+    <footer className="bg-bg-secondary border-t border-border">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           {/* Brand */}
-          <div className="col-span-1">
-            <Link href="/" className="text-xl font-bold">
-              <span className="text-gradient-gold">Tamil</span>
-              <span className="text-text-primary">CinemaHub</span>
+          <div className="md:col-span-1">
+            <Link href="/" className="flex items-center gap-2.5 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-accent-gold flex items-center justify-center">
+                <Film size={16} className="text-text-inverse" strokeWidth={2.5} />
+              </div>
+              <span className="text-base font-bold text-text-primary tracking-tight">
+                Tamil<span className="text-accent-gold">Cinema</span>Hub
+              </span>
             </Link>
-            <p className="mt-4 text-text-secondary text-sm leading-relaxed">
-              The definitive archive of Tamil cinema. Discover, explore, and rediscover Kollywood.
+            <p className="text-xs text-text-muted leading-relaxed">
+              A high-fidelity archive of Tamil films. Discover, explore, and rediscover Kollywood.
             </p>
-            <div className="mt-6 flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-accent-emerald animate-pulse" />
-              <span className="text-accent-emerald text-xs font-medium">Database Active</span>
-            </div>
           </div>
 
-          {/* Link columns */}
-          {Object.entries(footerLinks).map(([title, links]) => (
-            <div key={title}>
-              <h4 className="text-text-primary font-semibold text-sm uppercase tracking-wider mb-5">{title}</h4>
-              <ul className="space-y-3.5">
-                {links.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-text-secondary text-sm hover:text-accent-gold transition-colors duration-200"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {/* Explore */}
+          <div>
+            <h4 className="text-[11px] font-bold uppercase tracking-widest text-text-muted mb-4">Explore</h4>
+            <ul className="space-y-2.5">
+              <FooterLink href="/movies">All Movies</FooterLink>
+              <FooterLink href="/blogs">Reviews</FooterLink>
+              <FooterLink href="/analytics">Analytics</FooterLink>
+              <FooterLink href="/recommendations">Recommendations</FooterLink>
+            </ul>
+          </div>
+
+          {/* Genres */}
+          <div>
+            <h4 className="text-[11px] font-bold uppercase tracking-widest text-text-muted mb-4">Genres</h4>
+            <ul className="space-y-2.5">
+              <FooterLink href="/movies?genre=Action">Action</FooterLink>
+              <FooterLink href="/movies?genre=Drama">Drama</FooterLink>
+              <FooterLink href="/movies?genre=Comedy">Comedy</FooterLink>
+              <FooterLink href="/movies?genre=Thriller">Thriller</FooterLink>
+            </ul>
+          </div>
+
+          {/* Info */}
+          <div>
+            <h4 className="text-[11px] font-bold uppercase tracking-widest text-text-muted mb-4">Info</h4>
+            <ul className="space-y-2.5">
+              <FooterLink href="/about">About</FooterLink>
+              <FooterLink href="/contact">Contact</FooterLink>
+              <FooterLink href="/privacy-policy">Privacy Policy</FooterLink>
+            </ul>
+          </div>
         </div>
 
-        {/* Bottom strip */}
-        <div className="mt-16 pt-8 border-t border-border-subtle flex items-center justify-between">
-          <p className="text-text-muted text-xs">&copy; {new Date().getFullYear()} TamilCinemaHub. All rights reserved.</p>
-          <p className="text-text-muted text-xs">Built with Next.js &amp; Sanity</p>
+        {/* Bottom bar */}
+        <div className="mt-12 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-xs text-text-muted">© {year} TamilCinemaHub. All rights reserved.</p>
+          <p className="text-xs text-text-muted">Made for Tamil cinema lovers</p>
         </div>
       </div>
     </footer>
+  )
+}
+
+function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <li>
+      <Link href={href} className="text-sm text-text-secondary hover:text-text-primary transition-colors">
+        {children}
+      </Link>
+    </li>
   )
 }
