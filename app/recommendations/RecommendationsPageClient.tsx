@@ -39,10 +39,10 @@ interface Props {
    ═══════════════════════════════════════════════════════════════════════════════ */
 
 const steps = [
-  { icon: Search, title: 'Search', desc: 'Tell us what you like — genre, mood, actor, or era', color: 'accent-gold' },
-  { icon: Wand2, title: 'AI Analyze', desc: 'Our AI scans 1,600+ films for the perfect match', color: 'accent-purple' },
-  { icon: Target, title: 'Smart Match', desc: 'Get personalized recommendations tailored to you', color: 'accent-teal' },
-  { icon: Rocket, title: 'Discover', desc: 'Find your next favorite Tamil film', color: 'accent-rose' },
+  { icon: Search, title: 'Search', desc: 'Tell us what you like — genre, mood, actor, or era', bg: 'bg-accent-gold-muted', border: 'border-accent-gold', text: 'text-accent-gold' },
+  { icon: Wand2, title: 'AI Analyze', desc: 'Our AI scans 1,600+ films for the perfect match', bg: 'bg-accent-purple-muted', border: 'border-accent-purple', text: 'text-accent-purple' },
+  { icon: Target, title: 'Smart Match', desc: 'Get personalized recommendations tailored to you', bg: 'bg-accent-teal-muted', border: 'border-accent-teal', text: 'text-accent-teal' },
+  { icon: Rocket, title: 'Discover', desc: 'Find your next favorite Tamil film', bg: 'bg-accent-rose-muted', border: 'border-accent-rose', text: 'text-accent-rose' },
 ]
 
 const genreColors: Record<string, string> = {
@@ -116,8 +116,8 @@ function StepCard({ step, index, total }: { step: typeof steps[0]; index: number
         <div className="hidden lg:block absolute top-7 left-[60%] right-[-40%] h-px border-t-2 border-dashed border-border-accent z-0" />
       )}
 
-      <div className={`relative z-10 w-14 h-14 rounded-full bg-${step.color}-muted border-2 border-${step.color} flex items-center justify-center mx-auto mb-5 shadow-lg`}>
-        <step.icon size={22} className={`text-${step.color}`} />
+      <div className={`relative z-10 w-14 h-14 rounded-full ${step.bg} border-2 ${step.border} flex items-center justify-center mx-auto mb-5 shadow-lg`}>
+        <step.icon size={22} className={step.text} />
       </div>
       <h3 className="text-text-primary font-semibold text-base mb-2">{step.title}</h3>
       <p className="text-text-muted text-sm max-w-[200px] mx-auto">{step.desc}</p>

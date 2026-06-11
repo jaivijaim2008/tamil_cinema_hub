@@ -51,12 +51,12 @@ interface Props {
    ═══════════════════════════════════════════════════════════════════════════════ */
 
 const techStack = [
-  { name: 'Next.js 15', desc: 'React framework with App Router, server components, and streaming', icon: Code, color: 'accent-gold' },
-  { name: 'Sanity CMS', desc: 'Headless content management with real-time collaboration', icon: Database, color: 'accent-purple' },
-  { name: 'Tailwind CSS', desc: 'Utility-first styling with custom design tokens', icon: Globe, color: 'accent-teal' },
-  { name: 'AI Engine', desc: 'Intelligent movie recommendations powered by our custom AI', icon: Sparkles, color: 'accent-rose' },
-  { name: 'Framer Motion', desc: 'Production-ready animations and transitions', icon: Zap, color: 'accent-amber' },
-  { name: 'Recharts', desc: 'Beautiful, composable data visualizations', icon: Target, color: 'accent-emerald' },
+  { name: 'Next.js 15', desc: 'React framework with App Router, server components, and streaming', icon: Code, iconBg: 'bg-accent-gold-muted', iconText: 'text-accent-gold' },
+  { name: 'Sanity CMS', desc: 'Headless content management with real-time collaboration', icon: Database, iconBg: 'bg-accent-purple-muted', iconText: 'text-accent-purple' },
+  { name: 'Tailwind CSS', desc: 'Utility-first styling with custom design tokens', icon: Globe, iconBg: 'bg-accent-teal-muted', iconText: 'text-accent-teal' },
+  { name: 'AI Engine', desc: 'Intelligent movie recommendations powered by our custom AI', icon: Sparkles, iconBg: 'bg-accent-rose-muted', iconText: 'text-accent-rose' },
+  { name: 'Framer Motion', desc: 'Production-ready animations and transitions', icon: Zap, iconBg: 'bg-accent-amber-muted', iconText: 'text-accent-amber' },
+  { name: 'Recharts', desc: 'Beautiful, composable data visualizations', icon: Target, iconBg: 'bg-accent-emerald-muted', iconText: 'text-accent-emerald' },
 ]
 
 const values = [
@@ -64,25 +64,25 @@ const values = [
     icon: Shield,
     title: 'Accuracy',
     description: 'Every film entry is carefully curated and verified. We believe in presenting the truth of Tamil cinema.',
-    accent: 'accent-gold',
+    iconBg: 'bg-accent-gold-muted', iconText: 'text-accent-gold', glow: 'bg-accent-gold/5', glowHover: 'group-hover:bg-accent-gold/10',
   },
   {
     icon: Heart,
     title: 'Passion',
     description: 'Built by cinephiles, for cinephiles. Our love for Tamil cinema drives every feature we build.',
-    accent: 'accent-rose',
+    iconBg: 'bg-accent-rose-muted', iconText: 'text-accent-rose', glow: 'bg-accent-rose/5', glowHover: 'group-hover:bg-accent-rose/10',
   },
   {
     icon: Globe,
     title: 'Accessibility',
     description: 'Making Tamil cinema discoverable worldwide. No paywalls, no barriers — just great films.',
-    accent: 'accent-teal',
+    iconBg: 'bg-accent-teal-muted', iconText: 'text-accent-teal', glow: 'bg-accent-teal/5', glowHover: 'group-hover:bg-accent-teal/10',
   },
   {
     icon: Rocket,
     title: 'Innovation',
     description: 'Using modern AI and web technologies to reimagine how we explore and discuss cinema.',
-    accent: 'accent-purple',
+    iconBg: 'bg-accent-purple-muted', iconText: 'text-accent-purple', glow: 'bg-accent-purple/5', glowHover: 'group-hover:bg-accent-purple/10',
   },
 ]
 
@@ -146,9 +146,9 @@ function ValueCard({ value, index }: { value: typeof values[0]; index: number })
       whileHover={{ y: -6, scale: 1.01 }}
       className="bg-bg-card border border-border-subtle rounded-2xl p-8 card-shine group relative overflow-hidden"
     >
-      <div className={`absolute -top-10 -right-10 w-28 h-28 rounded-full bg-${value.accent}/5 group-hover:bg-${value.accent}/10 transition-colors duration-500`} />
-      <div className={`w-14 h-14 rounded-2xl bg-${value.accent}-muted flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
-        <value.icon size={24} className={`text-${value.accent}`} strokeWidth={1.5} />
+      <div className={`absolute -top-10 -right-10 w-28 h-28 rounded-full ${value.glow} ${value.glowHover} transition-colors duration-500`} />
+      <div className={`w-14 h-14 rounded-2xl ${value.iconBg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+        <value.icon size={24} className={value.iconText} strokeWidth={1.5} />
       </div>
       <h3 className="font-playfair text-xl text-text-primary mb-3">{value.title}</h3>
       <p className="text-text-secondary text-sm leading-relaxed">{value.description}</p>
@@ -167,8 +167,8 @@ function TechCard({ tech, index }: { tech: typeof techStack[0]; index: number })
       whileHover={{ x: 4 }}
       className="flex items-start gap-5 p-5 rounded-xl bg-bg-card border border-border-subtle hover:border-border-accent transition-all group"
     >
-      <div className={`w-12 h-12 rounded-xl bg-${tech.color}-muted flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
-        <tech.icon size={20} className={`text-${tech.color}`} />
+      <div className={`w-12 h-12 rounded-xl ${tech.iconBg} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
+        <tech.icon size={20} className={tech.iconText} />
       </div>
       <div>
         <h3 className="text-text-primary font-semibold text-base mb-1 group-hover:text-accent-gold transition-colors">{tech.name}</h3>

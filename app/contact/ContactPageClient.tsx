@@ -45,7 +45,8 @@ const contactMethods = [
     value: 'hello@tamilcinemahub.xyz',
     description: 'For general inquiries and feedback',
     href: 'mailto:hello@tamilcinemahub.xyz',
-    accent: 'accent-gold',
+    iconBg: 'bg-accent-gold-muted',
+    iconText: 'text-accent-gold',
   },
   {
     icon: Globe,
@@ -53,7 +54,8 @@ const contactMethods = [
     value: '@TamilCinemaHub',
     description: 'Follow us for updates and discussions',
     href: 'https://twitter.com',
-    accent: 'accent-blue',
+    iconBg: 'bg-accent-blue-muted',
+    iconText: 'text-accent-blue',
   },
   {
     icon: Sparkles,
@@ -61,7 +63,8 @@ const contactMethods = [
     value: 'tamilcinema-hub',
     description: 'Open source contributions welcome',
     href: 'https://github.com',
-    accent: 'accent-purple',
+    iconBg: 'bg-accent-purple-muted',
+    iconText: 'text-accent-purple',
   },
 ]
 
@@ -104,8 +107,8 @@ function ContactMethodCard({ method, index }: { method: typeof contactMethods[0]
         rel={method.href.startsWith('http') ? 'noopener noreferrer' : undefined}
         className="block bg-bg-card border border-border-subtle rounded-2xl p-6 card-shine group hover:border-border-accent transition-all"
       >
-        <div className={`w-12 h-12 rounded-xl bg-${method.accent}-muted flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-          <method.icon size={20} className={`text-${method.accent}`} />
+        <div className={`w-12 h-12 rounded-xl ${method.iconBg} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+          <method.icon size={20} className={method.iconText} />
         </div>
         <h3 className="text-text-primary font-semibold text-base mb-1 group-hover:text-accent-gold transition-colors">{method.title}</h3>
         <p className="text-text-secondary text-sm mb-2">{method.value}</p>
