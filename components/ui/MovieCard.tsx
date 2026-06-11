@@ -79,7 +79,7 @@ export default function MovieCard({ movie, index = 0 }: Props) {
         {movie.rating != null && movie.rating > 0 && (
           <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/70 backdrop-blur-sm rounded-lg px-2 py-1">
             <Star size={10} className="fill-current" style={{ color: ratingColor }} />
-            <span className="text-xs font-bold text-white">{Number(movie.rating).toFixed(1)}</span>
+            <span className="text-xs font-bold text-white">{Number(normalizeRating(movie.rating)).toFixed(1)}</span>
           </div>
         )}
 

@@ -9,7 +9,7 @@ import {
   Cell,
   AreaChart, Area, CartesianGrid,
 } from 'recharts'
-import type { MovieAnalytics } from '@/lib/types'
+import { normalizeRating } from '@/lib/rating'
 import PageHeader from '@/components/ui/PageHeader'
 
 interface Props {
@@ -26,7 +26,8 @@ export default function AnalyticsPageClient({ movies, totalCount }: Props) {
     const yearMap = new Map<number, number>()
     const genreMap = new Map<string, number>()
     const directorMap = new Map<string, number>()
-    const ratingBuckets = [0, 0, 0, 0, 0] // 0-2, 2-3, 3-4, 4-4.5, 4.5-5
+// ratingBuckets will be defined below
+    const ratingBuckets = [0, 0, 0, 0, 0] // 0-1, 1-2, 2-3, 3-4, 4-5
     let ratingSum = 0
     let ratedCount = 0
 
@@ -35,12 +36,13 @@ export default function AnalyticsPageClient({ movies, totalCount }: Props) {
       m.genre?.forEach((g) => genreMap.set(g, (genreMap.get(g) || 0) + 1))
       if (m.director) directorMap.set(m.director, (directorMap.get(m.director) || 0) + 1)
       if (m.rating != null) {
-        ratingSum += m.rating
+        const norm = normalizeRating(m.rating)
+        ratingSum += norm
         ratedCount++
-        if (m.rating < 2) ratingBuckets[0]++
-        else if (m.rating < 3) ratingBuckets[1]++
-        else if (m.rating < 4) ratingBuckets[2]++
-        else if (m.rating < 4.5) ratingBuckets[3]++
+        if (norm < 1) ratingBuckets[0]++
+        else if (norm < 2) ratingBuckets[1]++
+        else if (norm < 3) ratingBuckets[2]++
+        else if (norm < 4) ratingBuckets[3]++
         else ratingBuckets[4]++
       }
     }
@@ -66,6 +68,7 @@ export default function AnalyticsPageClient({ movies, totalCount }: Props) {
       { label: 'Excellent (4.5+)', count: ratingBuckets[4], fill: '#E8B84B' },
     ]
 
+    const fiveStarCount = movies.filter(m => m.rating === 5).length;
     return {
       yearData,
       genreData: genreData.slice(0, 10),
@@ -75,6 +78,7 @@ export default function AnalyticsPageClient({ movies, totalCount }: Props) {
       ratedCount,
       minYear: yearData.length > 0 ? yearData[0].year : 0,
       maxYear: yearData.length > 0 ? yearData[yearData.length - 1].year : 0,
+      fiveStarCount,
     }
   }, [movies])
 
