@@ -130,17 +130,33 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
             {/* Cast */}
             {movie.cast && movie.cast.length > 0 && (
               <div className="mb-6">
-                <h2 className="text-sm font-semibold text-text-primary mb-2 uppercase tracking-wide">Cast</h2>
-                <div className="flex flex-wrap gap-2">
-                  {movie.cast.map((name: any, idx) => {
-                    const castName = typeof name === 'string' ? name : name?.name || 'Unknown';
+                <h2 className="text-sm font-semibold text-text-primary mb-3 uppercase tracking-wide">Cast</h2>
+                <div className="flex flex-wrap gap-3">
+                  {movie.cast.map((castItem: any, idx) => {
+                    const isObj = typeof castItem !== 'string';
+                    const castName = isObj ? (castItem?.name || 'Unknown') : castItem;
+                    const castChar = isObj ? castItem?.character : null;
+                    const castPhotoUrl = isObj && castItem?.photo?.asset ? urlFor(castItem.photo).width(80).height(80).url() : null;
+
                     return (
-                      <span
+                      <div
                         key={castName + idx}
-                        className="text-sm text-text-secondary glassmorphism hover:bg-white/5 transition-colors rounded-lg px-3 py-1.5"
+                        className="flex items-center gap-2 glassmorphism rounded-full pr-4 pl-1 py-1 hover:bg-white/5 transition-colors"
                       >
-                        {castName}
-                      </span>
+                        {castPhotoUrl ? (
+                          <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0 border border-white/10">
+                            <Image src={castPhotoUrl} alt={castName} fill className="object-cover" />
+                          </div>
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-bg-surface flex items-center justify-center shrink-0 border border-white/10 ml-1">
+                            <User size={14} className="text-text-muted" />
+                          </div>
+                        )}
+                        <div className="flex flex-col">
+                          <span className="text-xs font-semibold text-text-primary leading-none">{castName}</span>
+                          {castChar && <span className="text-[10px] text-text-muted mt-1 leading-none">{castChar}</span>}
+                        </div>
+                      </div>
                     )
                   })}
                 </div>

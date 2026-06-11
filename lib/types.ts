@@ -1,4 +1,11 @@
-/* ── Movie ──────────────────────────────────────────────────────────────────── */
+export interface CastMember {
+  _key?: string
+  name?: string
+  character?: string
+  photo?: SanityImage
+  tmdbPersonId?: number
+}
+
 export interface Movie {
   _id: string
   title: string
@@ -6,7 +13,7 @@ export interface Movie {
   slug: string
   year: number
   director: string
-  cast?: string[]
+  cast?: (string | CastMember)[]
   genre?: string[]
   rating?: number
   poster?: SanityImage
