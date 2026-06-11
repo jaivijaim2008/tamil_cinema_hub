@@ -105,6 +105,7 @@ export default function ContactPageClient() {
                       id="name"
                       type="text"
                       placeholder=" "
+                      autoComplete="name"
                       className="peer w-full bg-transparent border border-border-subtle rounded-xl px-4 pt-6 pb-2 text-text-primary text-base outline-none focus:border-accent-gold focus:shadow-[0_0_0_3px_rgba(232,184,75,0.12)] transition-all"
                     />
                     <label htmlFor="name" className="absolute left-4 top-2 text-text-muted text-xs peer-focus:text-accent-gold peer-focus:text-[10px] peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-accent-gold transition-all pointer-events-none">
@@ -120,6 +121,7 @@ export default function ContactPageClient() {
                       id="email"
                       type="email"
                       placeholder=" "
+                      autoComplete="email"
                       className="peer w-full bg-transparent border border-border-subtle rounded-xl px-4 pt-6 pb-2 text-text-primary text-base outline-none focus:border-accent-gold focus:shadow-[0_0_0_3px_rgba(232,184,75,0.12)] transition-all"
                     />
                     <label htmlFor="email" className="absolute left-4 top-2 text-text-muted text-xs peer-focus:text-accent-gold peer-focus:text-[10px] peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:text-accent-gold transition-all pointer-events-none">

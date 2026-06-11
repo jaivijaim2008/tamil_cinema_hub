@@ -1,5 +1,6 @@
 import { client } from '../sanity/client'
 import { latestMoviesQuery, latestBlogsQuery } from '../lib/queries'
+import { toArray } from '../lib/utils'
 import type { Movie } from '../components/ui/MovieCard'
 import HomePageClient from './HomePageClient'
 
@@ -35,7 +36,7 @@ export default async function Home() {
     let ratingCount = 0
 
     for (const item of allData) {
-      const genres = Array.isArray(item.genre) ? item.genre : item.genre ? [item.genre] : []
+      const genres = toArray(item.genre)
       for (const g of genres) {
         if (g) genreMap.set(g, (genreMap.get(g) || 0) + 1)
       }

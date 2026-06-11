@@ -43,7 +43,7 @@ const barColors = [
 
 
 
-export default function HomePageClient({ movies, blogs, recentTitles, totalMovies, totalBlogs, genreCounts, avgRating: serverAvgRating }: Props) {
+export default function HomePageClient({ movies, blogs, recentTitles, totalMovies, totalBlogs, genreCounts, avgRating }: Props) {
   const section2Ref = useRef(null)
   const section2InView = useInView(section2Ref, { once: true, margin: '-100px' })
 
@@ -62,7 +62,7 @@ export default function HomePageClient({ movies, blogs, recentTitles, totalMovie
       }))
   }, [genreCounts])
 
-  const avgRating = serverAvgRating
+
 
   return (
     <>
