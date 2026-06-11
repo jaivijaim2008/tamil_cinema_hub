@@ -3,30 +3,75 @@
 
 /* ═══════════════════════════════════════════════════════════════
    TamilCinemaHub — Cinematic Design System
-   Mobile-First · Gold/Black · Film Grain · Glassmorphism
+   Mobile-First · Gold/Black · Rich Colors · Film Grain
    ═══════════════════════════════════════════════════════════════ */
 
 @theme inline {
-  /* ── Color Tokens ─────────────────────────────────────────── */
+  /* ── Core Colors ──────────────────────────────────────────── */
   --color-bg-primary: #080808;
   --color-bg-secondary: #0F0F0F;
   --color-bg-card: #141414;
   --color-bg-elevated: #1A1A1A;
+  --color-bg-surface: #1E1E1E;
 
+  /* ── Gold Spectrum ─────────────────────────────────────────── */
   --color-accent-gold: #E8B84B;
   --color-accent-gold-bright: #F5CC6A;
   --color-accent-gold-dim: #C49A35;
   --color-accent-gold-glow: rgba(232,184,75,0.35);
   --color-accent-gold-muted: rgba(232,184,75,0.12);
-  --color-accent-red: #C0392B;
-  --color-accent-red-glow: rgba(192,57,43,0.3);
+  --color-accent-gold-subtle: rgba(232,184,75,0.06);
 
+  /* ── Red / Crimson ─────────────────────────────────────────── */
+  --color-accent-red: #C0392B;
+  --color-accent-red-bright: #E74C3C;
+  --color-accent-red-glow: rgba(192,57,43,0.3);
+  --color-accent-red-muted: rgba(192,57,43,0.12);
+
+  /* ── Teal / Cyan ───────────────────────────────────────────── */
+  --color-accent-teal: #06B6D4;
+  --color-accent-teal-bright: #22D3EE;
+  --color-accent-teal-glow: rgba(6,182,212,0.3);
+  --color-accent-teal-muted: rgba(6,182,212,0.12);
+
+  /* ── Purple / Violet ────────────────────────────────────────── */
+  --color-accent-purple: #A855F7;
+  --color-accent-purple-bright: #C084FC;
+  --color-accent-purple-glow: rgba(168,85,247,0.3);
+  --color-accent-purple-muted: rgba(168,85,247,0.12);
+
+  /* ── Emerald / Green ────────────────────────────────────────── */
+  --color-accent-emerald: #10B981;
+  --color-accent-emerald-bright: #34D399;
+  --color-accent-emerald-glow: rgba(16,185,129,0.3);
+  --color-accent-emerald-muted: rgba(16,185,129,0.12);
+
+  /* ── Rose / Pink ────────────────────────────────────────────── */
+  --color-accent-rose: #F43F5E;
+  --color-accent-rose-bright: #FB7185;
+  --color-accent-rose-glow: rgba(244,63,94,0.3);
+  --color-accent-rose-muted: rgba(244,63,94,0.12);
+
+  /* ── Amber / Orange ─────────────────────────────────────────── */
+  --color-accent-amber: #F59E0B;
+  --color-accent-amber-bright: #FBBF24;
+  --color-accent-amber-glow: rgba(245,158,11,0.3);
+  --color-accent-amber-muted: rgba(245,158,11,0.12);
+
+  /* ── Blue ───────────────────────────────────────────────────── */
+  --color-accent-blue: #3B82F6;
+  --color-accent-blue-bright: #60A5FA;
+  --color-accent-blue-glow: rgba(59,130,246,0.3);
+  --color-accent-blue-muted: rgba(59,130,246,0.12);
+
+  /* ── Text ───────────────────────────────────────────────────── */
   --color-text-primary: #F0EDE8;
   --color-text-secondary: #9A9690;
-  --color-text-muted: #4A4745;
+  --color-text-muted: #5A5654;
   --color-text-inverse: #080808;
 
-  --color-border-subtle: rgba(255,255,255,0.05);
+  /* ── Borders ────────────────────────────────────────────────── */
+  --color-border-subtle: rgba(255,255,255,0.06);
   --color-border-mid: rgba(255,255,255,0.10);
   --color-border-accent: rgba(232,184,75,0.22);
   --color-border-glow: rgba(232,184,75,0.55);
@@ -105,6 +150,16 @@
   100% { transform: rotate(360deg); }
 }
 
+/* ── Reduced Motion ──────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ── Global Reset ───────────────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -123,7 +178,7 @@ body {
   color: #F0EDE8;
   font-family: var(--font-inter);
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.6;
   overflow-x: hidden;
 }
 
@@ -152,9 +207,9 @@ body::after {
 
 /* ── Glassmorphism utility ──────────────────────────────────── */
 .glass {
-  background: rgba(20, 20, 20, 0.65);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(15, 15, 15, 0.78);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
@@ -169,17 +224,25 @@ body::after {
   inset: -1px;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, rgba(232,184,75,0.6), transparent, rgba(232,184,75,0.2), transparent);
+  background: linear-gradient(135deg, rgba(232,184,75,0.6), transparent 40%, rgba(232,184,75,0.2) 60%, transparent);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   animation: borderGlow 3s ease-in-out infinite;
 }
 
+/* ── Section spacing utility ────────────────────────────────── */
+.section-padding {
+  padding-top: clamp(3rem, 8vw, 6rem);
+  padding-bottom: clamp(3rem, 8vw, 6rem);
+  padding-left: clamp(1.25rem, 5vw, 2.5rem);
+  padding-right: clamp(1.25rem, 5vw, 2.5rem);
+}
+
 /* ── Scrollbar styling ──────────────────────────────────────── */
-::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #0F0F0F; }
-::-webkit-scrollbar-thumb { background: rgba(232,184,75,0.3); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: rgba(232,184,75,0.3); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(232,184,75,0.6); }
 
 /* Hide scrollbar for carousels */
@@ -189,6 +252,34 @@ body::after {
 /* ── Text utilities ─────────────────────────────────────────── */
 .text-gradient-gold {
   background: linear-gradient(135deg, #F5CC6A, #E8B84B, #C49A35);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-red {
+  background: linear-gradient(135deg, #E74C3C, #C0392B);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-teal {
+  background: linear-gradient(135deg, #22D3EE, #06B6D4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-purple {
+  background: linear-gradient(135deg, #C084FC, #A855F7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-rose {
+  background: linear-gradient(135deg, #FB7185, #F43F5E);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -216,7 +307,7 @@ input, textarea, select {
 /* ── Mobile tap feedback ─────────────────────────────────────── */
 @media (max-width: 1023px) {
   a:active {
-    transform: scale(0.96) !important;
+    transform: scale(0.97) !important;
   }
 }
 
@@ -258,4 +349,39 @@ input, textarea, select {
 .blob-2 {
   background: radial-gradient(circle, rgba(192,57,43,0.08), transparent 70%);
   animation: floatUp 8s ease-in-out infinite reverse;
+}
+.blob-3 {
+  background: radial-gradient(circle, rgba(168,85,247,0.08), transparent 70%);
+  animation: floatUp 7s ease-in-out infinite;
+}
+.blob-4 {
+  background: radial-gradient(circle, rgba(6,182,212,0.08), transparent 70%);
+  animation: floatUp 9s ease-in-out infinite reverse;
+}
+
+/* ── Card hover shine effect ─────────────────────────────────── */
+.card-shine {
+  position: relative;
+  overflow: hidden;
+}
+.card-shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(232,184,75,0.03) 45%, rgba(232,184,75,0.06) 50%, rgba(232,184,75,0.03) 55%, transparent 60%);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+.card-shine:hover::after {
+  transform: translateX(100%);
+}
+
+/* ── Color accent dot ────────────────────────────────────────── */
+.accent-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
 }

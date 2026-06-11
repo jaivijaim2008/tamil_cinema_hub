@@ -22,7 +22,7 @@ export default function AnimatedCounter({ from = 0, to, duration = 2, suffix = '
   }, [isInView, motionVal, to])
 
   useEffect(() => {
-    const unsubscribe = spring.on('change', (v) => setDisplay(Math.floor(v)))
+    const unsubscribe = spring.on('change', (v) => setDisplay(Math.round(v * 10) / 10))
     return unsubscribe
   }, [spring])
 

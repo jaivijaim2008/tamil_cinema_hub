@@ -33,8 +33,8 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
     (movie.rating || 0) >= 8
       ? 'text-accent-gold'
       : (movie.rating || 0) >= 6
-        ? 'text-green-400'
-        : 'text-amber-400'
+        ? 'text-accent-emerald'
+        : 'text-accent-amber'
 
   return (
     <>
@@ -54,45 +54,45 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
           {/* Back button */}
           <Link
             href="/movies"
-            className="absolute top-4 left-4 z-10 w-10 h-10 rounded-full glass flex items-center justify-center"
+            className="absolute top-4 left-4 z-10 w-11 h-11 rounded-full glass flex items-center justify-center"
           >
             <ArrowLeft size={18} className="text-text-primary" />
           </Link>
 
           {/* Genre + rating overlaid */}
-          <div className="absolute bottom-20 left-4 flex items-center gap-2">
+          <div className="absolute bottom-24 left-5 flex items-center gap-2 flex-wrap">
             {genreList.map((g) => <GenreBadge key={g} genre={g} />)}
             {movie.rating && (
-              <span className={`text-xs font-mono font-bold ${ratingColor} bg-bg-elevated/80 px-2 py-0.5 rounded`}>
+              <span className={`text-xs font-mono font-bold ${ratingColor} bg-bg-elevated/80 px-3 py-1 rounded-lg`}>
                 ★ {movie.rating.toFixed(1)}
               </span>
             )}
           </div>
 
           {/* Title overlaid */}
-          <div className="absolute bottom-4 left-4 right-4 z-10">
+          <div className="absolute bottom-6 left-5 right-5 z-10">
             <h1 className="font-playfair text-3xl text-text-primary leading-tight">{movie.title}</h1>
           </div>
         </div>
 
         {/* Content card overlapping poster */}
-        <div className="bg-bg-primary rounded-t-3xl -mt-8 relative z-10 px-5 pt-6 pb-24">
-          <div className="flex items-center gap-3 mb-4">
+        <div className="bg-bg-primary rounded-t-3xl -mt-8 relative z-10 px-6 pt-8 pb-28">
+          <div className="flex items-center gap-3 mb-6">
             <p className="text-text-secondary text-sm">{movie.year} · {movie.director}</p>
           </div>
           {movie.rating && (
-            <div className="mb-4">
+            <div className="mb-6">
               <RatingStars rating={movie.rating} />
             </div>
           )}
 
           {/* Cast */}
           {castList.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-text-muted text-xs uppercase tracking-wider mb-3">Cast</h3>
-              <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+            <div className="mb-8">
+              <h3 className="text-text-muted text-xs uppercase tracking-wider mb-3 font-medium">Cast</h3>
+              <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2">
                 {castList.map((c) => (
-                  <span key={c} className="shrink-0 px-3 py-1.5 rounded-full bg-bg-elevated text-text-secondary text-xs border border-border-subtle">
+                  <span key={c} className="shrink-0 px-4 py-2 rounded-full bg-bg-elevated text-text-secondary text-xs border border-border-subtle">
                     {c}
                   </span>
                 ))}
@@ -102,11 +102,11 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
 
           {/* OTT */}
           {ottList.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-text-muted text-xs uppercase tracking-wider mb-3">Available On</h3>
-              <div className="flex gap-2 flex-wrap">
+            <div className="mb-8">
+              <h3 className="text-text-muted text-xs uppercase tracking-wider mb-3 font-medium">Available On</h3>
+              <div className="flex gap-2.5 flex-wrap">
                 {ottList.map((p) => (
-                  <span key={p} className="px-3 py-1.5 rounded-full bg-accent-gold-muted text-accent-gold text-xs border border-border-accent">
+                  <span key={p} className="px-4 py-2 rounded-full bg-accent-gold-muted text-accent-gold text-xs border border-accent-gold/30 font-medium">
                     {p}
                   </span>
                 ))}
@@ -116,8 +116,8 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
 
           {/* Synopsis */}
           {movie.synopsis && (
-            <div className="mb-6">
-              <h3 className="text-text-muted text-xs uppercase tracking-wider mb-3">Synopsis</h3>
+            <div className="mb-8">
+              <h3 className="text-text-muted text-xs uppercase tracking-wider mb-3 font-medium">Synopsis</h3>
               <p className="text-text-secondary text-sm leading-relaxed">{movie.synopsis}</p>
             </div>
           )}
@@ -126,16 +126,16 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
           <div className="flex gap-3">
             <button
               onClick={handleCopy}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border-subtle text-text-secondary text-sm"
+              className="flex items-center gap-2 px-5 py-3 rounded-xl border border-border-subtle text-text-secondary text-sm font-medium hover:border-border-accent transition-colors"
             >
-              {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+              {copied ? <Check size={14} className="text-accent-emerald" /> : <Copy size={14} />}
               {copied ? 'Copied!' : 'Copy Link'}
             </button>
             <a
               href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(movie.title + ' - TamilCinemaHub')}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border-subtle text-text-secondary text-sm"
+              className="flex items-center gap-2 px-5 py-3 rounded-xl border border-border-subtle text-text-secondary text-sm font-medium hover:border-border-accent transition-colors"
             >
               <Share2 size={14} />
               Share
@@ -145,14 +145,14 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
       </div>
 
       {/* ═══ DESKTOP LAYOUT (≥ 768px) ═══ */}
-      <div className="hidden lg:block min-h-screen pt-24 pb-16">
-        <div className="max-w-6xl mx-auto px-6">
+      <div className="hidden lg:block min-h-screen pt-28 pb-20">
+        <div className="max-w-6xl mx-auto px-8 lg:px-10">
           {/* Back */}
-          <Link href="/movies" className="inline-flex items-center gap-2 text-text-secondary text-sm hover:text-accent-gold mb-8 transition-colors">
+          <Link href="/movies" className="inline-flex items-center gap-2 text-text-secondary text-sm hover:text-accent-gold mb-10 transition-colors">
             <ArrowLeft size={16} /> Back to Movies
           </Link>
 
-          <div className="grid grid-cols-[320px_1fr] gap-10">
+          <div className="grid grid-cols-[320px_1fr] gap-12">
             {/* Poster with ambient glow */}
             <div className="relative">
               {posterUrl && (
@@ -160,7 +160,7 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
                   <Image src={posterUrl} alt="" fill className="object-cover blur-[60px] opacity-[0.15]" />
                 </div>
               )}
-              <div className="aspect-[2/3] rounded-2xl overflow-hidden border border-border-subtle relative">
+              <div className="aspect-[2/3] rounded-2xl overflow-hidden border border-border-subtle relative shadow-2xl">
                 {posterUrl ? (
                   <Image src={posterUrl} alt={movie.title} fill className="object-cover" priority sizes="320px" />
                 ) : (
@@ -173,22 +173,22 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
 
             {/* Details */}
             <div>
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-4">
                 {genreList.map((g) => <GenreBadge key={g} genre={g} />)}
               </div>
 
-              <h1 className="font-playfair text-4xl lg:text-5xl text-text-primary leading-tight mb-2">
+              <h1 className="font-playfair text-4xl lg:text-5xl text-text-primary leading-tight mb-3">
                 {movie.title}
               </h1>
 
               {movie.titleTanglish && (
-                <p className="text-text-muted text-sm mb-4">{movie.titleTanglish}</p>
+                <p className="text-text-muted text-sm mb-5">{movie.titleTanglish}</p>
               )}
 
-              <div className="flex items-center gap-4 mb-6">
-                <span className="text-text-secondary text-sm">{movie.year}</span>
+              <div className="flex items-center gap-4 mb-8">
+                <span className="text-text-secondary text-sm font-medium">{movie.year}</span>
                 <span className="text-text-muted">·</span>
-                <span className="text-text-secondary text-sm">{movie.director}</span>
+                <span className="text-text-secondary text-sm font-medium">{movie.director}</span>
                 {movie.rating && (
                   <>
                     <span className="text-text-muted">·</span>
@@ -200,20 +200,20 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
               </div>
 
               {movie.rating && (
-                <div className="mb-6">
+                <div className="mb-8">
                   <RatingStars rating={movie.rating} />
                 </div>
               )}
 
-              <CinematicDivider className="my-6" />
+              <CinematicDivider className="my-8" />
 
               {/* Cast */}
               {castList.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-text-muted text-xs uppercase tracking-wider mb-3">Cast</h3>
-                  <div className="flex gap-2 flex-wrap">
+                <div className="mb-8">
+                  <h3 className="text-text-muted text-xs uppercase tracking-wider mb-4 font-medium">Cast</h3>
+                  <div className="flex gap-2.5 flex-wrap">
                     {castList.map((c) => (
-                      <span key={c} className="px-3 py-1.5 rounded-full bg-bg-elevated text-text-secondary text-sm border border-border-subtle">
+                      <span key={c} className="px-4 py-2 rounded-full bg-bg-elevated text-text-secondary text-sm border border-border-subtle">
                         {c}
                       </span>
                     ))}
@@ -223,11 +223,11 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
 
               {/* OTT */}
               {ottList.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-text-muted text-xs uppercase tracking-wider mb-3">Available On</h3>
-                  <div className="flex gap-2 flex-wrap">
+                <div className="mb-8">
+                  <h3 className="text-text-muted text-xs uppercase tracking-wider mb-4 font-medium">Available On</h3>
+                  <div className="flex gap-2.5 flex-wrap">
                     {ottList.map((p) => (
-                      <span key={p} className="px-4 py-2 rounded-full bg-accent-gold-muted text-accent-gold text-sm border border-border-accent flex items-center gap-1.5">
+                      <span key={p} className="px-5 py-2.5 rounded-full bg-accent-gold-muted text-accent-gold text-sm border border-accent-gold/30 flex items-center gap-1.5 font-medium">
                         {p}
                       </span>
                     ))}
@@ -237,8 +237,8 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
 
               {/* Synopsis */}
               {movie.synopsis && (
-                <div className="mb-8">
-                  <h3 className="text-text-muted text-xs uppercase tracking-wider mb-3">Synopsis</h3>
+                <div className="mb-10">
+                  <h3 className="text-text-muted text-xs uppercase tracking-wider mb-4 font-medium">Synopsis</h3>
                   <p className="text-text-secondary leading-relaxed max-w-[60ch]">{movie.synopsis}</p>
                 </div>
               )}
@@ -247,16 +247,16 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
               <div className="flex gap-3">
                 <button
                   onClick={handleCopy}
-                  className="flex items-center gap-2 px-5 py-3 rounded-xl border border-border-subtle text-text-secondary text-sm hover:border-border-accent transition-colors"
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl border border-border-subtle text-text-secondary text-sm font-medium hover:border-border-accent transition-colors"
                 >
-                  {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+                  {copied ? <Check size={14} className="text-accent-emerald" /> : <Copy size={14} />}
                   {copied ? 'Copied!' : 'Copy Link'}
                 </button>
                 <a
                   href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(movie.title + ' - TamilCinemaHub')}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-5 py-3 rounded-xl border border-border-subtle text-text-secondary text-sm hover:border-border-accent transition-colors"
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl border border-border-subtle text-text-secondary text-sm font-medium hover:border-border-accent transition-colors"
                 >
                   <Share2 size={14} />
                   Share

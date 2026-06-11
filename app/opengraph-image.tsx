@@ -15,12 +15,12 @@ export default async function Image() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'linear-gradient(135deg, #0d0d2b 0%, #1a0533 40%, #0d0d2b 100%)',
+          background: 'linear-gradient(135deg, #080808 0%, #141414 40%, #1A1A1A 60%, #080808 100%)',
           position: 'relative',
           overflow: 'hidden',
         }}
       >
-        {/* Gradient orbs */}
+        {/* Gold radial glow top */}
         <div
           style={{
             position: 'absolute',
@@ -30,9 +30,10 @@ export default async function Image() {
             width: '800px',
             height: '400px',
             borderRadius: '50%',
-            background: 'radial-gradient(ellipse, rgba(124,58,237,0.4) 0%, transparent 70%)',
+            background: 'radial-gradient(ellipse, rgba(232,184,75,0.35) 0%, transparent 70%)',
           }}
         />
+        {/* Red radial glow bottom-right */}
         <div
           style={{
             position: 'absolute',
@@ -41,7 +42,19 @@ export default async function Image() {
             width: '500px',
             height: '300px',
             borderRadius: '50%',
-            background: 'radial-gradient(ellipse, rgba(249,115,22,0.2) 0%, transparent 70%)',
+            background: 'radial-gradient(ellipse, rgba(192,57,43,0.15) 0%, transparent 70%)',
+          }}
+        />
+        {/* Purple radial glow bottom-left */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '0px',
+            left: '-50px',
+            width: '400px',
+            height: '300px',
+            borderRadius: '50%',
+            background: 'radial-gradient(ellipse, rgba(168,85,247,0.1) 0%, transparent 70%)',
           }}
         />
 
@@ -51,10 +64,10 @@ export default async function Image() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            marginBottom: '16px',
+            marginBottom: '20px',
           }}
         >
-          <span style={{ fontSize: '48px' }}>🎬</span>
+          <span style={{ fontSize: '56px' }}>🎬</span>
         </div>
 
         {/* Site name */}
@@ -69,7 +82,7 @@ export default async function Image() {
         >
           <h1
             style={{
-              fontSize: '72px',
+              fontSize: '78px',
               fontWeight: 900,
               fontFamily: 'sans-serif',
               color: 'white',
@@ -80,17 +93,17 @@ export default async function Image() {
             }}
           >
             Tamil
-            <span style={{ color: '#f97316' }}>
-              Cinema Hub
+            <span style={{ color: '#E8B84B' }}>
+              {' '}CinemaHub
             </span>
           </h1>
           <p
             style={{
               fontSize: '24px',
               color: 'rgba(255,255,255,0.5)',
-              marginTop: '16px',
+              marginTop: '20px',
               fontFamily: 'sans-serif',
-              letterSpacing: '4px',
+              letterSpacing: '6px',
               textTransform: 'uppercase',
             }}
           >
@@ -98,15 +111,15 @@ export default async function Image() {
           </p>
         </div>
 
-        {/* Bottom accent line */}
+        {/* Bottom accent line — gold/red/purple */}
         <div
           style={{
             position: 'absolute',
             bottom: 0,
             left: 0,
             right: 0,
-            height: '4px',
-            background: 'linear-gradient(to right, #7c3aed, #f97316, #fbbf24)',
+            height: '5px',
+            background: 'linear-gradient(to right, #E8B84B, #C0392B, #A855F7, #E8B84B)',
           }}
         />
       </div>

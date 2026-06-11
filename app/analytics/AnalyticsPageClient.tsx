@@ -32,7 +32,8 @@ export default function AnalyticsPageClient({ movies, totalCount }: Props) {
     // Genre distribution
     const genreMap = new Map<string, number>()
     movies.forEach((m) => {
-      m.genre?.forEach((g: string) => genreMap.set(g, (genreMap.get(g) || 0) + 1))
+      const genres = Array.isArray(m.genre) ? m.genre : m.genre ? [m.genre] : []
+      genres.forEach((g: string) => genreMap.set(g, (genreMap.get(g) || 0) + 1))
     })
     const genreData = Array.from(genreMap.entries())
       .map(([name, value]) => ({ name, value }))
@@ -88,30 +89,30 @@ export default function AnalyticsPageClient({ movies, totalCount }: Props) {
   }, [movies])
 
   return (
-    <div className="min-h-screen pt-20 lg:pt-24 pb-12">
+    <div className="min-h-screen pt-24 lg:pt-28 pb-16">
       {/* Header */}
-      <section className="relative overflow-hidden py-16 px-6">
+      <section className="relative overflow-hidden py-20 px-6 sm:px-8 lg:px-10">
         <CinemaBackground />
         <div className="max-w-7xl mx-auto relative z-10">
           <Link href="/" className="inline-flex items-center gap-2 text-text-secondary text-sm hover:text-accent-gold mb-6 transition-colors">
             <ArrowLeft size={16} /> Home
           </Link>
-          <p className="text-accent-gold text-[11px] font-mono tracking-[0.3em] uppercase mb-2">Analytics</p>
-          <h1 className="font-playfair text-[clamp(28px,5vw,48px)] text-text-primary">Kollywood in Data</h1>
-          <p className="text-text-secondary text-sm mt-2">Exploring {totalCount.toLocaleString()} Tamil films across decades</p>
+          <p className="text-accent-gold text-[11px] font-mono tracking-[0.3em] uppercase mb-3">Analytics</p>
+          <h1 className="font-playfair text-[clamp(28px,5vw,48px)] text-text-primary mb-2">Kollywood in Data</h1>
+          <p className="text-text-secondary text-sm sm:text-base mt-2">Exploring {totalCount.toLocaleString()} Tamil films across decades</p>
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-14">
           {[
             { label: 'Total Films', value: totalCount, icon: Film, suffix: '' },
             { label: 'Directors', value: stats.uniqueDirectors, icon: Users, suffix: '' },
             { label: 'Avg Rating', value: Math.round(stats.avgRating * 10) / 10, icon: Star, suffix: '' },
             { label: 'Decades', value: stats.yearSpan, icon: Calendar, suffix: '+' },
-          ].map((kpi, i) => (
-            <SpotlightCard key={kpi.label} className="bg-bg-card border border-border-subtle p-5 animate-borderGlow">
+          ].map((kpi) => (
+            <SpotlightCard key={kpi.label} className="bg-bg-card border border-border-subtle p-6 animate-borderGlow card-shine">
               <div className="w-12 h-12 rounded-xl bg-accent-gold-muted flex items-center justify-center mb-4">
                 <kpi.icon size={20} className="text-accent-gold" />
               </div>
@@ -124,10 +125,10 @@ export default function AnalyticsPageClient({ movies, totalCount }: Props) {
         </div>
 
         {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-14">
           {/* Bar Chart - Movies by Year */}
-          <SpotlightCard className="bg-bg-card border border-border-subtle p-6">
-            <h3 className="font-playfair text-lg text-text-primary mb-4">Movies by Year</h3>
+          <SpotlightCard className="bg-bg-card border border-border-subtle p-6 lg:p-8">
+            <h3 className="font-playfair text-lg text-text-primary mb-5">Movies by Year</h3>
             <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={stats.yearData.slice(-20)} margin={{ top: 10, right: 10, bottom: 0, left: -10 }}>
@@ -150,8 +151,8 @@ export default function AnalyticsPageClient({ movies, totalCount }: Props) {
           </SpotlightCard>
 
           {/* Donut Chart - Genre Distribution */}
-          <SpotlightCard className="bg-bg-card border border-border-subtle p-6">
-            <h3 className="font-playfair text-lg text-text-primary mb-4">Genre Distribution</h3>
+          <SpotlightCard className="bg-bg-card border border-border-subtle p-6 lg:p-8">
+            <h3 className="font-playfair text-lg text-text-primary mb-5">Genre Distribution</h3>
             <div className="h-[280px] flex items-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -174,7 +175,7 @@ export default function AnalyticsPageClient({ movies, totalCount }: Props) {
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex flex-wrap gap-3 mt-2">
+            <div className="flex flex-wrap gap-3 mt-3">
               {stats.genreData.slice(0, 6).map((g, i) => (
                 <span key={g.name} className="flex items-center gap-1.5 text-xs text-text-secondary">
                   <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: CHART_COLORS[i] }} />
@@ -185,13 +186,13 @@ export default function AnalyticsPageClient({ movies, totalCount }: Props) {
           </SpotlightCard>
 
           {/* Rating Distribution */}
-          <SpotlightCard className="bg-bg-card border border-border-subtle p-6">
-            <h3 className="font-playfair text-lg text-text-primary mb-4">Rating Distribution</h3>
-            <div className="space-y-3">
+          <SpotlightCard className="bg-bg-card border border-border-subtle p-6 lg:p-8">
+            <h3 className="font-playfair text-lg text-text-primary mb-5">Rating Distribution</h3>
+            <div className="space-y-4">
               {stats.ratingBuckets.map((b) => (
-                <div key={b.range} className="flex items-center gap-3">
-                  <span className="text-text-secondary text-xs w-12 shrink-0">{b.range}</span>
-                  <div className="flex-1 h-6 bg-bg-primary rounded-full overflow-hidden">
+                <div key={b.range} className="flex items-center gap-4">
+                  <span className="text-text-secondary text-sm w-12 shrink-0 font-medium">{b.range}</span>
+                  <div className="flex-1 h-7 bg-bg-primary rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       whileInView={{ width: `${totalCount > 0 ? (b.count / totalCount) * 100 : 0}%` }}
@@ -200,22 +201,22 @@ export default function AnalyticsPageClient({ movies, totalCount }: Props) {
                       className="h-full bg-gradient-to-r from-accent-gold to-accent-gold-dim rounded-full"
                     />
                   </div>
-                  <span className="text-accent-gold font-mono text-xs w-10 text-right shrink-0">{b.count}</span>
+                  <span className="text-accent-gold font-mono text-xs w-10 text-right shrink-0 font-bold">{b.count}</span>
                 </div>
               ))}
             </div>
           </SpotlightCard>
 
-          {/* Genre pie as bar alternative */}
-          <SpotlightCard className="bg-bg-card border border-border-subtle p-6">
-            <h3 className="font-playfair text-lg text-text-primary mb-4">Top Genres</h3>
-            <div className="space-y-3">
+          {/* Genre bar chart */}
+          <SpotlightCard className="bg-bg-card border border-border-subtle p-6 lg:p-8">
+            <h3 className="font-playfair text-lg text-text-primary mb-5">Top Genres</h3>
+            <div className="space-y-4">
               {stats.genreData.slice(0, 8).map((g) => {
                 const maxVal = stats.genreData[0]?.value || 1
                 return (
-                  <div key={g.name} className="flex items-center gap-3">
-                    <span className="text-text-secondary text-xs w-20 shrink-0 truncate">{g.name}</span>
-                    <div className="flex-1 h-5 bg-bg-primary rounded-full overflow-hidden">
+                  <div key={g.name} className="flex items-center gap-4">
+                    <span className="text-text-secondary text-sm w-20 shrink-0 truncate font-medium">{g.name}</span>
+                    <div className="flex-1 h-6 bg-bg-primary rounded-full overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
                         whileInView={{ width: `${(g.value / maxVal) * 100}%` }}
@@ -224,7 +225,7 @@ export default function AnalyticsPageClient({ movies, totalCount }: Props) {
                         className="h-full bg-gradient-to-r from-accent-gold to-accent-gold-dim rounded-full"
                       />
                     </div>
-                    <span className="text-accent-gold font-mono text-xs w-10 text-right shrink-0">{g.value}</span>
+                    <span className="text-accent-gold font-mono text-xs w-10 text-right shrink-0 font-bold">{g.value}</span>
                   </div>
                 )
               })}
@@ -232,20 +233,20 @@ export default function AnalyticsPageClient({ movies, totalCount }: Props) {
           </SpotlightCard>
         </div>
 
-        <CinematicDivider className="mb-12" />
+        <CinematicDivider className="mb-14" />
 
         {/* Directors Table */}
-        <SpotlightCard className="bg-bg-card border border-border-subtle p-6 mb-12">
-          <h3 className="font-playfair text-lg text-text-primary mb-6">Top Directors</h3>
+        <SpotlightCard className="bg-bg-card border border-border-subtle p-6 lg:p-8 mb-14">
+          <h3 className="font-playfair text-lg text-text-primary mb-8">Top Directors</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border-subtle">
-                  <th className="text-left text-text-muted text-xs uppercase tracking-wider py-3 px-2 w-12">#</th>
-                  <th className="text-left text-text-muted text-xs uppercase tracking-wider py-3 px-2">Director</th>
-                  <th className="text-left text-text-muted text-xs uppercase tracking-wider py-3 px-2">Films</th>
-                  <th className="text-left text-text-muted text-xs uppercase tracking-wider py-3 px-2">Avg Rating</th>
-                  <th className="text-left text-text-muted text-xs uppercase tracking-wider py-3 px-2 hidden sm:table-cell">Distribution</th>
+                  <th className="text-left text-text-muted text-xs uppercase tracking-wider py-3 px-3 w-12">#</th>
+                  <th className="text-left text-text-muted text-xs uppercase tracking-wider py-3 px-3">Director</th>
+                  <th className="text-left text-text-muted text-xs uppercase tracking-wider py-3 px-3">Films</th>
+                  <th className="text-left text-text-muted text-xs uppercase tracking-wider py-3 px-3">Avg Rating</th>
+                  <th className="text-left text-text-muted text-xs uppercase tracking-wider py-3 px-3 hidden sm:table-cell">Distribution</th>
                 </tr>
               </thead>
               <tbody>
@@ -256,14 +257,14 @@ export default function AnalyticsPageClient({ movies, totalCount }: Props) {
                       key={d.name}
                       className="border-b border-border-subtle/50 hover:bg-bg-elevated transition-colors group"
                     >
-                      <td className="py-3 px-2 text-accent-gold font-mono font-bold">{i + 1}</td>
-                      <td className="py-3 px-2 text-text-primary font-medium">{d.name}</td>
-                      <td className="py-3 px-2 text-text-secondary">{d.count}</td>
-                      <td className="py-3 px-2">
+                      <td className="py-4 px-3 text-accent-gold font-mono font-bold">{i + 1}</td>
+                      <td className="py-4 px-3 text-text-primary font-medium">{d.name}</td>
+                      <td className="py-4 px-3 text-text-secondary">{d.count}</td>
+                      <td className="py-4 px-3">
                         {d.avgRating > 0 ? <RatingBadge rating={d.avgRating} /> : <span className="text-text-muted">—</span>}
                       </td>
-                      <td className="py-3 px-2 hidden sm:table-cell">
-                        <div className="w-full max-w-[200px] h-2 bg-bg-primary rounded-full overflow-hidden">
+                      <td className="py-4 px-3 hidden sm:table-cell">
+                        <div className="w-full max-w-[200px] h-2.5 bg-bg-primary rounded-full overflow-hidden">
                           <div
                             className="h-full bg-accent-gold rounded-full transition-all"
                             style={{ width: `${(d.count / maxCount) * 100}%` }}

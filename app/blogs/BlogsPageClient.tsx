@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Clock, ArrowRight } from 'lucide-react'
 import { urlFor } from '../../sanity/lib/image'
@@ -12,13 +11,13 @@ import FilmStripDecoration from '../../components/graphics/FilmStripDecoration'
 
 const categories = ['All', 'Review', 'News', 'Top List', 'Actor', 'Director', 'Feature']
 
-const categoryColors: Record<string, string> = {
-  Review: 'text-accent-gold bg-accent-gold-muted border-border-accent',
-  News: 'text-blue-400 bg-blue-500/10 border-blue-500/30',
-  'Top List': 'text-red-400 bg-red-500/10 border-red-500/30',
-  Actor: 'text-pink-400 bg-pink-500/10 border-pink-500/30',
-  Director: 'text-purple-400 bg-purple-500/10 border-purple-500/30',
-  Feature: 'text-teal-400 bg-teal-500/10 border-teal-500/30',
+const categoryColors: Record<string, { text: string; bg: string; border: string; dot: string }> = {
+  Review: { text: 'text-accent-gold', bg: 'bg-accent-gold-muted', border: 'border-accent-gold/30', dot: 'bg-accent-gold' },
+  News: { text: 'text-accent-blue', bg: 'bg-accent-blue-muted', border: 'border-accent-blue/30', dot: 'bg-accent-blue' },
+  'Top List': { text: 'text-accent-rose', bg: 'bg-accent-rose-muted', border: 'border-accent-rose/30', dot: 'bg-accent-rose' },
+  Actor: { text: 'text-accent-purple', bg: 'bg-accent-purple-muted', border: 'border-accent-purple/30', dot: 'bg-accent-purple' },
+  Director: { text: 'text-accent-teal', bg: 'bg-accent-teal-muted', border: 'border-accent-teal/30', dot: 'bg-accent-teal' },
+  Feature: { text: 'text-accent-emerald', bg: 'bg-accent-emerald-muted', border: 'border-accent-emerald/30', dot: 'bg-accent-emerald' },
 }
 
 interface Props {
@@ -30,32 +29,29 @@ interface Props {
 }
 
 export default function BlogsPageClient({ initialBlogs, totalCount, initialCategory, currentPage, totalPages }: Props) {
-  const router = useRouter()
-
   const filterCategory = (cat: string) => {
     const params = new URLSearchParams()
     if (cat !== 'All') params.set('category', cat)
-    router.push(`/blogs?${params.toString()}`, { scroll: false })
     window.location.href = `/blogs?${params.toString()}`
   }
 
   return (
     <>
       {/* Hero */}
-      <section className="relative min-h-[60svh] flex flex-col justify-end pb-16 overflow-hidden">
+      <section className="relative min-h-[55svh] flex flex-col justify-end pb-20 pt-32 lg:pt-36 overflow-hidden">
         <CinemaBackground />
         {/* Watermark */}
-        <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-playfair text-[20vw] text-text-primary/[0.03] select-none pointer-events-none whitespace-nowrap">
+        <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-playfair text-[18vw] text-text-primary/[0.03] select-none pointer-events-none whitespace-nowrap">
           EDITORIAL
         </span>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
-          <p className="text-accent-gold text-[11px] font-mono tracking-[0.3em] uppercase mb-2">Blog &amp; Reviews</p>
-          <h1 className="font-playfair text-[clamp(32px,6vw,72px)] text-text-primary leading-tight mb-4">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 w-full">
+          <p className="text-accent-gold text-[11px] font-mono tracking-[0.3em] uppercase mb-3">Blog &amp; Reviews</p>
+          <h1 className="font-playfair text-[clamp(36px,6vw,72px)] text-text-primary leading-tight mb-5">
             Tamil Cinema<br />
             <span className="text-gradient-gold">In Focus</span>
           </h1>
-          <p className="text-text-secondary text-base max-w-lg">
+          <p className="text-text-secondary text-base sm:text-lg max-w-lg leading-relaxed">
             Reviews, analysis, and stories from the world of Kollywood.
           </p>
         </div>
@@ -63,41 +59,44 @@ export default function BlogsPageClient({ initialBlogs, totalCount, initialCateg
       </section>
 
       {/* Content */}
-      <section className="py-12 px-6 max-w-7xl mx-auto">
+      <section className="py-16 sm:py-20 lg:py-24 px-6 sm:px-8 lg:px-10 max-w-7xl mx-auto">
         {/* Category filter */}
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-6 mb-8 border-b border-border-subtle">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => filterCategory(cat)}
-              className={`shrink-0 px-4 py-2 rounded-xl text-sm transition-colors ${
-                (cat === 'All' && !initialCategory) || initialCategory === cat
-                  ? 'bg-accent-gold text-text-inverse'
-                  : 'border border-border-subtle text-text-secondary hover:border-border-accent'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+        <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-6 mb-10 border-b border-border-subtle">
+          {categories.map((cat) => {
+            const isActive = (cat === 'All' && !initialCategory) || initialCategory === cat
+            return (
+              <button
+                key={cat}
+                onClick={() => filterCategory(cat)}
+                className={`shrink-0 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  isActive
+                    ? 'bg-accent-gold text-text-inverse shadow-lg shadow-accent-gold/20'
+                    : 'border border-border-subtle text-text-secondary hover:border-border-accent hover:text-text-primary hover:bg-accent-gold-subtle'
+                }`}
+              >
+                {cat}
+              </button>
+            )
+          })}
         </div>
 
         {/* Blog grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {initialBlogs.map((blog: any, i: number) => {
             const imageUrl = blog.mainImage ? urlFor(blog.mainImage).width(800).height(450).url() : null
             const readTime = Math.max(3, Math.ceil((blog.excerpt?.length || 200) / 200))
+            const catStyle = categoryColors[blog.category] || categoryColors.Review
 
             return (
               <motion.div
                 key={blog._id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
+                transition={{ delay: i * 0.06, duration: 0.5 }}
               >
                 <Link
                   href={`/blogs/${blog.slug}`}
-                  className="group block bg-bg-card rounded-2xl overflow-hidden border border-border-subtle hover:border-border-accent transition-all hover:-translate-y-1"
-                  style={{ boxShadow: '0 4px 30px rgba(0,0,0,0.2)' }}
+                  className="group block bg-bg-card rounded-2xl overflow-hidden border border-border-subtle hover:border-border-accent transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-accent-gold/5 card-shine"
                 >
                   {/* Image */}
                   <div className="aspect-[16/9] relative overflow-hidden">
@@ -110,37 +109,38 @@ export default function BlogsPageClient({ initialBlogs, totalCount, initialCateg
                         sizes="(max-width:768px) 100vw, 50vw"
                       />
                     ) : (
-                      <div className="w-full h-full bg-bg-elevated" />
+                      <div className="w-full h-full bg-gradient-to-br from-bg-elevated to-bg-card" />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
                     {/* Category badge */}
                     <div className="absolute top-4 left-4">
-                      <span className={`text-[10px] px-2.5 py-1 rounded-full border font-medium ${categoryColors[blog.category] || 'text-text-secondary bg-bg-elevated border-border-subtle'}`}>
+                      <span className={`text-[11px] px-3 py-1.5 rounded-full border font-medium inline-flex items-center gap-1.5 ${catStyle.text} ${catStyle.bg} ${catStyle.border}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${catStyle.dot}`} />
                         {blog.category || 'Review'}
                       </span>
                     </div>
                   </div>
 
                   {/* Content */}
-                  <div className="p-5">
-                    <div className="flex items-center gap-2 text-text-muted text-xs mb-2">
-                      <Clock size={12} />
+                  <div className="p-6">
+                    <div className="flex items-center gap-2.5 text-text-muted text-xs mb-3">
+                      <Clock size={12} className="text-accent-gold/60" />
                       <span>{readTime} min read</span>
-                      <span>·</span>
+                      <span className="text-border-mid">·</span>
                       <span>{new Date(blog.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                     </div>
 
-                    <h3 className="font-playfair text-xl text-text-primary group-hover:text-accent-gold transition-colors line-clamp-2 mb-2">
+                    <h3 className="font-playfair text-xl sm:text-2xl text-text-primary group-hover:text-accent-gold transition-colors duration-300 line-clamp-2 mb-3">
                       {blog.title}
                     </h3>
 
-                    <p className="text-text-secondary text-sm line-clamp-2 mb-4">{blog.excerpt}</p>
+                    <p className="text-text-secondary text-sm leading-relaxed line-clamp-2 mb-5">{blog.excerpt}</p>
 
-                    <div className="flex items-center justify-between">
-                      <span className="text-text-muted text-xs">{blog.author || 'TamilCinemaHub'}</span>
-                      <span className="text-accent-gold text-xs font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        Read <ArrowRight size={10} />
+                    <div className="flex items-center justify-between pt-4 border-t border-border-subtle">
+                      <span className="text-text-muted text-xs font-medium">{blog.author || 'TamilCinemaHub'}</span>
+                      <span className="text-accent-gold text-xs font-semibold flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-0 group-hover:translate-x-1">
+                        Read More <ArrowRight size={12} />
                       </span>
                     </div>
                   </div>
@@ -152,7 +152,7 @@ export default function BlogsPageClient({ initialBlogs, totalCount, initialCateg
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-center gap-2 mt-12">
+          <div className="flex justify-center gap-2.5 mt-16">
             {Array.from({ length: Math.min(totalPages, 10) }).map((_, i) => {
               const p = i + 1
               return (
@@ -164,10 +164,10 @@ export default function BlogsPageClient({ initialBlogs, totalCount, initialCateg
                     params.set('page', String(p))
                     window.location.href = `/blogs?${params.toString()}`
                   }}
-                  className={`w-10 h-10 rounded-xl text-sm transition-colors ${
+                  className={`w-11 h-11 rounded-xl text-sm font-medium transition-all duration-200 ${
                     p === currentPage
-                      ? 'bg-accent-gold text-text-inverse'
-                      : 'border border-border-subtle text-text-secondary hover:border-border-accent'
+                      ? 'bg-accent-gold text-text-inverse shadow-lg shadow-accent-gold/20'
+                      : 'border border-border-subtle text-text-secondary hover:border-border-accent hover:text-text-primary'
                   }`}
                 >
                   {p}
