@@ -132,25 +132,25 @@ const premiumFeatures = [
     icon: Search,
     title: 'Smart Search',
     description: 'Find any Tamil film with intelligent search powered by our comprehensive database of thousands of titles.',
-    accent: 'accent-gold',
+    iconBg: 'bg-accent-gold-muted', iconText: 'text-accent-gold', glow: 'bg-accent-gold/5', glowHover: 'group-hover:bg-accent-gold/10',
   },
   {
     icon: Bot,
     title: 'AI Recommendations',
     description: 'Our AI understands Tamil cinema deeply. Get personalized suggestions based on your taste and mood.',
-    accent: 'accent-purple',
+    iconBg: 'bg-accent-purple-muted', iconText: 'text-accent-purple', glow: 'bg-accent-purple/5', glowHover: 'group-hover:bg-accent-purple/10',
   },
   {
     icon: BarChart3,
     title: 'Deep Analytics',
     description: 'Explore genre trends, ratings distributions, and cinematic data across decades of Tamil filmmaking.',
-    accent: 'accent-teal',
+    iconBg: 'bg-accent-teal-muted', iconText: 'text-accent-teal', glow: 'bg-accent-teal/5', glowHover: 'group-hover:bg-accent-teal/10',
   },
   {
     icon: Globe,
     title: 'Pan-Indian Coverage',
     description: 'From classic Kollywood to modern pan-Indian blockbusters, we cover the full spectrum of Tamil cinema.',
-    accent: 'accent-rose',
+    iconBg: 'bg-accent-rose-muted', iconText: 'text-accent-rose', glow: 'bg-accent-rose/5', glowHover: 'group-hover:bg-accent-rose/10',
   },
 ]
 
@@ -428,7 +428,7 @@ function FeatureCard({
   feature,
   index,
 }: {
-  feature: { icon: any; title: string; description: string; accent: string }
+  feature: { icon: any; title: string; description: string; iconBg: string; iconText: string; glow: string; glowHover: string }
   index: number
 }) {
   return (
@@ -441,14 +441,10 @@ function FeatureCard({
       className="bg-bg-card border border-border-subtle rounded-2xl p-8 card-shine relative overflow-hidden group"
     >
       {/* Background glow */}
-      <div
-        className={`absolute -top-12 -right-12 w-32 h-32 rounded-full bg-${feature.accent}/5 group-hover:bg-${feature.accent}/10 transition-colors duration-500`}
-      />
+      <div className={`absolute -top-12 -right-12 w-32 h-32 rounded-full ${feature.glow} ${feature.glowHover} transition-colors duration-500`} />
 
-      <div
-        className={`w-14 h-14 rounded-2xl bg-${feature.accent}-muted flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}
-      >
-        <feature.icon size={24} className={`text-${feature.accent}`} strokeWidth={1.5} />
+      <div className={`w-14 h-14 rounded-2xl ${feature.iconBg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+        <feature.icon size={24} className={feature.iconText} strokeWidth={1.5} />
       </div>
 
       <h3 className="font-playfair text-xl text-text-primary mb-3">{feature.title}</h3>
@@ -1070,17 +1066,17 @@ export default function HomePageClient({
 
                 <div className="grid grid-cols-2 gap-4">
                   {[
-                    { label: 'Total Films', value: totalMovies.toLocaleString(), accent: 'accent-gold' },
-                    { label: 'Top Genre', value: genreStats[0]?.name || '—', accent: 'accent-purple' },
-                    { label: 'Avg Rating', value: avgRating > 0 ? String(avgRating) : '—', accent: 'accent-emerald' },
-                    { label: 'Genres', value: String(genreCounts.length), accent: 'accent-teal' },
+                    { label: 'Total Films', value: totalMovies.toLocaleString(), textColor: 'text-accent-gold' },
+                    { label: 'Top Genre', value: genreStats[0]?.name || '—', textColor: 'text-accent-purple' },
+                    { label: 'Avg Rating', value: avgRating > 0 ? String(avgRating) : '—', textColor: 'text-accent-emerald' },
+                    { label: 'Genres', value: String(genreCounts.length), textColor: 'text-accent-teal' },
                   ].map((s) => (
                     <motion.div
                       key={s.label}
                       whileHover={{ scale: 1.02 }}
-                      className={`bg-bg-primary border border-border-accent rounded-xl px-5 py-4 animate-borderGlow cursor-default`}
+                      className="bg-bg-primary border border-border-accent rounded-xl px-5 py-4 animate-borderGlow cursor-default"
                     >
-                      <p className={`text-${s.accent} font-playfair text-xl`}>{s.value}</p>
+                      <p className={`${s.textColor} font-playfair text-xl`}>{s.value}</p>
                       <p className="text-text-muted text-xs mt-0.5">{s.label}</p>
                     </motion.div>
                   ))}
