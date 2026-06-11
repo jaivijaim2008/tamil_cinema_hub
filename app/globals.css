@@ -69,7 +69,8 @@ html {
 }
 
 body {
-  background: var(--color-bg-primary);
+  background: radial-gradient(circle at top center, #1a1a1a 0%, var(--color-bg-primary) 60%);
+  background-attachment: fixed;
   color: var(--color-text-primary);
 }
 
@@ -101,6 +102,21 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.glassmorphism {
+  background: rgba(28, 28, 28, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  background: linear-gradient(145deg, rgba(28, 28, 28, 0.6) 0%, rgba(22, 22, 22, 0.4) 100%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
 /* ── Additional keyframes ──────────────────────────────────────────────────── */

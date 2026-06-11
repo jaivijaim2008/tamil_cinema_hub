@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // @ts-ignore - turbopack root config for Next.js 16
+  turbopack: {
+    root: process.cwd(),
+  },
   // ── Security Headers ──────────────────────────────────────
   // Middleware also sets these; this is defense-in-depth
   headers: async () => [

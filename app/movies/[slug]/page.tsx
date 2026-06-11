@@ -11,15 +11,22 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const movie = await client.fetch<any>(movieBySlugQuery, { slug })
+  let movie: any = null
+  try {
+    movie = await client.fetch<any>(movieBySlugQuery, { slug })
+  } catch (error) {
+    console.error("Failed to fetch movie for metadata:", error)
+  }
+
   if (!movie) return { title: 'Movie Not Found' }
+
   return {
     title: `${movie.title} (${movie.year})`,
     description: movie.synopsis || `${movie.title} - Tamil movie directed by ${movie.director}`,
     openGraph: {
       title: `${movie.title} (${movie.year})`,
       description: movie.synopsis || '',
-      images: movie.poster ? [urlFor(movie.poster).width(800).url()] : [],
+      images: movie.poster?.asset ? [urlFor(movie.poster).width(800).url()] : [],
     },
   }
 }
@@ -37,11 +44,29 @@ export default async function MovieDetailPage({
 
   if (!movie) notFound()
 
-  const posterUrl = movie.poster
+  const posterUrl = movie.poster?.asset
     ? urlFor(movie.poster).width(800).url()
     : movie.posterUrl || null
 
   const backdropUrl = movie.backdropUrl || null
 
-  return <MovieDetailClient movie={movie} posterUrl={posterUrl} backdropUrl={backdropUrl} />
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Movie',
+            name: movie.title,
+            image: posterUrl,
+            description: movie.synopsis || '',
+            director: movie.director ? { '@type': 'Person', name: movie.director } : undefined,
+            dateCreated: movie.year ? `${movie.year}` : undefined,
+          }),
+        }}
+      />
+      <MovieDetailClient movie={movie} posterUrl={posterUrl} backdropUrl={backdropUrl} />
+    </>
+  )
 }

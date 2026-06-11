@@ -39,6 +39,24 @@ export const metadata: Metadata = {
     template: '%s | TamilCinemaHub',
   },
   description: 'A high-fidelity archive of 1,600+ Tamil films. Discover, explore, and rediscover Kollywood.',
+  keywords: ['Tamil cinema', 'Kollywood movies', 'Tamil movies', 'Tamil movie reviews', 'Tamil film archive', 'Kollywood', 'Tamil film industry'],
+  authors: [{ name: 'TamilCinemaHub Team' }],
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://tamilcinemahub.xyz',
+    title: 'TamilCinemaHub — Tamil Cinema Archive',
+    description: 'A high-fidelity archive of 1,600+ Tamil films. Discover, explore, and rediscover Kollywood.',
+    siteName: 'TamilCinemaHub',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'TamilCinemaHub — Tamil Cinema Archive',
+    description: 'A high-fidelity archive of 1,600+ Tamil films. Discover, explore, and rediscover Kollywood.',
+  },
+  alternates: {
+    canonical: '/',
+  },
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,

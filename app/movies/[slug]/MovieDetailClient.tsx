@@ -37,7 +37,7 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
         <div className="flex flex-col md:flex-row gap-6 md:gap-10">
           {/* Poster */}
           <div className="shrink-0 w-48 md:w-64 mx-auto md:mx-0">
-            <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-bg-card border border-border">
+            <div className="relative aspect-[2/3] rounded-xl overflow-hidden glass-card">
               {posterUrl ? (
                 <Image
                   src={posterUrl}
@@ -126,7 +126,7 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
                   {movie.cast.map((name) => (
                     <span
                       key={name}
-                      className="text-sm text-text-secondary bg-bg-card border border-border rounded-lg px-3 py-1.5"
+                      className="text-sm text-text-secondary glassmorphism hover:bg-white/5 transition-colors rounded-lg px-3 py-1.5"
                     >
                       {name}
                     </span>
@@ -138,11 +138,15 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
         </div>
 
         {/* Full Review */}
-        {movie.review && movie.review.length > 0 && (
+        {movie.review && (
           <div className="mt-10 md:mt-14 max-w-3xl">
             <h2 className="text-lg font-bold text-text-primary mb-4">Full Review</h2>
             <div className="prose prose-invert prose-sm max-w-none">
-              <PortableText value={movie.review} />
+              {Array.isArray(movie.review) ? (
+                <PortableText value={movie.review} />
+              ) : (
+                <p className="text-text-secondary leading-relaxed">{String(movie.review)}</p>
+              )}
             </div>
           </div>
         )}
