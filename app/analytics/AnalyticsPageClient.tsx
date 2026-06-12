@@ -9,7 +9,8 @@ import {
   Cell,
   AreaChart, Area, CartesianGrid,
 } from 'recharts'
-import { normalizeRating } from '@/lib/rating'
+import { normalizeRating } from '@/lib/rating';
+import { MovieAnalytics } from '@/lib/types';
 import PageHeader from '@/components/ui/PageHeader'
 
 interface Props {

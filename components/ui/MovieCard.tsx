@@ -4,11 +4,12 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Film, Star } from 'lucide-react'
-import type { Movie } from '@/lib/types'
 import { motion } from 'framer-motion'
 import { getRatingColor } from '@/lib/constants'
 import { urlFor } from '@/sanity/lib/image'
 import type { CastMember } from '@/lib/types'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { Movie } from '@/lib/types'
 
 export interface MovieCardMovie {
   _id: string
@@ -18,13 +19,12 @@ export interface MovieCardMovie {
   year: number
   director?: string
   rating?: number
-  poster?: any
+  poster?: { asset?: { _ref?: string } }
   posterUrl?: string | null
   genre?: string[]
   cast?: (string | CastMember)[]
 }
 
-// Re-export the core type that server pages import from here
 export type { Movie } from '@/lib/types'
 
 interface Props {
@@ -79,7 +79,7 @@ export default function MovieCard({ movie, index = 0 }: Props) {
         {movie.rating != null && movie.rating > 0 && (
           <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/70 backdrop-blur-sm rounded-lg px-2 py-1">
             <Star size={10} className="fill-current" style={{ color: ratingColor }} />
-            <span className="text-xs font-bold text-white">{Number(normalizeRating(movie.rating)).toFixed(1)}</span>
+            <span className="text-xs font-bold text-white">{movie.rating != null ? Number(movie.rating).toFixed(1) : '—'}</span>
           </div>
         )}
 

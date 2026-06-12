@@ -28,13 +28,31 @@ export async function generateMetadata({
   const { slug } = await params
   const blog = await client.fetch<BlogDetail>(blogBySlugQuery, { slug })
   if (!blog) return { title: 'Post Not Found' }
+
+  const ogImage = blog.mainImage ? urlFor(blog.mainImage).width(1200).height(630).url() : undefined
+
   return {
     title: blog.seoTitle || blog.title,
     description: blog.seoDescription || blog.excerpt,
+    keywords: blog.tags,
+    authors: blog.author ? [{ name: blog.author }] : undefined,
     openGraph: {
+      type: 'article',
       title: blog.title,
       description: blog.excerpt,
-      images: blog.mainImage ? [urlFor(blog.mainImage).width(1200).url()] : [],
+      images: ogImage ? [{ url: ogImage, width: 1200, height: 630, alt: blog.title }] : [],
+      publishedTime: blog.publishedAt,
+      section: blog.category,
+      tags: blog.tags,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: blog.title,
+      description: blog.excerpt,
+      images: ogImage ? [ogImage] : [],
+    },
+    alternates: {
+      canonical: `/blogs/${slug}`,
     },
   }
 }

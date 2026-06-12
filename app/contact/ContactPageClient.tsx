@@ -42,7 +42,7 @@ export default function ContactPageClient() {
             <div className="bg-bg-card border border-border rounded-xl p-4">
               <Mail size={18} className="text-accent-gold mb-2" />
               <p className="text-sm font-semibold text-text-primary">Email</p>
-              <p className="text-xs text-text-muted">hello@tamilcinemahub.xyz</p>
+              <p className="text-xs text-text-muted">Reach us via the contact form below.</p>
             </div>
             <div className="bg-bg-card border border-border rounded-xl p-4">
               <MessageSquare size={18} className="text-accent-gold mb-2" />

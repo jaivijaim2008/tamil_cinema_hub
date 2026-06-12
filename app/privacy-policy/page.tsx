@@ -2,7 +2,7 @@ export default function PrivacyPolicyPage() {
   const sections = [
     {
       title: 'Information We Collect',
-      content: 'We collect information you provide directly, such as when you fill out our contact form. This may include your name, email address, and message content. We also automatically collect certain information when you visit our website, including your IP address, browser type, and usage data.',
+      content: 'We gather information you voluntarily provide when you use our contact form, such as your name, email address, subject, and message. Additionally, we automatically collect technical data like your IP address, browser type, and usage patterns to enhance site performance.',
     },
     {
       title: 'How We Use Your Information',
@@ -30,7 +30,7 @@ export default function PrivacyPolicyPage() {
     },
     {
       title: 'Contact Us',
-      content: 'If you have any questions about this Privacy Policy, please contact us through our contact page or at hello@tamilcinemahub.xyz.',
+      content: 'If you have any questions about this Privacy Policy, please use the contact form on our website. We will respond using the information you provide.'
     },
   ]
 

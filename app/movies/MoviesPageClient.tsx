@@ -1,24 +1,26 @@
-'use client'
+// MoviesPageClient.tsx – Displays movie grid with optional 5‑star filter
+'use client';
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Filter, Grid3X3, List, X } from 'lucide-react'
-import type { Movie } from '@/lib/types'
-import MovieCard from '@/components/ui/MovieCard'
-import SearchInput from '@/components/ui/SearchInput'
-import GenreChip from '@/components/ui/GenreChip'
-import Pagination from '@/components/ui/Pagination'
-import EmptyState from '@/components/ui/EmptyState'
-import PageHeader from '@/components/ui/PageHeader'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Filter, X } from 'lucide-react';
+import type { Movie } from '@/lib/types';
+// Removed normalizeRating import as we now use raw rating
+import MovieCard from '@/components/ui/MovieCard';
+import SearchInput from '@/components/ui/SearchInput';
+import GenreChip from '@/components/ui/GenreChip';
+import Pagination from '@/components/ui/Pagination';
+import EmptyState from '@/components/ui/EmptyState';
+import PageHeader from '@/components/ui/PageHeader';
 
 interface Props {
-  initialMovies: Movie[]
-  totalCount: number
-  genres: string[]
-  initialGenre: string
-  initialQ: string
-  currentPage: number
-  totalPages: number
+  initialMovies: Movie[];
+  totalCount: number;
+  genres: string[];
+  initialGenre: string;
+  initialQ: string;
+  currentPage: number;
+  totalPages: number;
 }
 
 export default function MoviesPageClient({
@@ -30,14 +32,19 @@ export default function MoviesPageClient({
   currentPage,
   totalPages,
 }: Props) {
-  const [showFilters, setShowFilters] = useState(false)
-  const router = useRouter()
+  const [showFilters, setShowFilters] = useState(false);
+  const [showFiveStarsOnly, setShowFiveStarsOnly] = useState(false);
+  const router = useRouter();
+
+  const displayMovies = showFiveStarsOnly
+    ? initialMovies.filter((m) => m.rating === 5)
+    : initialMovies;
 
   function applyFilter(genre: string) {
-    const sp = new URLSearchParams()
-    if (genre && genre !== 'All') sp.set('genre', genre)
-    if (initialQ) sp.set('q', initialQ)
-    router.push(`/movies?${sp.toString()}`)
+    const sp = new URLSearchParams();
+    if (genre && genre !== 'All') sp.set('genre', genre);
+    if (initialQ) sp.set('q', initialQ);
+    router.push(`/movies?${sp.toString()}`);
   }
 
   return (
@@ -84,10 +91,18 @@ export default function MoviesPageClient({
           </div>
         )}
 
+        {/* 5‑star filter toggle */}
+        <button
+          onClick={() => setShowFiveStarsOnly(!showFiveStarsOnly)}
+          className="mb-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-bg-card border border-border text-sm text-text-secondary hover:text-text-primary transition-colors"
+        >
+          {showFiveStarsOnly ? 'Show All' : '5★ Only'}
+        </button>
+
         {/* Movie grid */}
-        {initialMovies.length > 0 ? (
+        {displayMovies.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
-            {initialMovies.map((movie, i) => (
+            {displayMovies.map((movie, i) => (
               <MovieCard key={movie._id} movie={movie} index={i} />
             ))}
           </div>
@@ -107,5 +122,5 @@ export default function MoviesPageClient({
         />
       </div>
     </div>
-  )
+  );
 }

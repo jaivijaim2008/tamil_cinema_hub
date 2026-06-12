@@ -3,9 +3,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Star, Calendar, User, Monitor, ArrowLeft, Film } from 'lucide-react'
-import type { Movie } from '@/lib/types'
-import { normalizeRating } from '@/lib/rating'
+import { Calendar, User, Monitor, ArrowLeft, Film } from 'lucide-react'
+import type { Movie, CastMember } from '@/lib/types'
 import RatingStars from '@/components/ui/RatingStars'
 import { urlFor } from '@/sanity/lib/image'
 import PortableText from '@/components/ui/PortableText'
@@ -133,7 +132,7 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
               <div className="mb-6">
                 <h2 className="text-sm font-semibold text-text-primary mb-3 uppercase tracking-wide">Cast</h2>
                 <div className="flex flex-wrap gap-3">
-                  {movie.cast.map((castItem: any, idx) => {
+                  {movie.cast.map((castItem: string | CastMember, idx) => {
                     const isObj = typeof castItem !== 'string';
                     const castName = isObj ? (castItem?.name || 'Unknown') : castItem;
                     const castChar = isObj ? castItem?.character : null;
