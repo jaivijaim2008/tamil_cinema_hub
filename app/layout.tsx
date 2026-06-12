@@ -55,6 +55,9 @@ export const metadata: Metadata = {
     title: 'TamilCinemaHub — Tamil Cinema Archive',
     description: 'A high-fidelity archive of 1,600+ Tamil films. Discover, explore, and rediscover Kollywood.',
   },
+  other: {
+    'google-adsense-account': 'ca-pub-9250311764302161',
+  },
   alternates: {
     canonical: '/',
   },
