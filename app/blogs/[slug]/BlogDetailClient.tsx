@@ -8,6 +8,7 @@ import type { Blog } from '@/lib/types'
 import { urlFor } from '@/sanity/lib/image'
 import PortableText from '@/components/ui/PortableText'
 import BlogCard from '@/components/ui/BlogCard'
+import AdUnit from '@/components/ui/AdUnit'
 
 interface Props {
   blog: BlogDetail
@@ -167,10 +168,15 @@ export default function BlogDetailClient({ blog, related }: Props) {
 
           {/* Body */}
           {blog.body && blog.body.length > 0 && (
-            <div className="mb-12">
+            <div className="mb-8">
               <PortableText value={blog.body as any} />
             </div>
           )}
+
+          {/* Ad: After article body */}
+          <div className="mb-12">
+            <AdUnit adSlot="0000000004" className="max-w-2xl mx-auto" minHeight="100px" />
+          </div>
 
           {/* Tags */}
           {blog.tags && blog.tags.length > 0 && (

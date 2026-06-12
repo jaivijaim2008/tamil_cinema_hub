@@ -8,6 +8,7 @@ import type { Movie, CastMember } from '@/lib/types'
 import RatingStars from '@/components/ui/RatingStars'
 import { urlFor } from '@/sanity/lib/image'
 import PortableText from '@/components/ui/PortableText'
+import AdUnit from '@/components/ui/AdUnit'
 
 interface Props {
   movie: Movie
@@ -163,6 +164,11 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
               </div>
             )}
           </div>
+        </div>
+
+        {/* Ad: Between Details and Review */}
+        <div className="mt-10 md:mt-14">
+          <AdUnit adSlot="0000000003" className="max-w-3xl" minHeight="100px" />
         </div>
 
         {/* Full Review */}

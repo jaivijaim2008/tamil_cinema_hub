@@ -12,6 +12,7 @@ import GenreChip from '@/components/ui/GenreChip';
 import Pagination from '@/components/ui/Pagination';
 import EmptyState from '@/components/ui/EmptyState';
 import PageHeader from '@/components/ui/PageHeader';
+import AdUnit from '@/components/ui/AdUnit';
 
 interface Props {
   initialMovies: Movie[];
@@ -98,6 +99,11 @@ export default function MoviesPageClient({
         >
           {showFiveStarsOnly ? 'Show All' : '5★ Only'}
         </button>
+
+        {/* Ad: Above movie grid */}
+        <div className="mb-8">
+          <AdUnit adSlot="0000000005" className="max-w-4xl mx-auto" minHeight="90px" />
+        </div>
 
         {/* Movie grid */}
         {displayMovies.length > 0 ? (

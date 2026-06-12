@@ -7,6 +7,7 @@ import { GENRE_COLORS } from '@/lib/constants'
 import MovieCard from '@/components/ui/MovieCard'
 import BlogCard from '@/components/ui/BlogCard'
 import InteractiveHero from '@/components/ui/InteractiveHero'
+import AdUnit from '@/components/ui/AdUnit'
 import { motion } from 'framer-motion'
 
 interface GenreCountItem {
@@ -36,6 +37,13 @@ export default function HomePageClient({
     <div className="min-h-screen">
       <InteractiveHero totalMovies={totalMovies} avgRating={avgRating} />
 
+      {/* ── Ad: Below Hero ─────────────────────────────────────────────────── */}
+      <section className="py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <AdUnit adSlot="0000000000" className="max-w-4xl mx-auto" minHeight="100px" />
+        </div>
+      </section>
+
       {/* ── Latest Movies ─────────────────────────────────────────────────── */}
       {movies.length > 0 && (
         <section className="py-16 md:py-24">
@@ -54,6 +62,13 @@ export default function HomePageClient({
           </div>
         </section>
       )}
+
+      {/* ── Ad: Between Movies and Genres ──────────────────────────────────── */}
+      <section className="py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <AdUnit adSlot="0000000001" className="max-w-4xl mx-auto" />
+        </div>
+      </section>
 
       {/* ── Genre Explorer ────────────────────────────────────────────────── */}
       {genreCounts.length > 0 && (
@@ -127,6 +142,13 @@ export default function HomePageClient({
           </div>
         </section>
       )}
+
+      {/* ── Ad: Before CTA ──────────────────────────────────────────────────── */}
+      <section className="py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <AdUnit adSlot="0000000002" className="max-w-4xl mx-auto" />
+        </div>
+      </section>
 
       {/* ── CTA ───────────────────────────────────────────────────────────── */}
       <section className="py-16 md:py-24">
