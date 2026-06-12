@@ -73,13 +73,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" className={`${playfair.variable} ${inter.variable} ${mono.variable}`}>
       <head>
-        {/* Google AdSense */}
+        {/* Google AdSense — beforeInteractive ensures the script tag is in the SSR HTML so Google's crawler can verify it */}
         <Script
           id="adsense-init"
-          async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9250311764302161"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
+          strategy="beforeInteractive"
         />
       </head>
       <body className="bg-bg-primary text-text-primary font-inter antialiased overflow-x-hidden">
