@@ -56,3 +56,6 @@ export function getRatingLabel(rating: number): string {
 }
 
 export const PLACEHOLDER_POSTER = '/placeholder-poster.svg'
+
+// ML Recommendation Engine API URL
+export const RECOMMENDER_API_URL = process.env.NEXT_PUBLIC_RECOMMENDER_API_URL || 'https://tamilcinema-recommender.onrender.com'

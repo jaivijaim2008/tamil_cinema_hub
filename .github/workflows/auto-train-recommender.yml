@@ -1,0 +1,115 @@
+name: Auto-Train ML Recommender
+
+on:
+  schedule:
+    # Runs every Sunday at 3 AM UTC
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - 'recommender-api/**'
+      - 'sanity/schemas/movie.js'
+
+jobs:
+  train-recommender:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Node dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Create .env.local
+        run: |
+          echo "NEXT_PUBLIC_SANITY_PROJECT_ID=${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID }}" >> .env.local
+          echo "NEXT_PUBLIC_SANITY_DATASET=${{ secrets.NEXT_PUBLIC_SANITY_DATASET }}" >> .env.local
+          echo "SANITY_WRITE_TOKEN=${{ secrets.SANITY_WRITE_TOKEN }}" >> .env.local
+
+      - name: Export movie data from Sanity
+        run: node scripts/exportForRecommender.js
+
+      - name: Install Python dependencies
+        run: pip install -r recommender-api/requirements.txt
+
+      - name: Validate ML model loads
+        run: |
+          cd recommender-api
+          python -c "
+          import json, sys
+          from sklearn.feature_extraction.text import TfidfVectorizer
+          from sklearn.metrics.pairwise import cosine_similarity
+          import numpy as np
+          import pandas as pd
+          from collections import defaultdict
+
+          print('Loading movies.json...')
+          with open('movies.json', 'r') as f:
+              raw = json.load(f)
+
+          print(f'Loaded {len(raw)} movies')
+          assert len(raw) > 0, 'No movies found!'
+
+          df = pd.DataFrame(raw)
+          df['genre'] = df['genre'].apply(lambda x: x if isinstance(x, list) else [])
+
+          def normalize_cast(items):
+              if not isinstance(items, list): return []
+              return [item.get('name', '') if isinstance(item, dict) else str(item) for item in items if item]
+          df['cast'] = df['cast'].apply(normalize_cast)
+          df['director'] = df['director'].apply(lambda x: str(x).lower().strip() if pd.notna(x) else 'unknown')
+          df['synopsis'] = df['synopsis'].apply(lambda x: str(x).lower() if pd.notna(x) else '')
+          df['rating'] = df['rating'].apply(lambda x: float(x) if pd.notna(x) and x > 0 else 0.0)
+          df['year'] = df['year'].apply(lambda x: int(x) if pd.notna(x) else 0)
+          df['slug'] = df['slug'].apply(lambda x: str(x) if pd.notna(x) else '')
+
+          # Build features
+          df['features'] = (
+              df['genre'].apply(lambda x: ' '.join(x * 3)) + ' ' +
+              df['director'] + ' ' + df['director'] + ' ' +
+              df['cast'].apply(lambda x: ' '.join(x)) + ' ' +
+              df['cast'].apply(lambda x: ' '.join(x)) + ' ' +
+              df['synopsis'].apply(lambda x: ' '.join(x.split()[:80]))
+          )
+
+          # TF-IDF
+          vectorizer = TfidfVectorizer(stop_words='english', max_features=8000, ngram_range=(1,2), min_df=1, sublinear_tf=True)
+          tfidf = vectorizer.fit_transform(df['features'])
+          print(f'TF-IDF matrix: {tfidf.shape}')
+
+          # Content similarity
+          content_sim = cosine_similarity(tfidf).astype(np.float32)
+          print(f'Content similarity matrix: {content_sim.shape}')
+
+          # Test recommendation
+          if len(df) > 1:
+              scores = content_sim[0]
+              top_idx = np.argsort(scores)[::-1][1:4]
+              print(f'Top 3 similar to \"{df.iloc[0][\"title\"]}\":')
+              for i in top_idx:
+                  print(f'  - {df.iloc[i][\"title\"]} (score: {scores[i]:.4f})')
+
+          print('✅ ML model validation passed!')
+          "
+
+      - name: Commit updated movies.json if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add recommender-api/movies.json
+          git diff --cached --quiet || git commit -m "chore: auto-update recommender training data"
+          git push || echo "No changes to commit"

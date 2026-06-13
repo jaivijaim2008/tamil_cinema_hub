@@ -9,6 +9,7 @@ import RatingStars from '@/components/ui/RatingStars'
 import { urlFor } from '@/sanity/lib/image'
 import PortableText from '@/components/ui/PortableText'
 import AdUnit from '@/components/ui/AdUnit'
+import MLMoreLikeThis from '@/components/ui/MLMoreLikeThis'
 
 interface Props {
   movie: Movie
@@ -165,6 +166,9 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
             )}
           </div>
         </div>
+
+        {/* ML-Powered More Like This */}
+        <MLMoreLikeThis movieSlug={movie.slug} />
 
         {/* Ad: Between Details and Review */}
         <div className="mt-10 md:mt-14">
