@@ -284,7 +284,8 @@ async def lifespan(app: FastAPI):
     tfidf_matrix = None
     content_sim_matrix = None
     collab_sim_matrix = None
-    hybrid_sim_matrix = None    slugs_to_idx = {}
+    hybrid_sim_matrix = None
+    slugs_to_idx = {}
     rec_cache = {}
     model_info = {}
     gc.collect()

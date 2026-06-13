@@ -10,6 +10,8 @@ import { urlFor } from '@/sanity/lib/image'
 import PortableText from '@/components/ui/PortableText'
 import AdUnit from '@/components/ui/AdUnit'
 import MLMoreLikeThis from '@/components/ui/MLMoreLikeThis'
+import MovieCompare from '@/components/ui/MovieCompare'
+import { useTrackView } from '@/hooks/useTrackInteraction'
 
 interface Props {
   movie: Movie
@@ -20,6 +22,9 @@ interface Props {
 export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Props) {
   const [posterError, setPosterError] = useState(false)
   const [backdropError, setBackdropError] = useState(false)
+
+  // Track this movie view for ML personalization
+  useTrackView(movie.slug)
 
   const displayPoster = !posterError && posterUrl
   const displayBackdrop = !backdropError && backdropUrl
@@ -169,6 +174,9 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
 
         {/* ML-Powered More Like This */}
         <MLMoreLikeThis movieSlug={movie.slug} />
+
+        {/* Movie Comparison */}
+        <MovieCompare movieSlug={movie.slug} />
 
         {/* Ad: Between Details and Review */}
         <div className="mt-10 md:mt-14">
