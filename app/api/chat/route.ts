@@ -358,10 +358,23 @@ type IntentType =
   | 'recommend'
   | 'movie_detail'
   | 'search'
+  | 'non_cinema'
   | 'unknown'
 
 function classifyIntent(message: string, e: Entities): IntentType {
   const lower = message.toLowerCase().trim()
+
+  // ── Non-cinema questions — catch these FIRST ──────────────
+  const isCinemaRelated = e.actors.length > 0 || e.directors.length > 0 || e.genres.length > 0 || e.years.length > 0 || e.otts.length > 0 || e.ratings !== null
+  if (!isCinemaRelated) {
+    if (/^(what(?:'s| is| are) (?:the )?(?:time|date|day|weather|temperature))\b/i.test(lower)) return 'non_cinema'
+    if (/^(who (?:is|are) (?:the )?(?:president|pm|minister|governor|ceo|king|queen))\b/i.test(lower)) return 'non_cinema'
+    if (/^(how (?:old|tall|far|much|many|do i))\b/i.test(lower)) return 'non_cinema'
+    if (/^(can you|do you|are you|will you|shall we|could you)\b/i.test(lower)) return 'non_cinema'
+    if (/^(tell me a joke|joke|fun fact|riddle)\b/i.test(lower)) return 'non_cinema'
+    if (/^(translate|what does .+ mean in|define)\b/i.test(lower)) return 'non_cinema'
+    if (/^(calculate|math|convert)\b/i.test(lower)) return 'non_cinema'
+  }
 
   if (/^(hi|hello|hey|yo|sup|hii+|helo+|hai|vanakkam|namaste|good\s*(morning|evening|night|day)|welcome|start)\b/i.test(lower))
     return 'greeting'
@@ -717,7 +730,7 @@ async function askGroq(
     console.log(`[Groq] Success — ${reply.length} chars, model: ${data?.model ?? 'unknown'}`)
 
     return {
-      reply: `🤖 ${reply}`,
+      reply,
       suggestions: buildGroqSuggestions(message),
     }
 
@@ -822,6 +835,14 @@ async function generateResponse(
         `🎉 Anytime! Come back for more recommendations!`,
       ]),
       suggestions: ['More recommendations', 'Top rated films', 'Latest releases'],
+    }
+  }
+
+  // ── Non-cinema question ─────────────────────────────────
+  if (intent === 'non_cinema') {
+    return {
+      reply: `🎬 I specialize in Tamil cinema only! I can help you with:\n\n• **Actors** — "Vijay movies", "Kamal Haasan films"\n• **Directors** — "Mani Ratnam filmography"\n• **Genres** — "best action movies", "top thrillers"\n• **Streaming** — "movies on Netflix"\n\nWhat Tamil cinema topic can I help with?`,
+      suggestions: ['Best action movies', 'Vijay films', 'Top rated Tamil films'],
     }
   }
 
@@ -1158,7 +1179,7 @@ async function generateResponse(
     }
   }
 
-  // ── Final fallback: Groq AI ───────────────────────────────
+  // ── Final fallback: Groq AI (handles unknown + any unmatched) ──
   return await askGroq(message, history, `intent:${intent} no DB match`)
 }
 

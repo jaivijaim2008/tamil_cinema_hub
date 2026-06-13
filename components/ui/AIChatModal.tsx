@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { X, Send, Trash2, Bot, User, Sparkles } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 
@@ -11,7 +11,7 @@ interface ChatMessage {
   timestamp: number
 }
 
-const STORAGE_KEY = 'kollywoodai_chat_history'
+const STORAGE_KEY = 'tamilcinema_chat_history'
 const MAX_STORED_MESSAGES = 50
 
 function loadHistory(): ChatMessage[] {
@@ -32,6 +32,46 @@ function saveHistory(messages: ChatMessage[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-MAX_STORED_MESSAGES)))
   } catch {}
+}
+
+/**
+ * Pre-process markdown content to convert [poster:URL] syntax to real images.
+ */
+function cleanContent(text: string): string {
+  return text
+    // Convert [poster:URL] → markdown image
+    .replace(/\[poster:(https?:\/\/[^\]]+)\]/g, '![]($1)')
+}
+
+/** Custom ReactMarkdown components for chat styling */
+function ChatMarkdown({ content }: { content: string }) {
+  const cleaned = useMemo(() => cleanContent(content), [content])
+
+  return (
+    <div className="prose prose-invert prose-sm max-w-none
+      prose-a:text-accent-gold prose-a:no-underline hover:prose-a:underline
+      prose-strong:text-text-primary prose-p:text-text-secondary
+      prose-img:rounded-lg prose-img:my-2 prose-img:max-w-[120px]
+      prose-img:shadow-md prose-img:border prose-img:border-white/10
+      prose-headings:text-text-primary prose-li:text-text-secondary
+    ">
+      <ReactMarkdown
+        components={{
+          img: ({ src, alt }) => (
+            <img
+              src={src}
+              alt={alt || 'Movie poster'}
+              className="inline-block w-[80px] h-[120px] object-cover rounded-lg shadow-md border border-white/10 mr-2 mb-1 float-left"
+              loading="lazy"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+            />
+          ),
+        }}
+      >
+        {cleaned}
+      </ReactMarkdown>
+    </div>
+  )
 }
 
 interface Props {
@@ -125,18 +165,18 @@ export default function AIChatModal({ open, onClose }: Props) {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-end md:items-center justify-center">
+    <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full md:w-[480px] md:max-w-lg bg-bg-primary border border-border rounded-t-2xl md:rounded-2xl flex flex-col max-h-[85vh] overflow-hidden animate-slide-up shadow-2xl">
+      <div className="relative w-full sm:w-[480px] sm:max-w-lg bg-bg-primary border border-border rounded-t-2xl sm:rounded-2xl flex flex-col h-[100dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden animate-slide-up shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-bg-card/50">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-bg-card/50 shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-accent-gold/10 flex items-center justify-center">
               <Sparkles size={14} className="text-accent-gold" />
             </div>
             <div>
               <span className="text-sm font-semibold text-text-primary">TamilCinema AI</span>
-              <p className="text-[10px] text-text-muted">Powered by Groq + Your Database</p>
+              <p className="text-[10px] text-text-muted">Your Tamil cinema guide 🎬</p>
             </div>
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse ml-1" />
           </div>
@@ -161,7 +201,7 @@ export default function AIChatModal({ open, onClose }: Props) {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[200px] max-h-[50vh]">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 min-h-0">
           {messages.length === 0 && (
             <div className="text-center py-8">
               <div className="w-12 h-12 rounded-full bg-accent-gold/10 flex items-center justify-center mx-auto mb-3">
@@ -174,7 +214,7 @@ export default function AIChatModal({ open, onClose }: Props) {
 
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`flex gap-2 max-w-[90%] ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
+              <div className={`flex gap-2 max-w-[92%] sm:max-w-[88%] ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
                 {/* Avatar */}
                 <div className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-1 ${
                   m.role === 'user'
@@ -193,11 +233,9 @@ export default function AIChatModal({ open, onClose }: Props) {
                     : 'bg-bg-card text-text-primary border border-border/50'
                 }`}>
                   {m.role === 'assistant' ? (
-                    <div className="prose prose-invert prose-sm max-w-none prose-a:text-accent-gold prose-strong:text-text-primary prose-p:text-text-secondary">
-                      <ReactMarkdown>{m.content}</ReactMarkdown>
-                    </div>
+                    <ChatMarkdown content={m.content} />
                   ) : (
-                    <p>{m.content}</p>
+                    <p className="break-words">{m.content}</p>
                   )}
                 </div>
               </div>
@@ -226,7 +264,7 @@ export default function AIChatModal({ open, onClose }: Props) {
 
         {/* Suggestions */}
         {suggestions.length > 0 && !loading && (
-          <div className="px-4 pb-2 flex flex-wrap gap-1.5">
+          <div className="px-3 sm:px-4 pb-2 flex flex-wrap gap-1.5 shrink-0">
             {suggestions.map((s, i) => (
               <button
                 key={i}
@@ -240,7 +278,7 @@ export default function AIChatModal({ open, onClose }: Props) {
         )}
 
         {/* Input */}
-        <div className="border-t border-border p-3 bg-bg-card/30">
+        <div className="border-t border-border p-3 bg-bg-card/30 shrink-0">
           <form
             onSubmit={(e) => { e.preventDefault(); sendMessage(input) }}
             className="flex items-center gap-2"
@@ -263,7 +301,7 @@ export default function AIChatModal({ open, onClose }: Props) {
             </button>
           </form>
           <p className="text-[9px] text-text-muted/40 text-center mt-1.5">
-            Memory enabled • Powered by Groq LLM + Sanity database
+            Conversation memory enabled
           </p>
         </div>
       </div>
