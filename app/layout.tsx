@@ -79,6 +79,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9250311764302161"
           strategy="beforeInteractive"
         />
+        {/* Plausible Analytics — privacy-friendly, no cookies */}
+        <Script
+          defer
+          data-domain="tamilcinemahub.xyz"
+          src="https://plausible.io/js/script.js"
+        />
       </head>
       <body className="bg-bg-primary text-text-primary font-inter antialiased overflow-x-hidden">
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-accent-gold focus:text-text-inverse focus:px-4 focus:py-2 focus:rounded-lg">

@@ -39,7 +39,6 @@ function saveHistory(messages: ChatMessage[]) {
  */
 function cleanContent(text: string): string {
   return text
-    // Convert [poster:URL] → markdown image
     .replace(/\[poster:(https?:\/\/[^\]]+)\]/g, '![]($1)')
 }
 
@@ -74,6 +73,45 @@ function ChatMarkdown({ content }: { content: string }) {
   )
 }
 
+/** Typing indicator — shows "TamilCinema AI is typing…" with animated dots */
+function TypingIndicator() {
+  return (
+    <div className="flex justify-start">
+      <div className="flex gap-2">
+        <div className="shrink-0 w-6 h-6 rounded-full bg-bg-elevated border border-border flex items-center justify-center mt-1">
+          <Bot size={10} className="text-text-muted" />
+        </div>
+        <div className="bg-bg-card border border-border/50 px-3 py-2.5 rounded-xl">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] text-text-muted mr-1">thinking</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-accent-gold/60 animate-bounce" style={{ animationDelay: '0ms' }} />
+            <span className="w-1.5 h-1.5 rounded-full bg-accent-gold/60 animate-bounce" style={{ animationDelay: '150ms' }} />
+            <span className="w-1.5 h-1.5 rounded-full bg-accent-gold/60 animate-bounce" style={{ animationDelay: '300ms' }} />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** Shimmer skeleton — shows after typing indicator while waiting for full response */
+function ShimmerSkeleton() {
+  return (
+    <div className="flex justify-start">
+      <div className="flex gap-2">
+        <div className="shrink-0 w-6 h-6 rounded-full bg-bg-elevated border border-border flex items-center justify-center mt-1">
+          <Bot size={10} className="text-text-muted" />
+        </div>
+        <div className="bg-bg-card border border-border/50 px-3 py-2.5 rounded-xl space-y-2">
+          <div className="h-3 w-32 rounded-full bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04] animate-shimmer" />
+          <div className="h-3 w-24 rounded-full bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04] animate-shimmer" style={{ animationDelay: '150ms' }} />
+          <div className="h-3 w-20 rounded-full bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04] animate-shimmer" style={{ animationDelay: '300ms' }} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 interface Props {
   open: boolean
   onClose: () => void
@@ -83,6 +121,7 @@ export default function AIChatModal({ open, onClose }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showTyping, setShowTyping] = useState(false)
   const [suggestions, setSuggestions] = useState<string[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -103,7 +142,7 @@ export default function AIChatModal({ open, onClose }: Props) {
   // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, loading])
+  }, [messages, loading, showTyping])
 
   // Save history when messages change
   useEffect(() => {
@@ -122,8 +161,11 @@ export default function AIChatModal({ open, onClose }: Props) {
     setMessages(prev => [...prev, userMsg])
     setLoading(true)
 
+    // Show typing indicator immediately, then switch to shimmer after 1.5s
+    setShowTyping(true)
+    const shimmerTimer = setTimeout(() => setShowTyping(false), 1500)
+
     try {
-      // Send full conversation history for memory
       const historyForAPI = [...messages, userMsg].map(m => ({
         role: m.role,
         content: m.content,
@@ -152,6 +194,8 @@ export default function AIChatModal({ open, onClose }: Props) {
       }
       setMessages(prev => [...prev, errorMsg])
     } finally {
+      clearTimeout(shimmerTimer)
+      setShowTyping(false)
       setLoading(false)
     }
   }, [messages, loading])
@@ -215,7 +259,6 @@ export default function AIChatModal({ open, onClose }: Props) {
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div className={`flex gap-2 max-w-[92%] sm:max-w-[88%] ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                {/* Avatar */}
                 <div className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-1 ${
                   m.role === 'user'
                     ? 'bg-accent-gold/20'
@@ -226,7 +269,6 @@ export default function AIChatModal({ open, onClose }: Props) {
                     : <Bot size={10} className="text-text-muted" />
                   }
                 </div>
-                {/* Message bubble */}
                 <div className={`px-3 py-2 rounded-xl text-sm ${
                   m.role === 'user'
                     ? 'bg-accent-gold text-text-inverse'
@@ -242,20 +284,9 @@ export default function AIChatModal({ open, onClose }: Props) {
             </div>
           ))}
 
-          {loading && (
-            <div className="flex justify-start">
-              <div className="flex gap-2">
-                <div className="shrink-0 w-6 h-6 rounded-full bg-bg-elevated border border-border flex items-center justify-center mt-1">
-                  <Bot size={10} className="text-text-muted" />
-                </div>
-                <div className="bg-bg-card border border-border/50 px-3 py-2.5 rounded-xl space-y-2">
-                  <div className="h-3 w-32 rounded-full bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04] animate-shimmer" />
-                  <div className="h-3 w-24 rounded-full bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04] animate-shimmer" style={{ animationDelay: '150ms' }} />
-                  <div className="h-3 w-20 rounded-full bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04] animate-shimmer" style={{ animationDelay: '300ms' }} />
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Loading states: typing indicator first, then shimmer skeleton */}
+          {loading && showTyping && <TypingIndicator />}
+          {loading && !showTyping && <ShimmerSkeleton />}
 
           <div ref={messagesEndRef} />
         </div>
