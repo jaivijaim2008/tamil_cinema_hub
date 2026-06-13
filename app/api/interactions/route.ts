@@ -1,4 +1,8 @@
 import { NextResponse } from 'next/server'
+import { promises as fs } from 'fs'
+import path from 'path'
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB limit
 
 /**
  * POST /api/interactions
@@ -35,20 +39,25 @@ export async function POST(request: Request) {
       timestamp: new Date().toISOString(),
     }
 
-    // Store interaction using append to a local file
-    // In production, you'd use a database (Redis, Postgres, etc.)
-    const fs = require('fs')
-    const path = require('path')
-
     const dataDir = path.join(process.cwd(), 'data')
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true })
-    }
-
+    await fs.mkdir(dataDir, { recursive: true })
     const interactionsFile = path.join(dataDir, 'interactions.jsonl')
 
-    // Append the interaction as a JSONL line
-    fs.appendFileSync(interactionsFile, JSON.stringify(interaction) + '\n')
+    // Check file size before appending (prevent unbounded growth)
+    try {
+      const stats = await fs.stat(interactionsFile)
+      if (stats.size > MAX_FILE_SIZE) {
+        // Keep only the last 50% of lines
+        const content = await fs.readFile(interactionsFile, 'utf-8')
+        const lines = content.trim().split('\n').filter(Boolean)
+        const half = Math.floor(lines.length / 2)
+        await fs.writeFile(interactionsFile, lines.slice(half).join('\n') + '\n')
+      }
+    } catch {
+      // File doesn't exist yet, that's fine
+    }
+
+    await fs.appendFile(interactionsFile, JSON.stringify(interaction) + '\n')
 
     return NextResponse.json({ success: true })
   } catch (error) {
@@ -73,16 +82,15 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Missing slug parameter' }, { status: 400 })
     }
 
-    const fs = require('fs')
-    const path = require('path')
-
     const interactionsFile = path.join(process.cwd(), 'data', 'interactions.jsonl')
 
-    if (!fs.existsSync(interactionsFile)) {
+    let content: string
+    try {
+      content = await fs.readFile(interactionsFile, 'utf-8')
+    } catch {
       return NextResponse.json({ views: 0, clicks: 0, avgRating: 0, ratings: 0 })
     }
 
-    const content = fs.readFileSync(interactionsFile, 'utf-8')
     const lines = content.trim().split('\n').filter(Boolean)
 
     let views = 0

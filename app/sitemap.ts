@@ -10,16 +10,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let movieSlugs: string[] = []
   let blogSlugs: string[] = []
 
+  // Gracefully handle missing Sanity config (e.g. during local builds)
   try {
     movieSlugs = await client.fetch<string[]>(allMovieSlugsQuery)
-  } catch (error) {
-    console.error('Error fetching movie slugs for sitemap:', error)
+  } catch {
+    // sitemap will just include static pages
   }
 
   try {
     blogSlugs = await client.fetch<string[]>(allBlogSlugsQuery)
-  } catch (error) {
-    console.error('Error fetching blog slugs for sitemap:', error)
+  } catch {
+    // sitemap will just include static pages
   }
 
   // Static Pages

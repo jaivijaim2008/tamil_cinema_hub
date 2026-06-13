@@ -3,6 +3,9 @@ import { urlFor } from '../../sanity/lib/image'
 import RecommendationsPageClient from './RecommendationsPageClient'
 import { RECOMMENDER_API_URL } from '@/lib/constants'
 
+// Don't pre-render during build — fetch ML API + Sanity at runtime
+export const dynamic = 'force-dynamic'
+
 interface MlMovie {
   title: string
   slug: string

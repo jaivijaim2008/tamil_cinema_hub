@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { RECOMMENDER_API_URL } from '@/lib/constants'
 
+const ML_TIMEOUT = 10000 // 10s timeout for ML API calls
+
 /**
  * GET /api/recommend/compare?slug1=movie-a&slug2=movie-b
  *
@@ -21,14 +23,16 @@ export async function GET(request: Request) {
   }
 
   try {
+    const signal = AbortSignal.timeout(ML_TIMEOUT)
+
     // Fetch all three algorithm scores for both movies in parallel
     const [rec1, rec2, content1, content2, collab1, collab2] = await Promise.all([
-      fetch(`${RECOMMENDER_API_URL}/recommend/${encodeURIComponent(slug1)}?n=10`),
-      fetch(`${RECOMMENDER_API_URL}/recommend/${encodeURIComponent(slug2)}?n=10`),
-      fetch(`${RECOMMENDER_API_URL}/recommend/${encodeURIComponent(slug1)}/content?n=10`),
-      fetch(`${RECOMMENDER_API_URL}/recommend/${encodeURIComponent(slug2)}/content?n=10`),
-      fetch(`${RECOMMENDER_API_URL}/recommend/${encodeURIComponent(slug1)}/collaborative?n=10`),
-      fetch(`${RECOMMENDER_API_URL}/recommend/${encodeURIComponent(slug2)}/collaborative?n=10`),
+      fetch(`${RECOMMENDER_API_URL}/recommend/${encodeURIComponent(slug1)}?n=10`, { signal }),
+      fetch(`${RECOMMENDER_API_URL}/recommend/${encodeURIComponent(slug2)}?n=10`, { signal }),
+      fetch(`${RECOMMENDER_API_URL}/recommend/${encodeURIComponent(slug1)}/content?n=10`, { signal }),
+      fetch(`${RECOMMENDER_API_URL}/recommend/${encodeURIComponent(slug2)}/content?n=10`, { signal }),
+      fetch(`${RECOMMENDER_API_URL}/recommend/${encodeURIComponent(slug1)}/collaborative?n=10`, { signal }),
+      fetch(`${RECOMMENDER_API_URL}/recommend/${encodeURIComponent(slug2)}/collaborative?n=10`, { signal }),
     ])
 
     const [
@@ -48,9 +52,10 @@ export async function GET(request: Request) {
     ])
 
     // Find how similar these two movies are to each other
-    const findScore = (data: any, targetSlug: string): number => {
-      if (!data?.recommendations) return 0
-      const found = data.recommendations.find((r: any) => r.slug === targetSlug)
+    const findScore = (data: Record<string, unknown> | null, targetSlug: string): number => {
+      const recs = data?.recommendations as Array<{ slug: string; score: number }> | undefined
+      if (!recs) return 0
+      const found = recs.find((r) => r.slug === targetSlug)
       return found?.score || 0
     }
 
@@ -62,18 +67,19 @@ export async function GET(request: Request) {
     }
 
     // Shared connections: movies that both recommend
-    const shared1 = new Set(
-      (hybridData1?.recommendations || []).map((r: any) => r.slug)
+    type RecEntry = { slug: string }
+    const shared1 = new Set<string>(
+      ((hybridData1?.recommendations as RecEntry[] | undefined) || []).map((r) => r.slug)
     )
-    const shared2 = new Set(
-      (hybridData2?.recommendations || []).map((r: any) => r.slug)
+    const shared2 = new Set<string>(
+      ((hybridData2?.recommendations as RecEntry[] | undefined) || []).map((r) => r.slug)
     )
     const sharedRecommendations = [...shared1].filter((slug) => shared2.has(slug))
 
     return NextResponse.json({
       movies: {
-        [slug1]: hybridData1?.recommendations?.[0] || { slug: slug1 },
-        [slug2]: hybridData2?.recommendations?.[0] || { slug: slug2 },
+        [slug1]: (hybridData1?.recommendations as RecEntry[] | undefined)?.[0] || { slug: slug1 },
+        [slug2]: (hybridData2?.recommendations as RecEntry[] | undefined)?.[0] || { slug: slug2 },
       },
       similarity: {
         overall: (crossSimilarity.hybrid * 100).toFixed(1) + '%',
@@ -82,8 +88,8 @@ export async function GET(request: Request) {
       },
       sharedRecommendations: sharedRecommendations.slice(0, 6),
       individualRecs: {
-        [slug1]: hybridData1?.recommendations?.slice(0, 6) || [],
-        [slug2]: hybridData2?.recommendations?.slice(0, 6) || [],
+        [slug1]: ((hybridData1?.recommendations as RecEntry[]) || []).slice(0, 6),
+        [slug2]: ((hybridData2?.recommendations as RecEntry[]) || []).slice(0, 6),
       },
     })
   } catch (error) {
