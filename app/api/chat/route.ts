@@ -419,7 +419,7 @@ const F = `_id, title, titleTanglish, "slug": slug.current, year, director,
   cast[]{ name }, genre, rating, synopsis, ottPlatform, poster, posterUrl`
 
 const db = {
-  byActor: (actorKey: string, n = 7): Promise<any[]> => {
+  byActor: (actorKey: string, n = 5): Promise<any[]> => {
     const name = ACTOR_CANONICAL[actorKey.toLowerCase()] ?? actorKey
     return client.fetch(
       `*[_type == "movie" && count(cast[name == $name]) > 0]
@@ -434,7 +434,7 @@ const db = {
     )
   },
 
-  byActorAndGenre: (actorKey: string, genre: string, n = 7): Promise<any[]> => {
+  byActorAndGenre: (actorKey: string, genre: string, n = 5): Promise<any[]> => {
     const name = ACTOR_CANONICAL[actorKey.toLowerCase()] ?? actorKey
     return client.fetch(
       `*[_type == "movie" && count(cast[name == $name]) > 0 && $genre in genre]
@@ -449,67 +449,67 @@ const db = {
     )
   },
 
-  byDirector: (dir: string, n = 7): Promise<any[]> =>
+  byDirector: (dir: string, n = 5): Promise<any[]> =>
     client.fetch(
       `*[_type == "movie" && director match $pattern]
        | order(year desc)[0...${n}]{${F}}`,
       { pattern: `*${dir}*` }
     ),
 
-  byGenre: (genre: string, n = 7): Promise<any[]> =>
+  byGenre: (genre: string, n = 5): Promise<any[]> =>
     client.fetch(
       `*[_type == "movie" && $genre in genre]
        | order(rating desc)[0...${n}]{${F}}`,
       { genre }
     ),
 
-  byGenreAndYear: (genre: string, year: number, n = 7): Promise<any[]> =>
+  byGenreAndYear: (genre: string, year: number, n = 5): Promise<any[]> =>
     client.fetch(
       `*[_type == "movie" && $genre in genre && year == $year]
        | order(rating desc)[0...${n}]{${F}}`,
       { genre, year }
     ),
 
-  byYear: (year: number, n = 7): Promise<any[]> =>
+  byYear: (year: number, n = 5): Promise<any[]> =>
     client.fetch(
       `*[_type == "movie" && year == $year]
        | order(rating desc)[0...${n}]{${F}}`,
       { year }
     ),
 
-  byYearRange: (from: number, to: number, n = 8): Promise<any[]> =>
+  byYearRange: (from: number, to: number, n = 5): Promise<any[]> =>
     client.fetch(
       `*[_type == "movie" && year >= $from && year <= $to]
        | order(year desc)[0...${n}]{${F}}`,
       { from, to }
     ),
 
-  byOTT: (platform: string, n = 7): Promise<any[]> =>
+  byOTT: (platform: string, n = 5): Promise<any[]> =>
     client.fetch(
       `*[_type == "movie" && ottPlatform match $pattern]
        | order(year desc)[0...${n}]{${F}}`,
       { pattern: `*${platform}*` }
     ),
 
-  byRating: (min: number, max: number, n = 7): Promise<any[]> =>
+  byRating: (min: number, max: number, n = 5): Promise<any[]> =>
     client.fetch(
       `*[_type == "movie" && rating >= $min && rating <= $max]
        | order(rating desc)[0...${n}]{${F}}`,
       { min, max }
     ),
 
-  topRated: (n = 8): Promise<any[]> =>
+  topRated: (n = 5): Promise<any[]> =>
     client.fetch(
       `*[_type == "movie" && rating != null]
        | order(rating desc)[0...${n}]{${F}}`
     ),
 
-  recent: (n = 8): Promise<any[]> =>
+  recent: (n = 5): Promise<any[]> =>
     client.fetch(
       `*[_type == "movie"] | order(year desc)[0...${n}]{${F}}`
     ),
 
-  search: (q: string, n = 6): Promise<any[]> =>
+  search: (q: string, n = 5): Promise<any[]> =>
     client.fetch(
       `*[_type == "movie" && (
         title match $q || titleTanglish match $q ||
@@ -546,16 +546,12 @@ function fmtList(movies: any[], heading: string): string {
   if (!movies?.length) return ''
   let out = `${heading}\n\n`
   movies.forEach((m, i) => {
-    const cast = m.cast?.map((c: any) => c.name).filter(Boolean).join(', ') || 'N/A'
-    const genres = m.genre?.join(', ') || 'N/A'
     const rating = m.rating != null ? ` ⭐ ${Number(m.rating).toFixed(1)}/5` : ''
     const ott = m.ottPlatform ? ` | 📺 ${m.ottPlatform}` : ''
     const poster = getPosterUrl(m)
     const img = poster ? `[poster:${poster}]` : ''
     out += `${img}${i + 1}. [${m.title}](/movies/${m.slug}) (${m.year})${rating}${ott}\n`
-    out += `   🎬 ${m.director || 'N/A'} | 👥 ${cast} | 🏷️ ${genres}\n`
-    if (m.synopsis) out += `   📝 ${m.synopsis.slice(0, 120)}${m.synopsis.length > 120 ? '…' : ''}\n`
-    out += '\n'
+    out += `   🎬 ${m.director || 'N/A'}\n`
   })
   return out.trim()
 }
@@ -879,7 +875,7 @@ async function generateResponse(
   // ── OTT ───────────────────────────────────────────────────
   if (intent === 'ott') {
     const platform = e.otts[0]
-    const movies = await db.byOTT(platform, 7).catch(() => [])
+    const movies = await db.byOTT(platform).catch(() => [])
     if (movies.length) {
       return {
         reply: fmtList(movies, `📺 Tamil movies on ${titleCase(platform)}:`),
@@ -892,7 +888,7 @@ async function generateResponse(
   // ── Rating filter ─────────────────────────────────────────
   if (intent === 'rating_filter' && e.ratings) {
     const { min, max } = e.ratings
-    const movies = await db.byRating(min, max, 7).catch(() => [])
+    const movies = await db.byRating(min, max).catch(() => [])
     if (movies.length) {
       return {
         reply: fmtList(movies, `⭐ Movies rated ${min}${max < 5 ? `–${max}` : '+'}:`),
@@ -907,7 +903,7 @@ async function generateResponse(
     const actor = e.actors[0]
     const genre = e.genres[0]
     const actorLabel = titleCase(ACTOR_CANONICAL[actor] ?? actor)
-    const movies = await db.byActorAndGenre(actor, genre, 7).catch(() => [])
+    const movies = await db.byActorAndGenre(actor, genre).catch(() => [])
     if (movies.length) {
       return {
         reply: fmtList(movies, pick([
@@ -918,7 +914,7 @@ async function generateResponse(
         suggestions: buildSuggestions(e, movies),
       }
     }
-    const actorMovies = await db.byActor(actor, 7).catch(() => [])
+    const actorMovies = await db.byActor(actor).catch(() => [])
     if (actorMovies.length) {
       return {
         reply: fmtList(actorMovies, `🎭 ${actorLabel} movies (no ${genre} filter match found):`),
@@ -942,7 +938,7 @@ async function generateResponse(
         }
       }
     }
-    const movies = await db.byActor(actor, 8).catch(() => [])
+    const movies = await db.byActor(actor).catch(() => [])
     if (movies.length) {
       return {
         reply: fmtList(movies, pick([
@@ -967,7 +963,7 @@ async function generateResponse(
   if (intent === 'director') {
     const dir = e.directors[0]
     const dirLabel = titleCase(dir)
-    const movies = await db.byDirector(dir, 7).catch(() => [])
+    const movies = await db.byDirector(dir).catch(() => [])
     if (movies.length) {
       return {
         reply: fmtList(movies, pick([
@@ -991,7 +987,7 @@ async function generateResponse(
   // ── Year range ────────────────────────────────────────────
   if (intent === 'year_range' && e.yearRange) {
     const [from, to] = e.yearRange
-    const movies = await db.byYearRange(from, to, 8).catch(() => [])
+    const movies = await db.byYearRange(from, to).catch(() => [])
     if (movies.length) {
       return {
         reply: fmtList(movies, pick([
@@ -1008,7 +1004,7 @@ async function generateResponse(
   if (intent === 'genre') {
     const genre = e.genres[0]
     if (e.years.length) {
-      const movies = await db.byGenreAndYear(genre, e.years[0], 7).catch(() => [])
+      const movies = await db.byGenreAndYear(genre, e.years[0]).catch(() => [])
       if (movies.length) {
         return {
           reply: fmtList(movies, `🏷️ ${genre} movies from ${e.years[0]}:`),
@@ -1016,7 +1012,7 @@ async function generateResponse(
         }
       }
     }
-    const movies = await db.byGenre(genre, 7).catch(() => [])
+    const movies = await db.byGenre(genre).catch(() => [])
     if (movies.length) {
       return {
         reply: fmtList(movies, pick([
@@ -1033,7 +1029,7 @@ async function generateResponse(
   // ── Year ──────────────────────────────────────────────────
   if (intent === 'year') {
     const year = e.years[0]
-    const movies = await db.byYear(year, 7).catch(() => [])
+    const movies = await db.byYear(year).catch(() => [])
     if (movies.length) {
       return {
         reply: fmtList(movies, pick([
@@ -1048,7 +1044,7 @@ async function generateResponse(
 
   // ── Top rated ─────────────────────────────────────────────
   if (intent === 'top_rated') {
-    const movies = await db.topRated(8).catch(() => [])
+    const movies = await db.topRated().catch(() => [])
     if (movies.length) {
       return {
         reply: fmtList(movies, pick([
@@ -1064,7 +1060,7 @@ async function generateResponse(
 
   // ── Recent ────────────────────────────────────────────────
   if (intent === 'recent') {
-    const movies = await db.recent(8).catch(() => [])
+    const movies = await db.recent().catch(() => [])
     if (movies.length) {
       return {
         reply: fmtList(movies, pick([
@@ -1080,7 +1076,7 @@ async function generateResponse(
 
   // ── Recommend ─────────────────────────────────────────────
   if (intent === 'recommend') {
-    const movies = await db.topRated(7).catch(() => [])
+    const movies = await db.topRated().catch(() => [])
     if (movies.length) {
       return {
         reply: fmtList(movies, pick([
@@ -1151,12 +1147,12 @@ async function generateResponse(
     if (lastAI) {
       const ctx = extractEntities(lastAI.content.slice(0, 500))
       if (ctx.actors[0]) {
-        const movies = await db.byActor(ctx.actors[0], 6).catch(() => [])
+        const movies = await db.byActor(ctx.actors[0]).catch(() => [])
         const label = titleCase(ACTOR_CANONICAL[ctx.actors[0]] ?? ctx.actors[0])
         if (movies.length) return { reply: fmtList(movies, `🎭 More ${label} movies:`), suggestions: buildSuggestions(ctx, movies) }
       }
       if (ctx.genres[0]) {
-        const movies = await db.byGenre(ctx.genres[0], 6).catch(() => [])
+        const movies = await db.byGenre(ctx.genres[0]).catch(() => [])
         if (movies.length) return { reply: fmtList(movies, `🏷️ More ${ctx.genres[0]} movies:`), suggestions: buildSuggestions(ctx, movies) }
       }
     }

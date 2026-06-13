@@ -25,7 +25,8 @@ interface MlResponse {
 async function fetchMlRecommendations(endpoint: string): Promise<MlMovie[]> {
   try {
     const res = await fetch(`${RECOMMENDER_API_URL}${endpoint}`, {
-      next: { revalidate: 3600 }, // Cache for 1 hour
+      next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(6000), // 6s timeout — fall back to Sanity fast
     })
     if (!res.ok) return []
     const data: MlResponse = await res.json()
@@ -109,7 +110,7 @@ export default async function RecommendationsPage() {
           }`
         ).catch(() => []),
         client.fetch<any[]>(
-          `*[_type == "movie"] | order(year desc) {
+          `*[_type == "movie"] | order(year desc)[0...12] {
             _id, title, "slug": slug.current, year, director, genre, rating, poster, posterUrl
           }`
         ).catch(() => []),
@@ -117,14 +118,34 @@ export default async function RecommendationsPage() {
     } catch {}
   }
 
+  // Build genre sections from ML data, fallback to Sanity
   const genreSections: [string, any[]][] = []
   if (actionMovies.length > 0) genreSections.push(['action', actionMovies])
   if (dramaMovies.length > 0) genreSections.push(['drama', dramaMovies])
   if (romanceMovies.length > 0) genreSections.push(['romance', romanceMovies])
 
+  if (genreSections.length === 0) {
+    try {
+      const [actionFallback, dramaFallback, romanceFallback] = await Promise.all([
+        client.fetch<any[]>(
+          `*[_type == "movie" && "Action" in genre] | order(rating desc)[0...8]{ _id, title, "slug": slug.current, year, director, genre, rating, poster, posterUrl }`
+        ).catch(() => []),
+        client.fetch<any[]>(
+          `*[_type == "movie" && "Drama" in genre] | order(rating desc)[0...8]{ _id, title, "slug": slug.current, year, director, genre, rating, poster, posterUrl }`
+        ).catch(() => []),
+        client.fetch<any[]>(
+          `*[_type == "movie" && "Romance" in genre] | order(rating desc)[0...8]{ _id, title, "slug": slug.current, year, director, genre, rating, poster, posterUrl }`
+        ).catch(() => []),
+      ])
+      if (actionFallback.length) genreSections.push(['action', actionFallback])
+      if (dramaFallback.length) genreSections.push(['drama', dramaFallback])
+      if (romanceFallback.length) genreSections.push(['romance', romanceFallback])
+    } catch {}
+  }
+
   // Use ML top picks, or fallback to Sanity top rated
   const finalTopRated = topPicks.length > 0 ? topPicks : fallbackTopRated
-  const finalTrending = trending.length > 0 ? trending : []
+  const finalTrending = trending.length > 0 ? trending : (fallbackAllMovies.length > 0 ? fallbackAllMovies.slice(0, 12) : [])
 
   return (
     <RecommendationsPageClient
