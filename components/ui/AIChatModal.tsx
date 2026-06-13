@@ -248,12 +248,10 @@ export default function AIChatModal({ open, onClose }: Props) {
                 <div className="shrink-0 w-6 h-6 rounded-full bg-bg-elevated border border-border flex items-center justify-center mt-1">
                   <Bot size={10} className="text-text-muted" />
                 </div>
-                <div className="bg-bg-card border border-border/50 px-3 py-2 rounded-xl text-sm text-text-muted">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-accent-gold/60 animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-1.5 h-1.5 rounded-full bg-accent-gold/60 animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-1.5 h-1.5 rounded-full bg-accent-gold/60 animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
+                <div className="bg-bg-card border border-border/50 px-3 py-2.5 rounded-xl space-y-2">
+                  <div className="h-3 w-32 rounded-full bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04] animate-shimmer" />
+                  <div className="h-3 w-24 rounded-full bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04] animate-shimmer" style={{ animationDelay: '150ms' }} />
+                  <div className="h-3 w-20 rounded-full bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04] animate-shimmer" style={{ animationDelay: '300ms' }} />
                 </div>
               </div>
             </div>
