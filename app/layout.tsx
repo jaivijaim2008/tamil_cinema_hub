@@ -81,9 +81,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
         {/* Plausible Analytics — privacy-friendly, no cookies */}
         <Script
-          defer
-          data-domain="tamilcinemahub.xyz"
-          src="https://plausible.io/js/script.js"
+          id="plausible-init"
+          dangerouslySetInnerHTML={{
+            __html: `window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};plausible.init()`,
+          }}
+        />
+        <Script
+          async
+          src="https://plausible.io/js/pa-XAOaek-Iwb_EI-8oRm3Cg.js"
         />
       </head>
       <body className="bg-bg-primary text-text-primary font-inter antialiased overflow-x-hidden">
