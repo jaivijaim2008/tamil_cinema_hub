@@ -1,7 +1,38 @@
 'use client'
 
-import { useState } from 'react'
-import { X, Send } from 'lucide-react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { X, Send, Trash2, Bot, User, Sparkles } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+
+interface ChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+  suggestions?: string[]
+  timestamp: number
+}
+
+const STORAGE_KEY = 'kollywoodai_chat_history'
+const MAX_STORED_MESSAGES = 50
+
+function loadHistory(): ChatMessage[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+    return parsed.slice(-MAX_STORED_MESSAGES)
+  } catch {
+    return []
+  }
+}
+
+function saveHistory(messages: ChatMessage[]) {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-MAX_STORED_MESSAGES)))
+  } catch {}
+}
 
 interface Props {
   open: boolean
@@ -9,98 +40,231 @@ interface Props {
 }
 
 export default function AIChatModal({ open, onClose }: Props) {
-  const [messages, setMessages] = useState<{ role: 'user' | 'ai'; text: string }[]>([])
+  const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [suggestions, setSuggestions] = useState<string[]>([])
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
-  if (!open) return null
+  // Load history on mount
+  useEffect(() => {
+    if (open) {
+      const history = loadHistory()
+      if (history.length > 0) {
+        setMessages(history)
+        const lastSuggestions = history.filter(m => m.suggestions?.length).pop()?.suggestions
+        if (lastSuggestions) setSuggestions(lastSuggestions)
+      }
+      setTimeout(() => inputRef.current?.focus(), 100)
+    }
+  }, [open])
 
-  async function send() {
-    const q = input.trim()
+  // Auto-scroll to bottom
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, loading])
+
+  // Save history when messages change
+  useEffect(() => {
+    if (messages.length > 0) {
+      saveHistory(messages)
+    }
+  }, [messages])
+
+  const sendMessage = useCallback(async (text: string) => {
+    const q = text.trim()
     if (!q || loading) return
     setInput('')
-    setMessages((prev) => [...prev, { role: 'user', text: q }])
+    setSuggestions([])
+
+    const userMsg: ChatMessage = { role: 'user', content: q, timestamp: Date.now() }
+    setMessages(prev => [...prev, userMsg])
     setLoading(true)
 
     try {
+      // Send full conversation history for memory
+      const historyForAPI = [...messages, userMsg].map(m => ({
+        role: m.role,
+        content: m.content,
+      }))
+
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [{ role: 'user', content: q }] }),
+        body: JSON.stringify({ messages: historyForAPI }),
       })
       const data = await res.json()
-      setMessages((prev) => [...prev, { role: 'ai', text: data.reply || data.error || 'No response.' }])
+
+      const aiMsg: ChatMessage = {
+        role: 'assistant',
+        content: data.reply || data.error || 'No response.',
+        suggestions: data.suggestions,
+        timestamp: Date.now(),
+      }
+      setMessages(prev => [...prev, aiMsg])
+      if (data.suggestions?.length) setSuggestions(data.suggestions)
     } catch {
-      setMessages((prev) => [...prev, { role: 'ai', text: 'Something went wrong. Try again.' }])
+      const errorMsg: ChatMessage = {
+        role: 'assistant',
+        content: 'Something went wrong. Please try again.',
+        timestamp: Date.now(),
+      }
+      setMessages(prev => [...prev, errorMsg])
     } finally {
       setLoading(false)
     }
-  }
+  }, [messages, loading])
+
+  const clearHistory = useCallback(() => {
+    setMessages([])
+    setSuggestions([])
+    localStorage.removeItem(STORAGE_KEY)
+  }, [])
+
+  if (!open) return null
 
   return (
     <div className="fixed inset-0 z-[70] flex items-end md:items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full md:w-[440px] md:max-w-lg bg-bg-primary border border-border rounded-t-2xl md:rounded-2xl flex flex-col max-h-[80vh] overflow-hidden animate-slide-up">
+      <div className="relative w-full md:w-[480px] md:max-w-lg bg-bg-primary border border-border rounded-t-2xl md:rounded-2xl flex flex-col max-h-[85vh] overflow-hidden animate-slide-up shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-bg-card/50">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-            <span className="text-sm font-semibold text-text-primary">AI Assistant</span>
+            <div className="w-8 h-8 rounded-full bg-accent-gold/10 flex items-center justify-center">
+              <Sparkles size={14} className="text-accent-gold" />
+            </div>
+            <div>
+              <span className="text-sm font-semibold text-text-primary">TamilCinema AI</span>
+              <p className="text-[10px] text-text-muted">Powered by Groq + Your Database</p>
+            </div>
+            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse ml-1" />
           </div>
-          <button onClick={onClose} className="text-text-muted hover:text-text-primary transition-colors" aria-label="Close chat">
-            <X size={18} />
-          </button>
+          <div className="flex items-center gap-1">
+            {messages.length > 0 && (
+              <button
+                onClick={clearHistory}
+                className="p-1.5 text-text-muted hover:text-red-400 transition-colors rounded-lg hover:bg-white/5"
+                title="Clear conversation"
+              >
+                <Trash2 size={14} />
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="p-1.5 text-text-muted hover:text-text-primary transition-colors rounded-lg hover:bg-white/5"
+              aria-label="Close chat"
+            >
+              <X size={16} />
+            </button>
+          </div>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[200px]">
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[200px] max-h-[50vh]">
           {messages.length === 0 && (
-            <p className="text-sm text-text-muted text-center py-10">Ask me about Tamil cinema!</p>
+            <div className="text-center py-8">
+              <div className="w-12 h-12 rounded-full bg-accent-gold/10 flex items-center justify-center mx-auto mb-3">
+                <Sparkles size={20} className="text-accent-gold" />
+              </div>
+              <p className="text-sm font-medium text-text-primary mb-1">Ask me about Tamil cinema!</p>
+              <p className="text-xs text-text-muted">I remember our conversation so ask follow-ups naturally.</p>
+            </div>
           )}
+
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div
-                className={`max-w-[85%] px-3 py-2 rounded-xl text-sm ${
+              <div className={`flex gap-2 max-w-[90%] ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                {/* Avatar */}
+                <div className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-1 ${
+                  m.role === 'user'
+                    ? 'bg-accent-gold/20'
+                    : 'bg-bg-elevated border border-border'
+                }`}>
+                  {m.role === 'user'
+                    ? <User size={10} className="text-accent-gold" />
+                    : <Bot size={10} className="text-text-muted" />
+                  }
+                </div>
+                {/* Message bubble */}
+                <div className={`px-3 py-2 rounded-xl text-sm ${
                   m.role === 'user'
                     ? 'bg-accent-gold text-text-inverse'
-                    : 'bg-bg-card text-text-primary border border-border'
-                }`}
-              >
-                {m.text}
+                    : 'bg-bg-card text-text-primary border border-border/50'
+                }`}>
+                  {m.role === 'assistant' ? (
+                    <div className="prose prose-invert prose-sm max-w-none prose-a:text-accent-gold prose-strong:text-text-primary prose-p:text-text-secondary">
+                      <ReactMarkdown>{m.content}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <p>{m.content}</p>
+                  )}
+                </div>
               </div>
             </div>
           ))}
+
           {loading && (
             <div className="flex justify-start">
-              <div className="bg-bg-card border border-border px-3 py-2 rounded-xl text-sm text-text-muted animate-pulse">
-                Thinking…
+              <div className="flex gap-2">
+                <div className="shrink-0 w-6 h-6 rounded-full bg-bg-elevated border border-border flex items-center justify-center mt-1">
+                  <Bot size={10} className="text-text-muted" />
+                </div>
+                <div className="bg-bg-card border border-border/50 px-3 py-2 rounded-xl text-sm text-text-muted">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent-gold/60 animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent-gold/60 animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent-gold/60 animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                </div>
               </div>
             </div>
           )}
+
+          <div ref={messagesEndRef} />
         </div>
 
+        {/* Suggestions */}
+        {suggestions.length > 0 && !loading && (
+          <div className="px-4 pb-2 flex flex-wrap gap-1.5">
+            {suggestions.map((s, i) => (
+              <button
+                key={i}
+                onClick={() => sendMessage(s)}
+                className="text-[11px] px-2.5 py-1 rounded-full bg-accent-gold/5 border border-accent-gold/15 text-accent-gold/80 hover:bg-accent-gold/10 hover:text-accent-gold transition-colors font-medium"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Input */}
-        <div className="border-t border-border p-3">
+        <div className="border-t border-border p-3 bg-bg-card/30">
           <form
-            onSubmit={(e) => { e.preventDefault(); send() }}
+            onSubmit={(e) => { e.preventDefault(); sendMessage(input) }}
             className="flex items-center gap-2"
           >
             <input
+              ref={inputRef}
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about movies, directors, genres…"
-              className="flex-1 px-3 py-2 rounded-lg bg-bg-card border border-border text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-gold/50"
+              placeholder="Ask about movies, actors, directors…"
+              className="flex-1 px-3 py-2.5 rounded-xl bg-bg-elevated border border-border text-sm text-text-primary placeholder:text-text-muted/50 focus:outline-none focus:border-accent-gold/50 transition-colors"
             />
             <button
               type="submit"
               disabled={!input.trim() || loading}
-              className="w-9 h-9 flex items-center justify-center rounded-lg bg-accent-gold text-text-inverse disabled:opacity-40 disabled:cursor-not-allowed hover:bg-accent-gold-dim transition-colors"
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-accent-gold text-text-inverse disabled:opacity-30 disabled:cursor-not-allowed hover:bg-accent-gold-dim transition-all"
               aria-label="Send message"
             >
-              <Send size={14} />
+              <Send size={15} />
             </button>
           </form>
+          <p className="text-[9px] text-text-muted/40 text-center mt-1.5">
+            Memory enabled • Powered by Groq LLM + Sanity database
+          </p>
         </div>
       </div>
     </div>
