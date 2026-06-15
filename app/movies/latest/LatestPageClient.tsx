@@ -4,6 +4,7 @@ import type { Movie } from '@/lib/types'
 import MovieCard from '@/components/ui/MovieCard'
 import PageHeader from '@/components/ui/PageHeader'
 import EmptyState from '@/components/ui/EmptyState'
+import AdUnit from '@/components/ui/AdUnit'
 import { Film } from 'lucide-react'
 
 interface Props {
@@ -32,7 +33,7 @@ export default function LatestPageClient({ movies }: Props) {
 
         {years.length > 0 ? (
           <div className="space-y-12">
-            {years.map(([year, yearMovies]) => (
+            {years.map(([year, yearMovies], yearIdx) => (
               <section key={year}>
                 <h2 className="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
                   <span className="text-accent-gold">{year}</span>
@@ -43,6 +44,11 @@ export default function LatestPageClient({ movies }: Props) {
                     <MovieCard key={movie._id} movie={movie} index={i} />
                   ))}
                 </div>
+                {yearIdx > 0 && yearIdx % 3 === 0 && (
+                  <div className="mt-8">
+                    <AdUnit adSlot="0000000006" className="max-w-4xl mx-auto" minHeight="100px" />
+                  </div>
+                )}
               </section>
             ))}
           </div>

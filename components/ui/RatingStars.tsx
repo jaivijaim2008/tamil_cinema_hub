@@ -8,9 +8,11 @@ interface Props {
 }
 
 export default function RatingStars({ rating, maxStars = 5, size = 14, showValue = true }: Props) {
+  // Clamp to 0-5 to handle any 0-10 raw values from Sanity
+  const clamped = Math.min(5, Math.max(0, rating))
   const stars = []
   for (let i = 1; i <= maxStars; i++) {
-    const fill = Math.min(1, Math.max(0, rating - (i - 1)))
+    const fill = Math.min(1, Math.max(0, clamped - (i - 1)))
     stars.push(
       <span key={i} className="relative inline-block" style={{ width: size, height: size }}>
         <Star size={size} className="text-text-muted/30 absolute inset-0" />
@@ -27,7 +29,7 @@ export default function RatingStars({ rating, maxStars = 5, size = 14, showValue
     <span className="inline-flex items-center gap-1">
       <span className="inline-flex gap-0.5">{stars}</span>
       {showValue && (
-        <span className="text-sm font-bold text-text-primary ml-1">{Number(rating).toFixed(1)}</span>
+        <span className="text-sm font-bold text-text-primary ml-1">{Number(clamped).toFixed(1)}</span>
       )}
     </span>
   )

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { ArrowRight, Sparkles } from 'lucide-react'
-import type { Movie } from '@/lib/types'
+import type { Movie, Blog } from '@/lib/types'
 import { GENRE_COLORS } from '@/lib/constants'
 import MovieCard from '@/components/ui/MovieCard'
 import BlogCard from '@/components/ui/BlogCard'
@@ -17,8 +17,7 @@ interface GenreCountItem {
 
 interface Props {
   movies: Movie[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  blogs: any[]
+  blogs: Blog[]
   recentTitles: string[]
   totalMovies: number
   totalBlogs: number
@@ -31,11 +30,10 @@ export default function HomePageClient({
   blogs,
   totalMovies,
   genreCounts,
-  avgRating,
 }: Props) {
   return (
     <div className="min-h-screen">
-      <InteractiveHero totalMovies={totalMovies} avgRating={avgRating} />
+      <InteractiveHero totalMovies={totalMovies} />
 
       {/* ── Ad: Below Hero ─────────────────────────────────────────────────── */}
       <section className="py-8">
@@ -135,8 +133,8 @@ export default function HomePageClient({
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {blogs.slice(1, 7).map((blog, i) => (
-                <BlogCard key={blog._id} blog={blog} index={i} />
+              {blogs.slice(1, 7).map((blog) => (
+                <BlogCard key={blog._id} blog={blog} />
               ))}
             </div>
           </div>

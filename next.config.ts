@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // @ts-ignore - turbopack root config for Next.js 16
   turbopack: {
     root: process.cwd(),
   },

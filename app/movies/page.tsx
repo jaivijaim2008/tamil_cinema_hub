@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { client } from '../../sanity/client'
 import { paginatedMoviesQuery, moviesCountQuery, allGenresQuery } from '../../lib/queries'
 import MoviesPageClient from './MoviesPageClient'
+import type { Movie } from '@/lib/types'
 
 export default async function MoviesPage({
   searchParams,
@@ -16,13 +17,13 @@ export default async function MoviesPage({
   const start = (page - 1) * pageSize
   const end = start + pageSize
 
-  let movies: any[] = []
+  let movies: Movie[] = []
   let totalCount = 0
   let genres: string[] = []
 
   try {
     ;[movies, totalCount, genres] = await Promise.all([
-      client.fetch<any[]>(paginatedMoviesQuery(start, end), { genre, q }).catch(() => []),
+      client.fetch<Movie[]>(paginatedMoviesQuery(start, end), { genre, q }).catch(() => []),
       client.fetch<number>(moviesCountQuery, { genre, q }).catch(() => 0),
       client.fetch<string[]>(allGenresQuery).catch(() => []),
     ])

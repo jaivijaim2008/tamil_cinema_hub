@@ -15,8 +15,8 @@ export async function POST(
     return NextResponse.json({ error: 'Invalid comment key.' }, { status: 400 })
   }
 
-  let body: any
-  try { body = await req.json() } catch {
+  let body: Record<string, unknown>
+  try { body = await req.json() as Record<string, unknown> } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
@@ -35,8 +35,8 @@ export async function POST(
   // Rate limit: 1 like per IP per 5 seconds
   const ip = getIP(req)
   const now = Date.now()
-  if (!(globalThis as any).__commentLikeRL) (globalThis as any).__commentLikeRL = new Map<string, number>()
-  const rl: Map<string, number> = (globalThis as any).__commentLikeRL
+  if (!(globalThis as Record<string, unknown>).__commentLikeRL) (globalThis as Record<string, unknown>).__commentLikeRL = new Map<string, number>()
+  const rl: Map<string, number> = (globalThis as Record<string, unknown>).__commentLikeRL as Map<string, number>
   const last = rl.get(ip)
   if (last && now - last < 5_000) {
     return NextResponse.json({ error: 'Please wait before liking again.' }, { status: 429 })
@@ -51,7 +51,7 @@ export async function POST(
     if (!docId) return NextResponse.json({ error: 'Blog not found' }, { status: 404 })
 
     // Fetch current likes array for this comment
-    const doc = await client.fetch<{ comments?: any[] }>(
+    const doc = await client.fetch<{ comments?: Array<{ _key: string; likes?: string[] }> }>(
       `*[_type == "blog" && _id == $id][0]{ comments[_key == $key]{ likes } }`,
       { id: docId, key }
     )
@@ -68,8 +68,8 @@ export async function POST(
       .commit()
 
     return NextResponse.json({ ok: true, likes: newLikes.length, liked: !alreadyLiked })
-  } catch (err: any) {
-    console.error('[Comment Like]', err?.message)
+  } catch (err: unknown) {
+    console.error('[Comment Like]', err instanceof Error ? err.message : err)
     return NextResponse.json({ error: 'Failed to toggle like' }, { status: 500 })
   }
 }

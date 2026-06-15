@@ -4,6 +4,7 @@ import { blogBySlugQuery, relatedBlogsQuery } from '../../../lib/queries'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import BlogDetailClient from './BlogDetailClient'
+import type { SanityImage, SanityImageBlock, PortableTextBlock, Blog } from '@/lib/types'
 
 export interface BlogDetail {
   _id: string
@@ -12,9 +13,9 @@ export interface BlogDetail {
   author: string
   publishedAt: string
   category: string
-  mainImage: any
+  mainImage?: SanityImage
   excerpt: string
-  body: any[]
+  body?: (PortableTextBlock | SanityImageBlock)[]
   seoTitle?: string
   seoDescription?: string
   tags?: string[]
@@ -64,12 +65,12 @@ export default async function BlogDetailPage({
 }) {
   const { slug } = await params
   let blog: BlogDetail | null = null
-  let related: any[] = []
+  let related: Blog[] = []
 
   try {
     blog = await client.fetch<BlogDetail>(blogBySlugQuery, { slug })
     if (blog) {
-      related = await client.fetch<any[]>(relatedBlogsQuery, {
+      related = await client.fetch<Blog[]>(relatedBlogsQuery, {
         category: blog.category,
         slug,
       }).catch(() => [])

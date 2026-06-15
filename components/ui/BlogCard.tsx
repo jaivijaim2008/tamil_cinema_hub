@@ -8,11 +8,10 @@ import { urlFor } from '@/sanity/lib/image'
 
 interface Props {
   blog: Blog
-  index?: number
   variant?: 'default' | 'featured'
 }
 
-export default function BlogCard({ blog, index = 0, variant = 'default' }: Props) {
+export default function BlogCard({ blog, variant = 'default' }: Props) {
   const imageUrl = blog.mainImage
     ? urlFor(blog.mainImage).width(800).height(450).url()
     : null

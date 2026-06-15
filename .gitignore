@@ -47,3 +47,4 @@ nul
 wikipedia-movies.json
 wiki-patch-cache.json
 tmdb-cache.json
+recommender-api/__pycache__/

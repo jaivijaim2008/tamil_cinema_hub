@@ -8,8 +8,6 @@ import { motion } from 'framer-motion'
 import { getRatingColor } from '@/lib/constants'
 import { urlFor } from '@/sanity/lib/image'
 import type { CastMember } from '@/lib/types'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { Movie } from '@/lib/types'
 
 export interface MovieCardMovie {
   _id: string
@@ -25,7 +23,7 @@ export interface MovieCardMovie {
   cast?: (string | CastMember)[]
 }
 
-export type { Movie } from '@/lib/types'
+export type { Movie } from '@/lib/types' // re-export for consumers
 
 interface Props {
   movie: MovieCardMovie
@@ -41,7 +39,9 @@ export default function MovieCard({ movie, index = 0 }: Props) {
 
   const displayImage = !imageError && imageUrl
 
-  const ratingColor = movie.rating ? getRatingColor(movie.rating) : '#666'
+  // Clamp to 0-5 to handle any 0-10 raw values from Sanity
+  const displayRating = movie.rating != null ? Math.min(5, Math.max(0, movie.rating)) : null
+  const ratingColor = displayRating ? getRatingColor(displayRating) : '#666'
 
   return (
     <Link
@@ -76,10 +76,10 @@ export default function MovieCard({ movie, index = 0 }: Props) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
 
         {/* Rating badge */}
-        {movie.rating != null && movie.rating > 0 && (
+        {displayRating != null && displayRating > 0 && (
           <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/70 backdrop-blur-sm rounded-lg px-2 py-1">
             <Star size={10} className="fill-current" style={{ color: ratingColor }} />
-            <span className="text-xs font-bold text-white">{movie.rating != null ? Number(movie.rating).toFixed(1) : '—'}</span>
+            <span className="text-xs font-bold text-white">{Number(displayRating).toFixed(1)}</span>
           </div>
         )}
 

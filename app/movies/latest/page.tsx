@@ -1,5 +1,6 @@
 import { client } from '../../../sanity/client'
 import LatestPageClient from './LatestPageClient'
+import type { Movie } from '@/lib/types'
 
 export const metadata = {
   title: 'Latest Tamil Movie Releases',
@@ -7,10 +8,10 @@ export const metadata = {
 }
 
 export default async function LatestPage() {
-  let movies: any[] = []
+  let movies: Movie[] = []
 
   try {
-    movies = await client.fetch<any[]>(
+    movies = await client.fetch<Movie[]>(
       `*[_type == "movie"] | order(year desc, _createdAt desc) {
         _id, title, titleTanglish, "slug": slug.current, year, director, cast, genre, rating, poster, posterUrl, synopsis, ottPlatform
       }`

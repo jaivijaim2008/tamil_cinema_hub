@@ -17,8 +17,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Request too large.' }, { status: 413 })
   }
 
-  let body: any
-  try { body = await req.json() } catch {
+  let body: Record<string, unknown>
+  try { body = await req.json() as Record<string, unknown> } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
@@ -27,14 +27,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 })
   }
 
-  const { name, email, message } = body
+  const { name, email, message } = body as { name?: string; email?: string; message?: string }
   if (!name?.trim() || !email?.trim() || !message?.trim()) {
     return NextResponse.json({ error: 'Name, email, and message are required.' }, { status: 400 })
-  }
-
-  // Type checks
-  if (typeof name !== 'string' || typeof email !== 'string' || typeof message !== 'string') {
-    return NextResponse.json({ error: 'All fields must be strings.' }, { status: 400 })
   }
 
   // Basic email validation
@@ -47,8 +42,8 @@ export async function POST(req: NextRequest) {
   // (middleware also enforces this as defense-in-depth)
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
   const now = Date.now()
-  if (!(globalThis as any).__contactRL) (globalThis as any).__contactRL = new Map<string, number[]>()
-  const rl: Map<string, number[]> = (globalThis as any).__contactRL
+  if (!(globalThis as Record<string, unknown>).__contactRL) (globalThis as Record<string, unknown>).__contactRL = new Map<string, number[]>()
+  const rl: Map<string, number[]> = (globalThis as Record<string, unknown>).__contactRL as Map<string, number[]>
   const timestamps = rl.get(ip) ?? []
   const recent = timestamps.filter(t => now - t < 300_000)
   if (recent.length >= 3) {
@@ -90,8 +85,8 @@ export async function POST(req: NextRequest) {
     })
 
     return NextResponse.json({ ok: true, message: 'Message sent successfully!' })
-  } catch (err: any) {
-    console.error('[Contact API]', err?.message)
+  } catch (err: unknown) {
+    console.error('[Contact API]', err instanceof Error ? err.message : err)
     return NextResponse.json({ error: 'Failed to send message. Please try again.' }, { status: 500 })
   }
 }

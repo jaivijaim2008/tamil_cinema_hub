@@ -7,6 +7,7 @@ import type { Blog } from '@/lib/types'
 import BlogCard from '@/components/ui/BlogCard'
 import Pagination from '@/components/ui/Pagination'
 import EmptyState from '@/components/ui/EmptyState'
+import AdUnit from '@/components/ui/AdUnit'
 import PageHeader from '@/components/ui/PageHeader'
 import { BLOG_CATEGORIES } from '@/lib/constants'
 
@@ -87,11 +88,18 @@ export default function BlogsPageClient({
 
         {/* Blog grid */}
         {filtered.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((blog, i) => (
-              <BlogCard key={blog._id} blog={blog} index={i} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filtered.map((blog) => (
+                <BlogCard key={blog._id} blog={blog} />
+              ))}
+            </div>
+            {filtered.length > 3 && (
+              <div className="my-8">
+                <AdUnit adSlot="0000000010" className="max-w-4xl mx-auto" minHeight="100px" />
+              </div>
+            )}
+          </>
         ) : (
           <EmptyState title="No articles found" description="Try adjusting your search or category filter." />
         )}

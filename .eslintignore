@@ -1,1 +1,1 @@
-scripts/
+# Moved to eslint.config.mjs globalIgnores

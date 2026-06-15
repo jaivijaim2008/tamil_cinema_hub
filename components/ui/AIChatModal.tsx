@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import Image from 'next/image'
 import { X, Send, Trash2, Bot, User, Sparkles } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 
@@ -57,9 +58,11 @@ function ChatMarkdown({ content }: { content: string }) {
       <ReactMarkdown
         components={{
           img: ({ src, alt }) => (
-            <img
-              src={src}
+            <Image
+              src={typeof src === 'string' ? src : ''}
               alt={alt || 'Movie poster'}
+              width={80}
+              height={120}
               className="inline-block w-[80px] h-[120px] object-cover rounded-lg shadow-md border border-white/10 mr-2 mb-1 float-left"
               loading="lazy"
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}

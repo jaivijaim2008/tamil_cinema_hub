@@ -3,8 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowLeft, Calendar, User, Tag, Clock, Share2 } from 'lucide-react'
-import type { BlogDetail } from '@/lib/types'
-import type { Blog } from '@/lib/types'
+import type { BlogDetail, Blog, PortableTextBlock } from '@/lib/types'
 import { urlFor } from '@/sanity/lib/image'
 import PortableText from '@/components/ui/PortableText'
 import BlogCard from '@/components/ui/BlogCard'
@@ -39,10 +38,8 @@ export default function BlogDetailClient({ blog, related }: Props) {
   // Estimate reading time (200 wpm average)
   const wordCount = blog.body
     ? blog.body
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .filter((b: any) => b._type === 'block')
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .map((b: any) => b.children?.map((c: any) => c.text).join(' ') || '')
+        .filter((b) => b._type === 'block')
+        .map((b) => ('children' in b ? (b.children ?? []).map((c: { text?: string }) => c.text).join(' ') : ''))
         .join(' ')
         .split(/\s+/).length
     : 0
@@ -169,7 +166,7 @@ export default function BlogDetailClient({ blog, related }: Props) {
           {/* Body */}
           {blog.body && blog.body.length > 0 && (
             <div className="mb-8">
-              <PortableText value={blog.body as any} />
+              <PortableText value={blog.body as PortableTextBlock[]} />
             </div>
           )}
 
@@ -198,8 +195,8 @@ export default function BlogDetailClient({ blog, related }: Props) {
             <section aria-label="Related articles">
               <h2 className="text-lg font-bold text-text-primary mb-6">Related Articles</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {related.map((r, i) => (
-                  <BlogCard key={r._id} blog={r} index={i} />
+                {related.map((r) => (
+                  <BlogCard key={r._id} blog={r} />
                 ))}
               </div>
             </section>

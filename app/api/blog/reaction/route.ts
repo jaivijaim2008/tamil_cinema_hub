@@ -3,13 +3,13 @@ import { client } from '@/sanity/client'
 import { writeClient } from '@/sanity/writeClient'
 
 export async function POST(req: NextRequest) {
-  let body: any
-  try { body = await req.json() } catch {
+  let body: Record<string, unknown>
+  try { body = await req.json() as Record<string, unknown> } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { slug, type, prev, action } = body
-  if (!slug || !['like', 'dislike'].includes(type)) {
+  const { slug, type, prev, action } = body as { slug?: string; type?: string; prev?: string; action?: string }
+  if (!slug || !type || !['like', 'dislike'].includes(type)) {
     return NextResponse.json({ error: 'slug and type (like|dislike) required' }, { status: 400 })
   }
 
@@ -17,8 +17,8 @@ export async function POST(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
   const key = `${ip}:${slug}:${type}`
   const now = Date.now()
-  if (!(globalThis as any).__reactionRL) (globalThis as any).__reactionRL = new Map<string, number>()
-  const rl: Map<string, number> = (globalThis as any).__reactionRL
+  if (!(globalThis as Record<string, unknown>).__reactionRL) (globalThis as Record<string, unknown>).__reactionRL = new Map<string, number>()
+  const rl: Map<string, number> = (globalThis as Record<string, unknown>).__reactionRL as Map<string, number>
   const last = rl.get(key)
   if (last && now - last < 10_000) {
     return NextResponse.json({ error: 'Too fast. Wait a moment.' }, { status: 429 })
@@ -65,8 +65,8 @@ export async function POST(req: NextRequest) {
       likes: result.likes ?? 0,
       dislikes: result.dislikes ?? 0,
     })
-  } catch (err: any) {
-    console.error('[Reaction API]', err?.message)
+  } catch (err: unknown) {
+    console.error('[Reaction API]', err instanceof Error ? err.message : err)
     return NextResponse.json({ error: 'Failed to update reaction' }, { status: 500 })
   }
 }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { GitCompareArrows, ArrowRight, Users, Star, AlertCircle } from 'lucide-react'
+import { GitCompareArrows, ArrowRight, Users, AlertCircle } from 'lucide-react'
 import RatingStars from '@/components/ui/RatingStars'
 
 interface SanityDetails {
@@ -23,7 +23,7 @@ interface ComparisonResult {
     collaborative: string
   }
   sharedRecommendations: string[]
-  individualRecs: Record<string, any[]>
+  individualRecs: Record<string, Array<{ slug: string; title?: string; year?: number; score?: number }>>
   sanityDetails?: SanityDetails
 }
 

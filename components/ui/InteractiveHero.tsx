@@ -6,8 +6,6 @@ import { motion } from 'framer-motion'
 
 interface InteractiveHeroProps {
   totalMovies: number
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  avgRating?: number
 }
 
 export default function InteractiveHero({ totalMovies }: InteractiveHeroProps) {

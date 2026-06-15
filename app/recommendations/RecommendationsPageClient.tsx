@@ -14,7 +14,7 @@ interface MovieMinimal {
   director?: string
   genre?: string[]
   rating?: number
-  poster?: any
+  poster?: { asset?: { _ref?: string } }
   posterUrl?: string | null
 }
 

@@ -4,6 +4,7 @@ import { movieBySlugQuery } from '../../../lib/queries'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import MovieDetailClient from './MovieDetailClient'
+import type { Movie } from '@/lib/types'
 
 export async function generateMetadata({
   params,
@@ -11,9 +12,9 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  let movie: any = null
+  let movie: Movie | null = null
   try {
-    movie = await client.fetch<any>(movieBySlugQuery, { slug })
+    movie = await client.fetch<Movie>(movieBySlugQuery, { slug })
   } catch (error) {
     console.error("Failed to fetch movie for metadata:", error)
   }
@@ -37,9 +38,9 @@ export default async function MovieDetailPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  let movie: any = null
+  let movie: Movie | null = null
   try {
-    movie = await client.fetch<any>(movieBySlugQuery, { slug })
+    movie = await client.fetch<Movie>(movieBySlugQuery, { slug })
   } catch {}
 
   if (!movie) notFound()

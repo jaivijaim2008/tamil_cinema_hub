@@ -1,5 +1,4 @@
 import { client } from '../../sanity/client'
-import { urlFor } from '../../sanity/lib/image'
 import RecommendationsPageClient from './RecommendationsPageClient'
 import { RECOMMENDER_API_URL } from '@/lib/constants'
 
@@ -36,13 +35,25 @@ async function fetchMlRecommendations(endpoint: string): Promise<MlMovie[]> {
   }
 }
 
+interface SanityMovie {
+  _id: string
+  title: string
+  slug: string
+  year: number
+  director: string
+  genre: string[]
+  rating: number
+  poster?: { asset?: { _ref?: string } }
+  posterUrl?: string | null
+}
+
 async function enrichWithSanityData(mlMovies: MlMovie[]) {
   if (mlMovies.length === 0) return []
 
   const slugs = mlMovies.map((m) => m.slug)
   
   try {
-    const sanityMovies = await client.fetch<any[]>(
+    const sanityMovies = await client.fetch<SanityMovie[]>(
       `*[_type == "movie" && slug.current in $slugs] {
         _id, title, "slug": slug.current, year, director, genre, rating, poster, posterUrl
       }`,
@@ -98,18 +109,18 @@ export default async function RecommendationsPage() {
   ])
 
   // Fallback to Sanity-only data if ML engine is down
-  let fallbackTopRated: any[] = []
-  let fallbackAllMovies: any[] = []
+  let fallbackTopRated: SanityMovie[] = []
+  let fallbackAllMovies: SanityMovie[] = []
 
   if (topPicks.length === 0 && trending.length === 0) {
     try {
       ;[fallbackTopRated, fallbackAllMovies] = await Promise.all([
-        client.fetch<any[]>(
+        client.fetch<SanityMovie[]>(
           `*[_type == "movie" && rating >= 7] | order(rating desc)[0...12] {
             _id, title, "slug": slug.current, year, director, genre, rating, poster, posterUrl
           }`
         ).catch(() => []),
-        client.fetch<any[]>(
+        client.fetch<SanityMovie[]>(
           `*[_type == "movie"] | order(year desc)[0...12] {
             _id, title, "slug": slug.current, year, director, genre, rating, poster, posterUrl
           }`
@@ -119,7 +130,7 @@ export default async function RecommendationsPage() {
   }
 
   // Build genre sections from ML data, fallback to Sanity
-  const genreSections: [string, any[]][] = []
+  const genreSections: [string, SanityMovie[]][] = []
   if (actionMovies.length > 0) genreSections.push(['action', actionMovies])
   if (dramaMovies.length > 0) genreSections.push(['drama', dramaMovies])
   if (romanceMovies.length > 0) genreSections.push(['romance', romanceMovies])
@@ -127,13 +138,13 @@ export default async function RecommendationsPage() {
   if (genreSections.length === 0) {
     try {
       const [actionFallback, dramaFallback, romanceFallback] = await Promise.all([
-        client.fetch<any[]>(
+        client.fetch<SanityMovie[]>(
           `*[_type == "movie" && "Action" in genre] | order(rating desc)[0...8]{ _id, title, "slug": slug.current, year, director, genre, rating, poster, posterUrl }`
         ).catch(() => []),
-        client.fetch<any[]>(
+        client.fetch<SanityMovie[]>(
           `*[_type == "movie" && "Drama" in genre] | order(rating desc)[0...8]{ _id, title, "slug": slug.current, year, director, genre, rating, poster, posterUrl }`
         ).catch(() => []),
-        client.fetch<any[]>(
+        client.fetch<SanityMovie[]>(
           `*[_type == "movie" && "Romance" in genre] | order(rating desc)[0...8]{ _id, title, "slug": slug.current, year, director, genre, rating, poster, posterUrl }`
         ).catch(() => []),
       ])

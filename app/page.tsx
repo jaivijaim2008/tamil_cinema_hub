@@ -2,6 +2,7 @@ import { client } from '../sanity/client'
 import { latestMoviesQuery, latestBlogsQuery } from '../lib/queries'
 import { toArray } from '../lib/utils'
 import type { Movie } from '../components/ui/MovieCard'
+import type { Blog } from '@/lib/types'
 import HomePageClient from './HomePageClient'
 
 const allGenresAndRatingsQuery = `*[_type == "movie"]{ genre, rating }`
@@ -13,7 +14,7 @@ interface GenreCount {
 
 export default async function Home() {
   let movies: Movie[] = []
-  let blogs: any[] = []
+  let blogs: Blog[] = []
   let totalMovies = 0
   let totalBlogs = 0
   let genreCounts: GenreCount[] = []
@@ -22,7 +23,7 @@ export default async function Home() {
   try {
     ;[movies, blogs, totalMovies, totalBlogs] = await Promise.all([
       client.fetch<Movie[]>(latestMoviesQuery).catch(() => []),
-      client.fetch<any[]>(latestBlogsQuery).catch(() => []),
+      client.fetch<Blog[]>(latestBlogsQuery).catch(() => []),
       client.fetch<number>('count(*[_type == "movie"])').catch(() => 0),
       client.fetch<number>('count(*[_type == "blog"])').catch(() => 0),
     ])
@@ -41,7 +42,9 @@ export default async function Home() {
         if (g) genreMap.set(g, (genreMap.get(g) || 0) + 1)
       }
       if (item.rating) {
-        ratingSum += item.rating
+        // Clamp to 0-5 to handle any 0-10 raw values from Sanity
+        const clamped = Math.min(5, Math.max(0, item.rating))
+        ratingSum += clamped
         ratingCount++
       }
     }

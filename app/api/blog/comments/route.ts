@@ -20,7 +20,8 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const doc = await client.fetch<{ comments?: any[] }>(
+    type CommentEntry = { _key: string; createdAt: string; [k: string]: unknown }
+    const doc = await client.fetch<{ comments?: CommentEntry[] }>(
       `*[_type == "blog" && slug.current == $slug][0]{ comments }`,
       { slug }
     )
@@ -53,8 +54,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Request too large.' }, { status: 413 })
   }
 
-  let body: any
-  try { body = await req.json() } catch {
+  let body: Record<string, unknown>
+  try { body = await req.json() as Record<string, unknown> } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
@@ -63,14 +64,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 })
   }
 
-  const { slug, author, email, content, parentId } = body
-  if (!slug || !author?.trim() || !content?.trim()) {
+  const { slug, author, email, content, parentId } = body as { slug?: unknown; author?: unknown; email?: unknown; content?: unknown; parentId?: unknown }
+  if (typeof slug !== 'string' || typeof author !== 'string' || typeof content !== 'string') {
     return NextResponse.json({ error: 'slug, author, and content required' }, { status: 400 })
   }
 
-  // Type checks
-  if (typeof slug !== 'string' || typeof author !== 'string' || typeof content !== 'string') {
-    return NextResponse.json({ error: 'Invalid field types.' }, { status: 400 })
+  if (!slug || !author.trim() || !content.trim()) {
+    return NextResponse.json({ error: 'slug, author, and content required' }, { status: 400 })
   }
 
   if (email && typeof email !== 'string') {
@@ -93,8 +93,8 @@ export async function POST(req: NextRequest) {
   // Rate limit: 1 comment per IP per 30 seconds
   const ip = getIP(req)
   const now = Date.now()
-  if (!(globalThis as any).__commentRL) (globalThis as any).__commentRL = new Map<string, number>()
-  const rl: Map<string, number> = (globalThis as any).__commentRL
+  if (!(globalThis as Record<string, unknown>).__commentRL) (globalThis as Record<string, unknown>).__commentRL = new Map<string, number>()
+  const rl: Map<string, number> = (globalThis as Record<string, unknown>).__commentRL as Map<string, number>
   const last = rl.get(ip)
   if (last && now - last < 30_000) {
     return NextResponse.json({ error: 'Please wait before posting another comment.' }, { status: 429 })
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
     if (!docId) return NextResponse.json({ error: 'Blog not found' }, { status: 404 })
 
     // Store comment inline on the blog doc as an array field
-    const comment: Record<string, any> = {
+    const comment: Record<string, unknown> = {
       _type: 'comment',
       _key: Math.random().toString(36).slice(2, 10),
       author: cleanAuthor,
@@ -118,10 +118,10 @@ export async function POST(req: NextRequest) {
       createdAt: new Date().toISOString(),
       authorIp: ip, // Store IP for ownership verification on edit/delete
     }
-    if (email?.trim()) comment.email = escapeHtml(email.trim().slice(0, 200))
+    if (typeof email === 'string' && email.trim()) comment.email = escapeHtml(email.trim().slice(0, 200))
     if (parentId) comment.parentId = parentId
 
-    const result = await writeClient
+    await writeClient
       .patch(docId)
       .setIfMissing({ comments: [] })
       .append('comments', [comment])
@@ -131,8 +131,8 @@ export async function POST(req: NextRequest) {
       ok: true,
       comment: { _id: comment._key, author: cleanAuthor, email: comment.email, content: cleanContent, createdAt: comment.createdAt, parentId: comment.parentId },
     })
-  } catch (err: any) {
-    console.error('[Comments API]', err?.message)
+  } catch (err: unknown) {
+    console.error('[Comments API]', err instanceof Error ? err.message : err)
     return NextResponse.json({ error: 'Failed to post comment' }, { status: 500 })
   }
 }

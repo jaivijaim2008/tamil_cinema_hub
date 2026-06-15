@@ -85,8 +85,8 @@ export async function GET() {
           ),
         ])
         return { name: p.name, configured: true, reachable: result.ok, status: result.status }
-      } catch (err: any) {
-        return { name: p.name, configured: true, reachable: false, status: String(err.message ?? err ?? 'error') }
+      } catch (err: unknown) {
+        return { name: p.name, configured: true, reachable: false, status: String(err instanceof Error ? err.message : err ?? 'error') }
       }
     })
   )

@@ -14,8 +14,8 @@ export async function PATCH(
     return NextResponse.json({ error: 'Invalid comment key.' }, { status: 400 })
   }
 
-  let body: any
-  try { body = await req.json() } catch {
+  let body: Record<string, unknown>
+  try { body = await req.json() as Record<string, unknown> } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
@@ -24,7 +24,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 })
   }
 
-  const { slug, content, author } = body
+  const { slug, content } = body as { slug?: string; content?: string }
   if (!slug || !content?.trim()) {
     return NextResponse.json({ error: 'slug and content required' }, { status: 400 })
   }
@@ -42,8 +42,8 @@ export async function PATCH(
   // Rate limit: 1 edit per IP per 10 seconds
   const ip = getIP(req)
   const now = Date.now()
-  if (!(globalThis as any).__commentEditRL) (globalThis as any).__commentEditRL = new Map<string, number>()
-  const rl: Map<string, number> = (globalThis as any).__commentEditRL
+  if (!(globalThis as Record<string, unknown>).__commentEditRL) (globalThis as Record<string, unknown>).__commentEditRL = new Map<string, number>()
+  const rl: Map<string, number> = (globalThis as Record<string, unknown>).__commentEditRL as Map<string, number>
   const last = rl.get(ip)
   if (last && now - last < 10_000) {
     return NextResponse.json({ error: 'Please wait before editing again.' }, { status: 429 })
@@ -58,11 +58,12 @@ export async function PATCH(
     if (!docId) return NextResponse.json({ error: 'Blog not found' }, { status: 404 })
 
     // Find the comment by _key and verify IP ownership
-    const doc = await client.fetch<{ comments?: any[] }>(
+    type CommentEntry = { _key: string; authorIp?: string; content?: string; edited?: boolean; [k: string]: unknown }
+    const doc = await client.fetch<{ comments?: CommentEntry[] }>(
       `*[_type == "blog" && _id == $id][0]{ comments }`,
       { id: docId }
     )
-    const comment = doc?.comments?.find((c: any) => c._key === key)
+    const comment = doc?.comments?.find((c) => c._key === key)
     if (!comment) return NextResponse.json({ error: 'Comment not found' }, { status: 404 })
 
     // Ownership check: only allow editing if the comment was made from the same IP
@@ -82,8 +83,8 @@ export async function PATCH(
       ok: true,
       comment: { ...comment, content: cleanContent, edited: true },
     })
-  } catch (err: any) {
-    console.error('[Comments PATCH]', err?.message)
+  } catch (err: unknown) {
+    console.error('[Comments PATCH]', err instanceof Error ? err.message : err)
     return NextResponse.json({ error: 'Failed to edit comment' }, { status: 500 })
   }
 }
@@ -112,8 +113,8 @@ export async function DELETE(
   // Rate limit: 1 delete per IP per 10 seconds
   const ip = getIP(req)
   const now = Date.now()
-  if (!(globalThis as any).__commentDelRL) (globalThis as any).__commentDelRL = new Map<string, number>()
-  const rl: Map<string, number> = (globalThis as any).__commentDelRL
+  if (!(globalThis as Record<string, unknown>).__commentDelRL) (globalThis as Record<string, unknown>).__commentDelRL = new Map<string, number>()
+  const rl: Map<string, number> = (globalThis as Record<string, unknown>).__commentDelRL as Map<string, number>
   const last = rl.get(ip)
   if (last && now - last < 10_000) {
     return NextResponse.json({ error: 'Please wait before deleting again.' }, { status: 429 })
@@ -128,11 +129,12 @@ export async function DELETE(
     if (!docId) return NextResponse.json({ error: 'Blog not found' }, { status: 404 })
 
     // Also delete any replies to this comment (children with parentId matching this key)
-    const doc = await client.fetch<{ comments?: any[] }>(
+    type CommentEntry2 = { _key: string; authorIp?: string; parentId?: string; [k: string]: unknown }
+    const doc = await client.fetch<{ comments?: CommentEntry2[] }>(
       `*[_type == "blog" && _id == $id][0]{ comments }`,
       { id: docId }
     )
-    const targetComment = doc?.comments?.find((c: any) => c._key === key)
+    const targetComment = doc?.comments?.find((c) => c._key === key)
 
     // Ownership check: only allow deleting if the comment was made from the same IP
     if (targetComment?.authorIp && targetComment.authorIp !== ip) {
@@ -140,8 +142,8 @@ export async function DELETE(
     }
 
     const replyKeys = (doc?.comments ?? [])
-      .filter((c: any) => c.parentId === key)
-      .map((c: any) => c._key)
+      .filter((c) => c.parentId === key)
+      .map((c) => c._key)
 
     // Remove the comment and its replies
     const keysToRemove = [key, ...replyKeys]
@@ -151,8 +153,8 @@ export async function DELETE(
       .commit()
 
     return NextResponse.json({ ok: true, deletedKeys: keysToRemove })
-  } catch (err: any) {
-    console.error('[Comments DELETE]', err?.message)
+  } catch (err: unknown) {
+    console.error('[Comments DELETE]', err instanceof Error ? err.message : err)
     return NextResponse.json({ error: 'Failed to delete comment' }, { status: 500 })
   }
 }

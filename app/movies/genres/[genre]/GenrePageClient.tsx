@@ -6,6 +6,7 @@ import type { Movie } from '@/lib/types'
 import MovieCard from '@/components/ui/MovieCard'
 import PageHeader from '@/components/ui/PageHeader'
 import EmptyState from '@/components/ui/EmptyState'
+import AdUnit from '@/components/ui/AdUnit'
 
 interface Props {
   genre: string
@@ -30,11 +31,25 @@ export default function GenrePageClient({ genre, movies }: Props) {
         />
 
         {movies.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
-            {movies.map((movie, i) => (
-              <MovieCard key={movie._id} movie={movie} index={i} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+              {movies.slice(0, 12).map((movie, i) => (
+                <MovieCard key={movie._id} movie={movie} index={i} />
+              ))}
+            </div>
+            {movies.length > 12 && (
+              <div className="my-8">
+                <AdUnit adSlot="0000000007" className="max-w-4xl mx-auto" minHeight="100px" />
+              </div>
+            )}
+            {movies.length > 12 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+                {movies.slice(12).map((movie, i) => (
+                  <MovieCard key={movie._id} movie={movie} index={i + 12} />
+                ))}
+              </div>
+            )}
+          </>
         ) : (
           <EmptyState title={`No ${genre} movies found`} description="Check back later as the archive grows." />
         )}

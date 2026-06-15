@@ -431,14 +431,30 @@ function classifyIntent(message: string, e: Entities): IntentType {
 const F = `_id, title, titleTanglish, "slug": slug.current, year, director,
   cast[]{ name }, genre, rating, synopsis, ottPlatform, poster, posterUrl`
 
+interface MovieResult {
+  _id: string
+  title: string
+  titleTanglish?: string
+  slug: string
+  year: number
+  director: string
+  cast?: Array<{ name?: string }>
+  genre?: string[]
+  rating?: number
+  synopsis?: string
+  ottPlatform?: string
+  poster?: { asset?: { _ref?: string } }
+  posterUrl?: string | null
+}
+
 const db = {
-  byActor: (actorKey: string, n = 5): Promise<any[]> => {
+  byActor: (actorKey: string, n = 5): Promise<MovieResult[]> => {
     const name = ACTOR_CANONICAL[actorKey.toLowerCase()] ?? actorKey
     return client.fetch(
       `*[_type == "movie" && count(cast[name == $name]) > 0]
        | order(rating desc, year desc)[0...${n}]{${F}}`,
       { name }
-    ).then((res: any[]) => res.length ? res :
+    ).then((res: MovieResult[]) => res.length ? res :
       client.fetch(
         `*[_type == "movie" && cast[].name match $pattern]
          | order(year desc)[0...${n}]{${F}}`,
@@ -447,13 +463,13 @@ const db = {
     )
   },
 
-  byActorAndGenre: (actorKey: string, genre: string, n = 5): Promise<any[]> => {
+  byActorAndGenre: (actorKey: string, genre: string, n = 5): Promise<MovieResult[]> => {
     const name = ACTOR_CANONICAL[actorKey.toLowerCase()] ?? actorKey
     return client.fetch(
       `*[_type == "movie" && count(cast[name == $name]) > 0 && $genre in genre]
        | order(rating desc, year desc)[0...${n}]{${F}}`,
       { name, genre }
-    ).then((res: any[]) => res.length ? res :
+    ).then((res: MovieResult[]) => res.length ? res :
       client.fetch(
         `*[_type == "movie" && cast[].name match $pattern && $genre in genre]
          | order(rating desc)[0...${n}]{${F}}`,
@@ -462,67 +478,67 @@ const db = {
     )
   },
 
-  byDirector: (dir: string, n = 5): Promise<any[]> =>
+  byDirector: (dir: string, n = 5): Promise<MovieResult[]> =>
     client.fetch(
       `*[_type == "movie" && director match $pattern]
        | order(year desc)[0...${n}]{${F}}`,
       { pattern: `*${dir}*` }
     ),
 
-  byGenre: (genre: string, n = 5): Promise<any[]> =>
+  byGenre: (genre: string, n = 5): Promise<MovieResult[]> =>
     client.fetch(
       `*[_type == "movie" && $genre in genre]
        | order(rating desc)[0...${n}]{${F}}`,
       { genre }
     ),
 
-  byGenreAndYear: (genre: string, year: number, n = 5): Promise<any[]> =>
+  byGenreAndYear: (genre: string, year: number, n = 5): Promise<MovieResult[]> =>
     client.fetch(
       `*[_type == "movie" && $genre in genre && year == $year]
        | order(rating desc)[0...${n}]{${F}}`,
       { genre, year }
     ),
 
-  byYear: (year: number, n = 5): Promise<any[]> =>
+  byYear: (year: number, n = 5): Promise<MovieResult[]> =>
     client.fetch(
       `*[_type == "movie" && year == $year]
        | order(rating desc)[0...${n}]{${F}}`,
       { year }
     ),
 
-  byYearRange: (from: number, to: number, n = 5): Promise<any[]> =>
+  byYearRange: (from: number, to: number, n = 5): Promise<MovieResult[]> =>
     client.fetch(
       `*[_type == "movie" && year >= $from && year <= $to]
        | order(year desc)[0...${n}]{${F}}`,
       { from, to }
     ),
 
-  byOTT: (platform: string, n = 5): Promise<any[]> =>
+  byOTT: (platform: string, n = 5): Promise<MovieResult[]> =>
     client.fetch(
       `*[_type == "movie" && ottPlatform match $pattern]
        | order(year desc)[0...${n}]{${F}}`,
       { pattern: `*${platform}*` }
     ),
 
-  byRating: (min: number, max: number, n = 5): Promise<any[]> =>
+  byRating: (min: number, max: number, n = 5): Promise<MovieResult[]> =>
     client.fetch(
       `*[_type == "movie" && rating >= $min && rating <= $max]
        | order(rating desc)[0...${n}]{${F}}`,
       { min, max }
     ),
 
-  topRated: (n = 5): Promise<any[]> =>
+  topRated: (n = 5): Promise<MovieResult[]> =>
     client.fetch(
       `*[_type == "movie" && rating != null]
        | order(rating desc)[0...${n}]{${F}}`
     ),
 
-  recent: (n = 5): Promise<any[]> =>
+  recent: (n = 5): Promise<MovieResult[]> =>
     client.fetch(
       `*[_type == "movie"] | order(year desc)[0...${n}]{${F}}`
     ),
 
-  search: (q: string, n = 5): Promise<any[]> =>
+  search: (q: string, n = 5): Promise<MovieResult[]> =>
     client.fetch(
       `*[_type == "movie" && (
         title match $q || titleTanglish match $q ||
@@ -540,7 +556,7 @@ const db = {
 // FORMATTERS
 // ═══════════════════════════════════════════════════════════════
 
-function getPosterUrl(m: any): string | null {
+function getPosterUrl(m: MovieResult): string | null {
   if (m.poster) {
     try { return urlFor(m.poster).width(120).height(180).quality(80).fit('max').url() } catch {}
   }
@@ -555,7 +571,7 @@ function titleCase(s: string): string {
   return s.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
 }
 
-function fmtList(movies: any[], heading: string): string {
+function fmtList(movies: MovieResult[], heading: string): string {
   if (!movies?.length) return ''
   let out = `${heading}\n\n`
   movies.forEach((m, i) => {
@@ -569,8 +585,8 @@ function fmtList(movies: any[], heading: string): string {
   return out.trim()
 }
 
-function fmtDetail(m: any): string {
-  const cast = m.cast?.map((c: any) => c.name).filter(Boolean).join(', ') || 'N/A'
+function fmtDetail(m: MovieResult): string {
+  const cast = m.cast?.map((c) => c.name).filter(Boolean).join(', ') || 'N/A'
   const genres = m.genre?.join(', ') || 'N/A'
   const poster = getPosterUrl(m)
   const img = poster ? `[poster:${poster}]` : ''
@@ -585,7 +601,7 @@ function fmtDetail(m: any): string {
   return out
 }
 
-function buildSuggestions(e: Entities, movies: any[]): string[] {
+function buildSuggestions(e: Entities): string[] {
   const sugg: string[] = []
   if (e.actors.length) {
     const label = titleCase(ACTOR_CANONICAL[e.actors[0]] ?? e.actors[0])
@@ -691,13 +707,13 @@ async function askGroq(
 
     // ── Log full error details from Groq ──────────────────────────
     if (!res.ok) {
-      let errorBody: any = {}
-      try { errorBody = await res.json() } catch {}
+      let errorBody: { error?: { type?: string; message?: string } } = {}
+      try { errorBody = await res.json() as typeof errorBody } catch {}
 
       console.error(
         `[Groq] API returned HTTP ${res.status}\n` +
-        `  Error type:    ${errorBody?.error?.type ?? 'unknown'}\n` +
-        `  Error message: ${errorBody?.error?.message ?? JSON.stringify(errorBody)}\n` +
+        `  Error type:    ${errorBody.error?.type ?? 'unknown'}\n` +
+        `  Error message: ${errorBody.error?.message ?? JSON.stringify(errorBody)}\n` +
         `  Possible fixes:\n` +
         (res.status === 401
           ? '  → Invalid API key. Check GROQ_API_KEY in .env.local\n'
@@ -709,7 +725,7 @@ async function askGroq(
       )
 
       return {
-        reply: getGroqErrorReply(res.status, message),
+        reply: getGroqErrorReply(res.status),
         suggestions: buildGroqSuggestions(message),
       }
     }
@@ -734,15 +750,15 @@ async function askGroq(
       suggestions: buildGroqSuggestions(message),
     }
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     // ── Network / timeout errors ──────────────────────────────────
-    const isTimeout = err?.name === 'TimeoutError' || err?.message?.includes('timeout')
-    const isNetwork = err?.cause?.code === 'ECONNREFUSED' || err?.message?.includes('fetch failed')
+    const isTimeout = err instanceof Error && (err.name === 'TimeoutError' || err.message.includes('timeout'))
+    const isNetwork = err instanceof Error && err.cause instanceof Error && (err.cause as { code?: string }).code === 'ECONNREFUSED'
 
     console.error(
       `[Groq] Request failed\n` +
-      `  Error name:    ${err?.name ?? 'unknown'}\n` +
-      `  Error message: ${err?.message ?? 'no message'}\n` +
+      `  Error name:    ${err instanceof Error ? err.name : 'unknown'}\n` +
+      `  Error message: ${err instanceof Error ? err.message : 'no message'}\n` +
       `  Is timeout:    ${isTimeout}\n` +
       `  Is network:    ${isNetwork}\n` +
       (isTimeout ? '  → Increase timeout or check Groq server status\n' : '') +
@@ -760,7 +776,7 @@ async function askGroq(
 
 // ── Human-friendly error messages per HTTP status ────────────
 
-function getGroqErrorReply(status: number, message: string): string {
+function getGroqErrorReply(status: number): string {
   if (status === 401)
     return `🔑 My AI key seems invalid. But I can still help — ask me about a specific actor like "Vijay movies" or a genre like "best Tamil thrillers"!`
   if (status === 429)
@@ -875,7 +891,7 @@ async function generateResponse(
       k1 ? db.byActor(k1, 4).catch(() => []) : Promise.resolve([]),
       k2 ? db.byActor(k2, 4).catch(() => []) : Promise.resolve([]),
     ])
-    const fmtCompare = (key: string, movies: any[]) => {
+    const fmtCompare = (key: string, movies: MovieResult[]) => {
       const label = titleCase(ACTOR_CANONICAL[key] ?? key)
       if (!movies.length) return `No results found for ${label}.`
       let s = `── ${label} ──\n`
@@ -900,7 +916,7 @@ async function generateResponse(
     if (movies.length) {
       return {
         reply: fmtList(movies, `📺 Tamil movies on ${titleCase(platform)}:`),
-        suggestions: buildSuggestions(e, movies),
+        suggestions: buildSuggestions(e),
       }
     }
     return await askGroq(message, history, `OTT:${platform} not in DB`)
@@ -913,7 +929,7 @@ async function generateResponse(
     if (movies.length) {
       return {
         reply: fmtList(movies, `⭐ Movies rated ${min}${max < 5 ? `–${max}` : '+'}:`),
-        suggestions: buildSuggestions(e, movies),
+        suggestions: buildSuggestions(e),
       }
     }
     return await askGroq(message, history, `rating ${min}-${max} not in DB`)
@@ -932,14 +948,14 @@ async function generateResponse(
           `🔥 Best ${genre.toLowerCase()} films starring ${actorLabel}:`,
           `🎬 ${actorLabel}'s top ${genre.toLowerCase()} movies:`,
         ])),
-        suggestions: buildSuggestions(e, movies),
+        suggestions: buildSuggestions(e),
       }
     }
     const actorMovies = await db.byActor(actor).catch(() => [])
     if (actorMovies.length) {
       return {
         reply: fmtList(actorMovies, `🎭 ${actorLabel} movies (no ${genre} filter match found):`),
-        suggestions: buildSuggestions(e, actorMovies),
+        suggestions: buildSuggestions(e),
       }
     }
     return await askGroq(message, history, `actor_genre:${actor}+${genre} not in DB`)
@@ -950,31 +966,31 @@ async function generateResponse(
     const actor = e.actors[0]
     const actorLabel = titleCase(ACTOR_CANONICAL[actor] ?? actor)
     if (e.years.length) {
-      const all = await db.byActor(actor, 20).catch(() => [])
-      const filtered = all.filter((m: any) => m.year === e.years[0])
+      const all = await db.byActor(actor, 20).catch((): MovieResult[] => [])
+      const filtered = all.filter((m) => m.year === e.years[0])
       if (filtered.length) {
         return {
           reply: fmtList(filtered, `🎭 ${actorLabel} movies from ${e.years[0]}:`),
-          suggestions: buildSuggestions(e, filtered),
+          suggestions: buildSuggestions(e),
         }
       }
     }
-    const movies = await db.byActor(actor).catch(() => [])
-    if (movies.length) {
+    const actorMovies = await db.byActor(actor).catch((): MovieResult[] => [])
+    if (actorMovies.length) {
       return {
-        reply: fmtList(movies, pick([
-          `🎭 Movies featuring ${actorLabel}:`,
-          `🌟 ${actorLabel}'s filmography:`,
-          `🎬 Top ${actorLabel} movies:`,
-        ])),
-        suggestions: buildSuggestions(e, movies),
+        reply: fmtList(actorMovies, pick([
+            `🎭 Movies featuring ${actorLabel}:`,
+            `🌟 ${actorLabel}'s filmography:`,
+            `🎬 Top ${actorLabel} movies:`,
+          ])),
+          suggestions: buildSuggestions(e),
+        }
       }
-    }
     const searched = await db.search(ACTOR_CANONICAL[actor] ?? actor, 5).catch(() => [])
     if (searched.length) {
       return {
         reply: fmtList(searched, `🔍 Results for "${actorLabel}":`),
-        suggestions: buildSuggestions(e, searched),
+        suggestions: buildSuggestions(e),
       }
     }
     return await askGroq(message, history, `actor:${actor} not in DB`)
@@ -992,14 +1008,14 @@ async function generateResponse(
           `🎥 ${dirLabel}'s movies:`,
           `🎭 Films directed by ${dirLabel}:`,
         ])),
-        suggestions: buildSuggestions(e, movies),
+        suggestions: buildSuggestions(e),
       }
     }
     const searched = await db.search(dir, 5).catch(() => [])
     if (searched.length) {
       return {
         reply: fmtList(searched, `🔍 Results for "${dirLabel}":`),
-        suggestions: buildSuggestions(e, searched),
+        suggestions: buildSuggestions(e),
       }
     }
     return await askGroq(message, history, `director:${dir} not in DB`)
@@ -1015,7 +1031,7 @@ async function generateResponse(
           `📅 Tamil movies from ${from} to ${to}:`,
           `🏆 Best of ${from}–${to}:`,
         ])),
-        suggestions: buildSuggestions(e, movies),
+        suggestions: buildSuggestions(e),
       }
     }
     return await askGroq(message, history, `year_range:${from}-${to} not in DB`)
@@ -1029,7 +1045,7 @@ async function generateResponse(
       if (movies.length) {
         return {
           reply: fmtList(movies, `🏷️ ${genre} movies from ${e.years[0]}:`),
-          suggestions: buildSuggestions(e, movies),
+          suggestions: buildSuggestions(e),
         }
       }
     }
@@ -1041,7 +1057,7 @@ async function generateResponse(
           `💥 Top ${genre.toLowerCase()} picks for you:`,
           `🎬 Must-watch ${genre.toLowerCase()} films:`,
         ])),
-        suggestions: buildSuggestions(e, movies),
+        suggestions: buildSuggestions(e),
       }
     }
     return await askGroq(message, history, `genre:${genre} not in DB`)
@@ -1057,7 +1073,7 @@ async function generateResponse(
           `📅 Tamil movies from ${year}:`,
           `🏆 Best Tamil films of ${year}:`,
         ])),
-        suggestions: buildSuggestions(e, movies),
+        suggestions: buildSuggestions(e),
       }
     }
     return await askGroq(message, history, `year:${year} not in DB`)
@@ -1073,7 +1089,7 @@ async function generateResponse(
           `🌟 The best of Tamil cinema:`,
           `💎 Tamil cinema masterpieces:`,
         ])),
-        suggestions: buildSuggestions(e, movies),
+        suggestions: buildSuggestions(e),
       }
     }
     return await askGroq(message, history, 'top_rated DB empty')
@@ -1089,7 +1105,7 @@ async function generateResponse(
           `🎬 Fresh from Tamil cinema:`,
           `📽️ What's new in Tamil cinema:`,
         ])),
-        suggestions: buildSuggestions(e, movies),
+        suggestions: buildSuggestions(e),
       }
     }
     return await askGroq(message, history, 'recent DB empty')
@@ -1105,7 +1121,7 @@ async function generateResponse(
           `🎯 Handpicked for you:`,
           `🌟 You can't go wrong with these:`,
         ])),
-        suggestions: buildSuggestions(e, movies),
+        suggestions: buildSuggestions(e),
       }
     }
     return await askGroq(message, history, 'recommend DB empty')
@@ -1129,7 +1145,7 @@ async function generateResponse(
       if (movies.length > 1) {
         return {
           reply: fmtList(movies, `🔍 Found these matching "${q}":`),
-          suggestions: buildSuggestions(e, movies),
+          suggestions: buildSuggestions(e),
         }
       }
     }
@@ -1156,7 +1172,7 @@ async function generateResponse(
           `🔍 Results for "${q}":`,
           `📽️ Found these for "${q}":`,
         ])),
-        suggestions: buildSuggestions(e, movies),
+        suggestions: buildSuggestions(e),
       }
     }
     return await askGroq(message, history, `search:${q} not in DB`)
@@ -1170,11 +1186,11 @@ async function generateResponse(
       if (ctx.actors[0]) {
         const movies = await db.byActor(ctx.actors[0]).catch(() => [])
         const label = titleCase(ACTOR_CANONICAL[ctx.actors[0]] ?? ctx.actors[0])
-        if (movies.length) return { reply: fmtList(movies, `🎭 More ${label} movies:`), suggestions: buildSuggestions(ctx, movies) }
+        if (movies.length) return { reply: fmtList(movies, `🎭 More ${label} movies:`), suggestions: buildSuggestions(ctx) }
       }
       if (ctx.genres[0]) {
         const movies = await db.byGenre(ctx.genres[0]).catch(() => [])
-        if (movies.length) return { reply: fmtList(movies, `🏷️ More ${ctx.genres[0]} movies:`), suggestions: buildSuggestions(ctx, movies) }
+        if (movies.length) return { reply: fmtList(movies, `🏷️ More ${ctx.genres[0]} movies:`), suggestions: buildSuggestions(ctx) }
       }
     }
   }
@@ -1211,17 +1227,17 @@ function checkRateLimit(ip: string): { ok: boolean; retryAfter: number } {
 // ═══════════════════════════════════════════════════════════════
 
 async function handleDebug(): Promise<NextResponse> {
-  const results: Record<string, any> = {}
+  const results: Record<string, unknown> = {}
 
   try {
     results.movieCount = await db.count()
-    results.topRated = (await db.topRated(3)).map((m: any) => ({ title: m.title, year: m.year, rating: m.rating }))
-    results.recent = (await db.recent(3)).map((m: any) => ({ title: m.title, year: m.year }))
+    results.topRated = (await db.topRated(3)).map((m) => ({ title: m.title, year: m.year, rating: m.rating }))
+    results.recent = (await db.recent(3)).map((m) => ({ title: m.title, year: m.year }))
     results.groqKeySet = !!process.env.GROQ_API_KEY
     results.status = 'ok'
-  } catch (err: any) {
+  } catch (err: unknown) {
     results.status = 'error'
-    results.error = err?.message
+    results.error = err instanceof Error ? err.message : String(err)
     results.hint = 'Sanity client is likely misconfigured. Check projectId, dataset, and apiVersion in your sanity client file.'
   }
 
@@ -1264,9 +1280,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Request too large.' }, { status: 413 })
   }
 
-  let body: any
+  let body: Record<string, unknown>
   try {
-    body = await req.json()
+    body = await req.json() as Record<string, unknown>
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body.' }, { status: 400 })
   }
@@ -1283,11 +1299,14 @@ export async function POST(req: NextRequest) {
 
   // Validate message structure and sanitize
   const sanitizedMessages = messages
-    .filter((m: any) => m && typeof m === 'object' && typeof m.content === 'string')
-    .map((m: any) => ({
-      role: m.role === 'assistant' ? 'assistant' as const : 'user' as const,
-      content: m.content.slice(0, 2000), // Limit each message to 2000 chars
-    }))
+    .filter((m: unknown) => m && typeof m === 'object' && 'content' in m && typeof (m as { content: unknown }).content === 'string')
+    .map((m: unknown) => {
+      const msg = m as { role?: string; content: string }
+      return {
+        role: msg.role === 'assistant' ? 'assistant' as const : 'user' as const,
+        content: msg.content.slice(0, 2000), // Limit each message to 2000 chars
+      }
+    })
     .slice(-20) // Max 20 messages in history
 
   const lastMsg: string = sanitizedMessages.filter((m) => m.role === 'user').pop()?.content ?? ''
@@ -1303,14 +1322,14 @@ export async function POST(req: NextRequest) {
   try {
     const { reply, suggestions } = await generateResponse(userMessage, history)
     return NextResponse.json({ reply, suggestions, provider: 'TamilCinemaHub AI' })
-  } catch (err: any) {
-    console.error('[TamilCinemaHub] Unhandled error in generateResponse:', err?.message, err?.stack)
+  } catch (err: unknown) {
+    console.error('[TamilCinemaHub] Unhandled error in generateResponse:', err instanceof Error ? err.message : err, err instanceof Error ? err.stack : undefined)
     try {
       // Last-resort Groq call with minimal context
       const fallback = await askGroq(userMessage, [], 'top-level error recovery')
       return NextResponse.json({ ...fallback, provider: 'TamilCinemaHub AI' })
-    } catch (finalErr: any) {
-      console.error('[TamilCinemaHub] Final fallback also failed:', finalErr?.message)
+    } catch (finalErr: unknown) {
+      console.error('[TamilCinemaHub] Final fallback also failed:', finalErr instanceof Error ? finalErr.message : finalErr)
       return NextResponse.json(
         {
           reply: `🎬 Something went wrong! Please try again.\n\nTry: "Best action movies", "Vijay films", "Movies from 2024"`,
