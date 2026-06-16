@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import Script from 'next/script'
 import { Playfair_Display, Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
+import Providers from './providers'
 import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
 import BottomNav from '../components/layout/BottomNav'
@@ -71,7 +72,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${playfair.variable} ${inter.variable} ${mono.variable}`}>
+    <html lang="en" className={`${playfair.variable} ${inter.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
         {/* Google AdSense — beforeInteractive ensures the script tag is in the SSR HTML so Google's crawler can verify it */}
         <Script
@@ -92,17 +93,19 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
       </head>
       <body className="bg-bg-primary text-text-primary font-inter antialiased overflow-x-hidden">
-        <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-accent-gold focus:text-text-inverse focus:px-4 focus:py-2 focus:rounded-lg">
-          Skip to content
-        </a>
-        <div id="top" />
-        <Navbar />
-        <main id="main" className="pb-[76px] lg:pb-0">
-          {children}
-        </main>
-        <Footer />
-        <BottomNav />
-        <AIChatBubble />
+        <Providers>
+          <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-accent-gold focus:text-text-inverse focus:px-4 focus:py-2 focus:rounded-lg">
+            Skip to content
+          </a>
+          <div id="top" />
+          <Navbar />
+          <main id="main" className="pb-[76px] lg:pb-0">
+            {children}
+          </main>
+          <Footer />
+          <BottomNav />
+          <AIChatBubble />
+        </Providers>
       </body>
     </html>
   )

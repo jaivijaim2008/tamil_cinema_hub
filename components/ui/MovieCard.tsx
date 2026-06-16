@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { Film, Star } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getRatingColor } from '@/lib/constants'
+import WatchlistButton from '@/components/ui/WatchlistButton'
 import { urlFor } from '@/sanity/lib/image'
 import type { CastMember } from '@/lib/types'
 
@@ -88,6 +89,22 @@ export default function MovieCard({ movie, index = 0 }: Props) {
           <span className="text-[10px] font-bold text-white/90 glassmorphism rounded-md px-2 py-1">
             {movie.year}
           </span>
+        </div>
+
+        {/* Watchlist button */}
+        <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <WatchlistButton
+            movie={{
+              _id: movie._id,
+              title: movie.title,
+              slug: movie.slug,
+              year: movie.year,
+              rating: movie.rating,
+              poster: movie.poster,
+              posterUrl: movie.posterUrl,
+            } as import('@/lib/types').Movie}
+            size="sm"
+          />
         </div>
       </motion.div>
 

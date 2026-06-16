@@ -429,19 +429,23 @@ def recommend_collaborative(
 def top_picks(
     n: int = Query(default=12, ge=1, le=30),
     genre: str = Query(default="", description="Optional genre filter"),
+    year: int = Query(default=0, description="Filter by year (0 = all years)"),
 ):
     """
     Curated ML-powered top picks.
     Selects diverse, high-quality movies using score × rating × recency.
+    Pass year=2026 to get only 2026 releases.
     """
     if df is None or hybrid_sim_matrix is None:
         raise HTTPException(status_code=503, detail="Model not loaded")
 
-    cache_key = f"top_{n}_{genre}"
+    cache_key = f"top_{n}_{genre}_{year}"
     if cache_key in rec_cache:
         return rec_cache[cache_key]
 
     candidates = df.copy()
+    if year > 0:
+        candidates = candidates[candidates["year"] == year]
     if genre:
         genre_lower = genre.lower()
         candidates = candidates[
@@ -510,15 +514,17 @@ def top_picks(
 @app.get("/recommend/trending")
 def trending(
     n: int = Query(default=12, ge=1, le=30),
+    year: int = Query(default=0, description="Filter by year (0 = all years)"),
 ):
     """
     Trending movies: recent + well-rated + popular cast.
     Combines recency, rating, and cast popularity score.
+    Pass year=2026 to get only 2026 releases.
     """
     if df is None:
         raise HTTPException(status_code=503, detail="Model not loaded")
 
-    cache_key = f"trending_{n}"
+    cache_key = f"trending_{n}_{year}"
     if cache_key in rec_cache:
         return rec_cache[cache_key]
 
@@ -534,9 +540,12 @@ def trending(
     max_pop = max(cast_popularity.values()) if cast_popularity else 1
 
     current_year = datetime.now(timezone.utc).year
+    trending_df = df.copy()
+    if year > 0:
+        trending_df = trending_df[trending_df["year"] == year]
     scores = []
 
-    for _, row in df.iterrows():
+    for _, row in trending_df.iterrows():
         # Recency: exponential decay from current year
         year_diff = max(current_year - row["year"], 0)
         recency = np.exp(-year_diff / 5.0)  # ~5 year half-life
@@ -562,7 +571,7 @@ def trending(
         )
         scores.append(trending_score)
 
-    df_temp = df.copy()
+    df_temp = trending_df.copy()
     df_temp["_trending_score"] = scores
     df_temp = df_temp.sort_values("_trending_score", ascending=False).head(n)
 
@@ -594,9 +603,11 @@ def recommend_by_genre(
     genre: str,
     n: int = Query(default=12, ge=1, le=30),
     min_rating: float = Query(default=0.0, ge=0, le=10),
+    year: int = Query(default=0, description="Filter by year (0 = all years)"),
 ):
     """
     Best movies in a genre, ranked by ML quality score.
+    Pass year=2026 to get only 2026 releases.
     """
     if df is None:
         raise HTTPException(status_code=503, detail="Model not loaded")
@@ -606,6 +617,8 @@ def recommend_by_genre(
         df["genre"].apply(lambda g: genre_lower in [x.lower() for x in g])
         & (df["rating"] >= min_rating)
     ].copy()
+    if year > 0:
+        candidates = candidates[candidates["year"] == year]
 
     if candidates.empty:
         return {"total_results": 0, "recommendations": [], "genre": genre, "algorithm": "genre"}

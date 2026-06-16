@@ -3,13 +3,15 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Film, Search, Menu, X, ArrowRight } from 'lucide-react'
+import { Film, Search, Menu, X, ArrowRight, Bookmark } from 'lucide-react'
+import ThemeToggle from '@/components/ui/ThemeToggle'
 
 const NAV_LINKS = [
   { label: 'Movies', href: '/movies' },
   { label: 'Reviews', href: '/blogs' },
   { label: 'Analytics', href: '/analytics' },
   { label: 'Recommendations', href: '/recommendations' },
+  { label: 'Compare', href: '/compare' },
   { label: 'About', href: '/about' },
 ]
 
@@ -85,6 +87,14 @@ export default function Navbar() {
                 <kbd className="hidden lg:inline text-[10px] text-text-muted bg-bg-elevated px-1.5 py-0.5 rounded-md border border-border ml-2">⌘K</kbd>
               </Link>
 
+              <Link
+                href="/watchlist"
+                className="w-9 h-9 flex items-center justify-center rounded-xl bg-bg-card border border-border text-text-secondary hover:text-accent-gold hover:border-accent-gold/30 transition-all duration-300"
+                aria-label="Watchlist"
+              >
+                <Bookmark size={15} />
+              </Link>
+              <ThemeToggle />
               <button
                 onClick={() => setMobileOpen(true)}
                 className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl text-text-secondary hover:text-text-primary hover:bg-bg-elevated/50 transition-all duration-200"

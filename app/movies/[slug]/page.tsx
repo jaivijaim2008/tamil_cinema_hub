@@ -21,13 +21,36 @@ export async function generateMetadata({
 
   if (!movie) return { title: 'Movie Not Found' }
 
+  const posterUrl = movie.poster?.asset ? urlFor(movie.poster).width(800).url() : null
+  const description = movie.synopsis
+    ? movie.synopsis.slice(0, 160)
+    : `${movie.title} (${movie.year}) — Tamil movie directed by ${movie.director}. ${movie.genre?.join(', ') || ''}`.trim()
+
   return {
     title: `${movie.title} (${movie.year})`,
-    description: movie.synopsis || `${movie.title} - Tamil movie directed by ${movie.director}`,
+    description,
+    keywords: [
+      movie.title,
+      `${movie.title} ${movie.year}`,
+      movie.director,
+      ...(movie.genre || []),
+      'Tamil movie', 'Kollywood', 'Tamil cinema',
+    ],
     openGraph: {
+      title: `${movie.title} (${movie.year}) — TamilCinemaHub`,
+      description,
+      images: posterUrl ? [{ url: posterUrl, width: 800, height: 1200, alt: movie.title }] : [],
+      type: 'website',
+      siteName: 'TamilCinemaHub',
+    },
+    twitter: {
+      card: 'summary_large_image',
       title: `${movie.title} (${movie.year})`,
-      description: movie.synopsis || '',
-      images: movie.poster?.asset ? [urlFor(movie.poster).width(800).url()] : [],
+      description,
+      images: posterUrl ? [posterUrl] : [],
+    },
+    alternates: {
+      canonical: `/movies/${slug}`,
     },
   }
 }
@@ -64,6 +87,17 @@ export default async function MovieDetailPage({
             description: movie.synopsis || '',
             director: movie.director ? { '@type': 'Person', name: movie.director } : undefined,
             dateCreated: movie.year ? `${movie.year}` : undefined,
+            genre: movie.genre,
+            aggregateRating: movie.rating ? {
+              '@type': 'AggregateRating',
+              ratingValue: movie.rating,
+              bestRating: 5,
+              ratingCount: 1,
+            } : undefined,
+            actor: movie.cast?.slice(0, 10).map((c) => {
+              const name = typeof c === 'string' ? c : c.name
+              return name ? { '@type': 'Person', name } : null
+            }).filter(Boolean),
           }),
         }}
       />
