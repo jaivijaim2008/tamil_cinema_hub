@@ -28,6 +28,7 @@ function getSecurityHeaders(request: NextRequest): Record<string, string> {
       "img-src 'self' data: blob: https: http:",
       "media-src 'self'",
       "connect-src 'self' https://*.sanity.io https://api.groq.com https://generativelanguage.googleapis.com https://api.cerebras.ai https://openrouter.ai https://huggingface.co https://api.replicate.com https://plausible.io",
+      "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.google.com https://www.googleadservices.com https://adservice.google.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
