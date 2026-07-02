@@ -38,7 +38,7 @@ export default function HomePageClient({
       {/* ── Ad: Below Hero ─────────────────────────────────────────────────── */}
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <AdUnit adSlot="0000000000" className="max-w-4xl mx-auto" minHeight="100px" />
+          <AdUnit adSlot="9064239865" className="max-w-4xl mx-auto" minHeight="100px" />
         </div>
       </section>
 
