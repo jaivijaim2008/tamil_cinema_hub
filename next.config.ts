@@ -36,8 +36,12 @@ const nextConfig: NextConfig = {
     },
   ],
 
-  // ── Image Optimization Security ────────────────────────────
+  // ── Image Optimization ─────────────────────────────────────
+  // Unoptimized: serve images directly from TMDB/Sanity CDNs
+  // (they already serve optimized WebP/AVIF). This bypasses
+  // Vercel's Image Optimization quota (5K/mo on Hobby).
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -56,10 +60,6 @@ const nextConfig: NextConfig = {
         hostname: 'www.gravatar.com',
       },
     ],
-    // Limit image optimization to prevent abuse
-    minimumCacheTTL: 60 * 60, // 1 hour
-    deviceSizes: [640, 750, 828, 1080, 1200],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
 
   // ── Output file tracing for serverless (uncomment for Render/Fly.io) ──
