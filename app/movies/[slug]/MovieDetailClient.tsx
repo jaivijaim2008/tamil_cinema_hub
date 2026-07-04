@@ -25,7 +25,7 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
   const [backdropError, setBackdropError] = useState(false)
 
   // Track this movie view for ML personalization
-  useTrackView(movie.slug, movie.title, movie.year, movie.rating, posterUrl)
+  useTrackView(movie.slug)
 
   const displayPoster = !posterError && posterUrl
   const displayBackdrop = !backdropError && backdropUrl

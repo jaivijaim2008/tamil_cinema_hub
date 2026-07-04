@@ -7,7 +7,6 @@ import { GENRE_COLORS } from '@/lib/constants'
 import MovieCard from '@/components/ui/MovieCard'
 import BlogCard from '@/components/ui/BlogCard'
 import InteractiveHero from '@/components/ui/InteractiveHero'
-import ContinueWatching from '@/components/ui/ContinueWatching'
 import AdUnit from '@/components/ui/AdUnit'
 import { motion } from 'framer-motion'
 
@@ -35,9 +34,6 @@ export default function HomePageClient({
   return (
     <div className="min-h-screen">
       <InteractiveHero totalMovies={totalMovies} />
-
-      {/* ── Continue Watching (client-side, shows only if user has history) ── */}
-      <ContinueWatching />
 
       {/* ── Ad: Below Hero ─────────────────────────────────────────────────── */}
       <section className="py-8">

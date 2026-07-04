@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useCallback } from 'react'
-import { addRecentlyViewed } from './useRecentlyViewed'
+
 
 /**
  * Generates or retrieves a unique session ID for anonymous tracking.
@@ -46,23 +46,15 @@ export function trackInteraction(
  * Usage:
  *   useTrackView('anniyan-2005')
  */
-export function useTrackView(movieSlug: string, movieTitle?: string, movieYear?: number, movieRating?: number, moviePosterUrl?: string | null) {
+export function useTrackView(movieSlug: string) {
   const tracked = useRef(false)
 
   useEffect(() => {
     if (!tracked.current && movieSlug) {
       tracked.current = true
       trackInteraction('view', movieSlug)
-      // Also save to localStorage for Continue Watching section
-      addRecentlyViewed({
-        slug: movieSlug,
-        title: movieTitle || movieSlug,
-        year: movieYear,
-        rating: movieRating,
-        posterUrl: moviePosterUrl,
-      })
     }
-  }, [movieSlug, movieTitle, movieYear, movieRating, moviePosterUrl])
+  }, [movieSlug])
 }
 
 /**
