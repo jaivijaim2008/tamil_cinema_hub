@@ -3,6 +3,7 @@ export interface CastMember {
   name?: string
   character?: string
   photo?: SanityImage
+  posterUrl?: string
   tmdbPersonId?: number
 }
 

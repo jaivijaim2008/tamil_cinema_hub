@@ -25,7 +25,7 @@ async function fetchMlRecommendations(endpoint: string): Promise<MlMovie[]> {
   try {
     const res = await fetch(`${RECOMMENDER_API_URL}${endpoint}`, {
       next: { revalidate: 3600 },
-      signal: AbortSignal.timeout(6000), // 6s timeout — fall back to Sanity fast
+      signal: AbortSignal.timeout(8000),
     })
     if (!res.ok) return []
     const data: MlResponse = await res.json()
@@ -90,25 +90,65 @@ async function enrichWithSanityData(mlMovies: MlMovie[]) {
 }
 
 export default async function RecommendationsPage() {
-  // Fetch ML-powered recommendations filtered for 2026 only
-  const [mlTopPicks, mlTrending, mlAction, mlDrama, mlRomance] = await Promise.all([
-    fetchMlRecommendations('/recommend/top-picks?n=12&year=2026'),
-    fetchMlRecommendations('/recommend/trending?n=12&year=2026'),
-    fetchMlRecommendations('/recommend/genre/action?n=8&year=2026'),
-    fetchMlRecommendations('/recommend/genre/drama?n=8&year=2026'),
-    fetchMlRecommendations('/recommend/genre/romance?n=8&year=2026'),
+  // Fetch multiple Netflix-style recommendation sections in parallel
+  const [
+    mlTopPicks,
+    mlTrending,
+    mlCriticallyAcclaimed,
+    mlHiddenGems,
+    mlAction,
+    mlDrama,
+    mlComedy,
+    mlThriller,
+    mlRomance,
+    mlHorror,
+    mlDecade2020s,
+    mlDecade2010s,
+  ] = await Promise.all([
+    fetchMlRecommendations('/recommend/top-picks?n=12'),
+    fetchMlRecommendations('/recommend/trending?n=12'),
+    fetchMlRecommendations('/recommend/critically-acclaimed?n=12'),
+    fetchMlRecommendations('/recommend/hidden-gems?n=10'),
+    fetchMlRecommendations('/recommend/genre/action?n=8'),
+    fetchMlRecommendations('/recommend/genre/drama?n=8'),
+    fetchMlRecommendations('/recommend/genre/comedy?n=8'),
+    fetchMlRecommendations('/recommend/genre/thriller?n=8'),
+    fetchMlRecommendations('/recommend/genre/romance?n=8'),
+    fetchMlRecommendations('/recommend/genre/horror?n=8'),
+    fetchMlRecommendations('/recommend/decade/2020?n=8'),
+    fetchMlRecommendations('/recommend/decade/2010?n=8'),
   ])
 
-  // Enrich with Sanity poster/image data
-  const [topPicks, trending, actionMovies, dramaMovies, romanceMovies] = await Promise.all([
+  // Enrich all sections with Sanity poster data in parallel
+  const [
+    topPicks,
+    trending,
+    criticallyAcclaimed,
+    hiddenGems,
+    actionMovies,
+    dramaMovies,
+    comedyMovies,
+    thrillerMovies,
+    romanceMovies,
+    horrorMovies,
+    decade2020s,
+    decade2010s,
+  ] = await Promise.all([
     enrichWithSanityData(mlTopPicks),
     enrichWithSanityData(mlTrending),
+    enrichWithSanityData(mlCriticallyAcclaimed),
+    enrichWithSanityData(mlHiddenGems),
     enrichWithSanityData(mlAction),
     enrichWithSanityData(mlDrama),
+    enrichWithSanityData(mlComedy),
+    enrichWithSanityData(mlThriller),
     enrichWithSanityData(mlRomance),
+    enrichWithSanityData(mlHorror),
+    enrichWithSanityData(mlDecade2020s),
+    enrichWithSanityData(mlDecade2010s),
   ])
 
-  // Fallback to Sanity-only data if ML engine is down — 2026 movies only
+  // Fallback to Sanity-only data if ML engine is down
   let fallbackTopRated: SanityMovie[] = []
   let fallbackAllMovies: SanityMovie[] = []
 
@@ -116,12 +156,12 @@ export default async function RecommendationsPage() {
     try {
       ;[fallbackTopRated, fallbackAllMovies] = await Promise.all([
         client.fetch<SanityMovie[]>(
-          `*[_type == "movie" && year == 2026 && rating >= 7] | order(rating desc)[0...12] {
+          `*[_type == "movie" && rating >= 7] | order(rating desc)[0...12] {
             _id, title, "slug": slug.current, year, director, genre, rating, poster, posterUrl
           }`
         ).catch(() => []),
         client.fetch<SanityMovie[]>(
-          `*[_type == "movie" && year == 2026] | order(year desc)[0...12] {
+          `*[_type == "movie"] | order(year desc)[0...12] {
             _id, title, "slug": slug.current, year, director, genre, rating, poster, posterUrl
           }`
         ).catch(() => []),
@@ -131,30 +171,32 @@ export default async function RecommendationsPage() {
 
   // Build genre sections from ML data, fallback to Sanity
   const genreSections: [string, SanityMovie[]][] = []
-  if (actionMovies.length > 0) genreSections.push(['action', actionMovies])
-  if (dramaMovies.length > 0) genreSections.push(['drama', dramaMovies])
-  if (romanceMovies.length > 0) genreSections.push(['romance', romanceMovies])
+  if (actionMovies.length > 0) genreSections.push(['Action', actionMovies])
+  if (dramaMovies.length > 0) genreSections.push(['Drama', dramaMovies])
+  if (comedyMovies.length > 0) genreSections.push(['Comedy', comedyMovies])
+  if (thrillerMovies.length > 0) genreSections.push(['Thriller', thrillerMovies])
+  if (romanceMovies.length > 0) genreSections.push(['Romance', romanceMovies])
+  if (horrorMovies.length > 0) genreSections.push(['Horror', horrorMovies])
 
+  // Fallback genre sections from Sanity if ML is down
   if (genreSections.length === 0) {
     try {
-      const [actionFallback, dramaFallback, romanceFallback] = await Promise.all([
-        client.fetch<SanityMovie[]>(
-          `*[_type == "movie" && year == 2026 && "Action" in genre] | order(rating desc)[0...8]{ _id, title, "slug": slug.current, year, director, genre, rating, poster, posterUrl }`
-        ).catch(() => []),
-        client.fetch<SanityMovie[]>(
-          `*[_type == "movie" && year == 2026 && "Drama" in genre] | order(rating desc)[0...8]{ _id, title, "slug": slug.current, year, director, genre, rating, poster, posterUrl }`
-        ).catch(() => []),
-        client.fetch<SanityMovie[]>(
-          `*[_type == "movie" && year == 2026 && "Romance" in genre] | order(rating desc)[0...8]{ _id, title, "slug": slug.current, year, director, genre, rating, poster, posterUrl }`
-        ).catch(() => []),
-      ])
-      if (actionFallback.length) genreSections.push(['action', actionFallback])
-      if (dramaFallback.length) genreSections.push(['drama', dramaFallback])
-      if (romanceFallback.length) genreSections.push(['romance', romanceFallback])
+      const genres = ['Action', 'Drama', 'Comedy', 'Thriller', 'Romance', 'Horror']
+      const fallbackResults = await Promise.all(
+        genres.map((g) =>
+          client.fetch<SanityMovie[]>(
+            `*[_type == "movie" && "${g}" in genre] | order(rating desc)[0...8]{
+              _id, title, "slug": slug.current, year, director, genre, rating, poster, posterUrl
+            }`
+          ).catch(() => [])
+        )
+      )
+      genres.forEach((g, i) => {
+        if (fallbackResults[i].length > 0) genreSections.push([g, fallbackResults[i]])
+      })
     } catch {}
   }
 
-  // Use ML top picks, or fallback to Sanity top rated
   const finalTopRated = topPicks.length > 0 ? topPicks : fallbackTopRated
   const finalTrending = trending.length > 0 ? trending : (fallbackAllMovies.length > 0 ? fallbackAllMovies.slice(0, 12) : [])
 
@@ -162,6 +204,12 @@ export default async function RecommendationsPage() {
     <RecommendationsPageClient
       topRated={finalTopRated}
       trending={finalTrending}
+      criticallyAcclaimed={criticallyAcclaimed}
+      hiddenGems={hiddenGems}
+      decadeSections={[
+        ['2020s Hits', decade2020s],
+        ['2010s Classics', decade2010s],
+      ].filter(([, m]) => m.length > 0) as [string, SanityMovie[]][]}
       genreSections={genreSections}
       mlPowered={topPicks.length > 0}
     />

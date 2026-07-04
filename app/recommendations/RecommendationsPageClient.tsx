@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Star, TrendingUp, Sparkles, ArrowRight, Cpu } from 'lucide-react'
+import { Star, TrendingUp, Sparkles, ArrowRight, Cpu, Gem, Award, Calendar } from 'lucide-react'
 import MovieCard from '@/components/ui/MovieCard'
 import PageHeader from '@/components/ui/PageHeader'
 import AdUnit from '@/components/ui/AdUnit'
@@ -21,6 +21,9 @@ interface MovieMinimal {
 interface Props {
   topRated: MovieMinimal[]
   trending?: MovieMinimal[]
+  criticallyAcclaimed?: MovieMinimal[]
+  hiddenGems?: MovieMinimal[]
+  decadeSections?: [string, MovieMinimal[]][]
   genreSections: [string, MovieMinimal[]][]
   mlPowered?: boolean
 }
@@ -28,6 +31,9 @@ interface Props {
 export default function RecommendationsPageClient({
   topRated,
   trending = [],
+  criticallyAcclaimed = [],
+  hiddenGems = [],
+  decadeSections = [],
   genreSections,
   mlPowered = false,
 }: Props) {
@@ -39,7 +45,7 @@ export default function RecommendationsPageClient({
           title="Recommendations"
           description={
             mlPowered
-              ? 'Powered by machine learning — ensemble of content, collaborative & knowledge-based algorithms'
+              ? 'Personalized picks powered by machine learning — content similarity, cast networks & knowledge scoring'
               : 'Curated picks for every type of Tamil cinema fan'
           }
         />
@@ -49,18 +55,18 @@ export default function RecommendationsPageClient({
           <div className="mb-8 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent-gold/5 border border-accent-gold/10">
             <Cpu size={14} className="text-accent-gold" />
             <span className="text-xs text-accent-gold/80 font-medium">
-              Recommendations powered by ML ensemble engine — content similarity + cast network + knowledge scoring
+              Powered by ML ensemble — content similarity + cast network + knowledge scoring
             </span>
           </div>
         )}
 
-        {/* Top Picks (ML) or Top Rated (Fallback) */}
+        {/* ── Top Picks ──────────────────────────────────────────────────── */}
         {topRated.length > 0 && (
           <section className="mb-12">
             <div className="flex items-center gap-2 mb-4">
               <Star size={18} className="text-accent-gold fill-accent-gold" />
               <h2 className="text-lg font-bold text-text-primary">
-                {mlPowered ? 'Top Picks' : 'Top Rated'}
+                {mlPowered ? 'Top Picks For You' : 'Top Rated'}
               </h2>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -71,12 +77,12 @@ export default function RecommendationsPageClient({
           </section>
         )}
 
-        {/* Ad between sections */}
+        {/* Ad */}
         <div className="my-4">
           <AdUnit adSlot="0000000011" className="max-w-4xl mx-auto" minHeight="100px" />
         </div>
 
-        {/* Trending (ML-powered) */}
+        {/* ── Trending Now ───────────────────────────────────────────────── */}
         {trending.length > 0 && (
           <section className="mb-12">
             <div className="flex items-center gap-2 mb-4">
@@ -96,18 +102,71 @@ export default function RecommendationsPageClient({
           </section>
         )}
 
-        {/* Ad between sections */}
+        {/* ── Critically Acclaimed ───────────────────────────────────────── */}
+        {criticallyAcclaimed.length > 0 && (
+          <section className="mb-12">
+            <div className="flex items-center gap-2 mb-4">
+              <Award size={18} className="text-amber-400" />
+              <h2 className="text-lg font-bold text-text-primary">Critically Acclaimed</h2>
+            </div>
+            <p className="text-sm text-text-muted mb-4">
+              The highest rated Tamil films — the must-watch canon
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {criticallyAcclaimed.map((m, i) => (
+                <MovieCard key={m._id} movie={m} index={i} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Ad */}
         <div className="my-4">
           <AdUnit adSlot="0000000012" className="max-w-4xl mx-auto" minHeight="100px" />
         </div>
 
-        {/* Genre Sections (ML-ranked) */}
+        {/* ── Hidden Gems ────────────────────────────────────────────────── */}
+        {hiddenGems.length > 0 && (
+          <section className="mb-12">
+            <div className="flex items-center gap-2 mb-4">
+              <Gem size={18} className="text-violet-400" />
+              <h2 className="text-lg font-bold text-text-primary">Hidden Gems</h2>
+            </div>
+            <p className="text-sm text-text-muted mb-4">
+              Underrated films with great ratings that deserve more attention
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {hiddenGems.map((m, i) => (
+                <MovieCard key={m._id} movie={m} index={i} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ── Decade Sections ────────────────────────────────────────────── */}
+        {decadeSections.map(([decade, movies]) => (
+          <section key={decade} className="mb-12">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Calendar size={14} className="text-accent-gold/60" />
+                <h2 className="text-lg font-bold text-text-primary">{decade}</h2>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {movies.map((m, i) => (
+                <MovieCard key={m._id} movie={m} index={i} />
+              ))}
+            </div>
+          </section>
+        ))}
+
+        {/* ── Genre Sections ─────────────────────────────────────────────── */}
         {genreSections.map(([genre, movies]) => (
           <section key={genre} className="mb-12">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Sparkles size={14} className="text-accent-gold/60" />
-                <h2 className="text-lg font-bold text-text-primary">{genre}</h2>
+                <h2 className="text-lg font-bold text-text-primary">Best {genre} Films</h2>
               </div>
               <Link
                 href={`/movies?genre=${encodeURIComponent(genre)}`}

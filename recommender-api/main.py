@@ -754,6 +754,189 @@ def personalized(
     }
 
 
+@app.get("/recommend/decade/{decade}")
+def recommend_by_decade(
+    decade: int,
+    n: int = Query(default=12, ge=1, le=30),
+):
+    """
+    Best movies from a specific decade (e.g. 2000, 2010, 2020).
+    """
+    if df is None:
+        raise HTTPException(status_code=503, detail="Model not loaded")
+
+    cache_key = f"decade_{decade}_{n}"
+    if cache_key in rec_cache:
+        return rec_cache[cache_key]
+
+    candidates = df[(df["year"] >= decade) & (df["year"] < decade + 10)].copy()
+    if candidates.empty:
+        return {"total_results": 0, "recommendations": [], "algorithm": "decade"}
+
+    # Score by rating + diversity (avoid same director)
+    candidates = candidates.sort_values(["rating", "year"], ascending=[False, False])
+    scores = []
+    seen_directors = set()
+    for _, row in candidates.iterrows():
+        base = row["rating"] / 10.0
+        diversity = 1.0 if row["director"] not in seen_directors else 0.85
+        scores.append(base * diversity)
+        seen_directors.add(row["director"])
+
+    candidates["_score"] = scores
+    candidates = candidates.sort_values("_score", ascending=False).head(n)
+
+    recommendations = [
+        {
+            "title": row["title"],
+            "slug": row["slug"],
+            "year": int(row["year"]),
+            "director": row["director"],
+            "genre": row["genre"],
+            "rating": round(float(row["rating"]), 1),
+        }
+        for _, row in candidates.iterrows()
+    ]
+
+    result = {"total_results": len(recommendations), "recommendations": recommendations, "algorithm": "decade"}
+    rec_cache[cache_key] = result
+    return result
+
+
+@app.get("/recommend/critically-acclaimed")
+def critically_acclaimed(
+    n: int = Query(default=12, ge=1, le=30),
+    genre: str = Query(default=""),
+):
+    """
+    Highest rated movies overall — the must-watch canon.
+    """
+    if df is None:
+        raise HTTPException(status_code=503, detail="Model not loaded")
+
+    cache_key = f"critically_{n}_{genre}"
+    if cache_key in rec_cache:
+        return rec_cache[cache_key]
+
+    candidates = df[df["rating"] > 0].copy()
+    if genre:
+        genre_lower = genre.lower()
+        candidates = candidates[
+            candidates["genre"].apply(lambda g: genre_lower in [x.lower() for x in g])
+        ]
+
+    if candidates.empty:
+        return {"total_results": 0, "recommendations": [], "algorithm": "critically-acclaimed"}
+
+    # Score by rating weighted with cast richness
+    candidates["_credibility"] = candidates.apply(
+        lambda r: r["rating"] / 10.0 * 0.7 + min(len(r.get("cast", [])) / 10.0, 0.3),
+        axis=1,
+    )
+    candidates = candidates.sort_values("_credibility", ascending=False).head(n)
+
+    recommendations = [
+        {
+            "title": row["title"],
+            "slug": row["slug"],
+            "year": int(row["year"]),
+            "director": row["director"],
+            "genre": row["genre"],
+            "rating": round(float(row["rating"]), 1),
+        }
+        for _, row in candidates.iterrows()
+    ]
+
+    result = {"total_results": len(recommendations), "recommendations": recommendations, "algorithm": "critically-acclaimed"}
+    rec_cache[cache_key] = result
+    return result
+
+
+@app.get("/recommend/hidden-gems")
+def hidden_gems(
+    n: int = Query(default=12, ge=1, le=30),
+):
+    """
+    Underrated movies with great ratings but fewer known cast — hidden gems.
+    """
+    if df is None:
+        raise HTTPException(status_code=503, detail="Model not loaded")
+
+    cache_key = f"gems_{n}"
+    if cache_key in rec_cache:
+        return rec_cache[cache_key]
+
+    cast_popularity = defaultdict(int)
+    for _, row in df.iterrows():
+        for c in row.get("cast", []):
+            name = c if isinstance(c, str) else str(c)
+            cast_popularity[name.strip().lower()] += 1
+    max_pop = max(cast_popularity.values()) if cast_popularity else 1
+
+    candidates = df[(df["rating"] >= 6.0)].copy()
+    scores = []
+    for _, row in candidates.iterrows():
+        cast_list = row.get("cast", [])
+        avg_pop = 0
+        if isinstance(cast_list, list) and len(cast_list) > 0:
+            pops = [cast_popularity.get((c if isinstance(c, str) else str(c)).strip().lower(), 0) / max_pop for c in cast_list[:5]]
+            avg_pop = np.mean(pops)
+        # High rating + low cast popularity = hidden gem
+        gem_score = (row["rating"] / 10.0) * 0.6 + (1.0 - avg_pop) * 0.4
+        scores.append(gem_score)
+
+    candidates["_gem_score"] = scores
+    candidates = candidates.sort_values("_gem_score", ascending=False).head(n)
+
+    recommendations = [
+        {
+            "title": row["title"],
+            "slug": row["slug"],
+            "year": int(row["year"]),
+            "director": row["director"],
+            "genre": row["genre"],
+            "rating": round(float(row["rating"]), 1),
+        }
+        for _, row in candidates.iterrows()
+    ]
+
+    result = {"total_results": len(recommendations), "recommendations": recommendations, "algorithm": "hidden-gems"}
+    rec_cache[cache_key] = result
+    return result
+
+
+@app.get("/recommend/director/{director_name}")
+def recommend_by_director(
+    director_name: str,
+    n: int = Query(default=12, ge=1, le=30),
+):
+    """
+    Best movies by a specific director.
+    """
+    if df is None:
+        raise HTTPException(status_code=503, detail="Model not loaded")
+
+    dir_lower = director_name.lower().strip()
+    candidates = df[df["director"] == dir_lower].sort_values("rating", ascending=False).head(n)
+
+    if candidates.empty:
+        return {"total_results": 0, "recommendations": [], "algorithm": "director"}
+
+    recommendations = [
+        {
+            "title": row["title"],
+            "slug": row["slug"],
+            "year": int(row["year"]),
+            "director": row["director"],
+            "genre": row["genre"],
+            "rating": round(float(row["rating"]), 1),
+        }
+        for _, row in candidates.iterrows()
+    ]
+
+    return {"total_results": len(recommendations), "recommendations": recommendations, "algorithm": "director"}
+
+
 @app.get("/movies")
 def list_movies(
     page: int = Query(default=1, ge=1),

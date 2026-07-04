@@ -57,25 +57,9 @@ const castList = data.credits?.cast?.slice(0, 5) || []
           tmdbPersonId: actor.id,
         }
 
-        // Upload photo if available
+        // Store TMDB profile image URL directly (no upload needed)
         if (actor.profile_path) {
-          try {
-            const photoUrl = `${TMDB_IMAGE}${actor.profile_path}`
-            const photoRes = await fetch(photoUrl)
-            const photoBuffer = await photoRes.buffer()
-
-            const photoAsset = await sanity.assets.upload('image', photoBuffer, {
-              filename: `actor-${actor.id}.jpg`,
-              contentType: 'image/jpeg',
-            })
-
-            castMember.photo = {
-              _type: 'image',
-              asset: { _type: 'reference', _ref: photoAsset._id }
-            }
-          } catch (err) {
-            console.log(`  Photo failed for ${actor.name}: ${err.message}`)
-          }
+          castMember.posterUrl = `https://image.tmdb.org/t/p/w185${actor.profile_path}`
         }
 
         newCast.push(castMember)

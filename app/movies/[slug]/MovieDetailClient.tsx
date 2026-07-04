@@ -10,8 +10,9 @@ import { urlFor } from '@/sanity/lib/image'
 import PortableText from '@/components/ui/PortableText'
 import AdUnit from '@/components/ui/AdUnit'
 import MLMoreLikeThis from '@/components/ui/MLMoreLikeThis'
-import MovieCompare from '@/components/ui/MovieCompare'
 import { useTrackView } from '@/hooks/useTrackInteraction'
+
+
 
 interface Props {
   movie: Movie
@@ -143,7 +144,11 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
                     const isObj = typeof castItem !== 'string';
                     const castName = isObj ? (castItem?.name || 'Unknown') : castItem;
                     const castChar = isObj ? castItem?.character : null;
-                    const castPhotoUrl = isObj && castItem?.photo?.asset ? urlFor(castItem.photo).width(80).height(80).url() : null;
+                    const castPhotoUrl = isObj && castItem?.photo?.asset
+                      ? urlFor(castItem.photo).width(80).height(80).url()
+                      : isObj && castItem?.posterUrl
+                        ? castItem.posterUrl
+                        : null;
 
                     return (
                       <div
@@ -174,9 +179,6 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
 
         {/* ML-Powered More Like This */}
         <MLMoreLikeThis movieSlug={movie.slug} />
-
-        {/* Movie Comparison */}
-        <MovieCompare movieSlug={movie.slug} />
 
         {/* Ad: Between Details and Review */}
         <div className="mt-10 md:mt-14">
