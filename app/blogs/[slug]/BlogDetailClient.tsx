@@ -7,7 +7,6 @@ import type { BlogDetail, Blog, PortableTextBlock } from '@/lib/types'
 import { urlFor } from '@/sanity/lib/image'
 import PortableText from '@/components/ui/PortableText'
 import BlogCard from '@/components/ui/BlogCard'
-import MonetagAd from '@/components/ui/MonetagAd'
 
 interface Props {
   blog: BlogDetail
@@ -169,11 +168,6 @@ export default function BlogDetailClient({ blog, related }: Props) {
               <PortableText value={blog.body as PortableTextBlock[]} />
             </div>
           )}
-
-          {/* Ad: After article body */}
-          <div className="mb-12">
-            <MonetagAd placement="bannerBlog" className="max-w-2xl mx-auto" minHeight="100px" />
-          </div>
 
           {/* Tags */}
           {blog.tags && blog.tags.length > 0 && (

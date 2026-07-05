@@ -4,7 +4,6 @@ import type { Movie } from '@/lib/types'
 import MovieCard from '@/components/ui/MovieCard'
 import PageHeader from '@/components/ui/PageHeader'
 import EmptyState from '@/components/ui/EmptyState'
-import MonetagAd from '@/components/ui/MonetagAd'
 import { Film } from 'lucide-react'
 
 interface Props {
@@ -44,11 +43,7 @@ export default function LatestPageClient({ movies }: Props) {
                     <MovieCard key={movie._id} movie={movie} index={i} />
                   ))}
                 </div>
-                {yearIdx > 0 && yearIdx % 3 === 0 && (
-                  <div className="mt-8">
-                    <MonetagAd placement="banner" className="max-w-4xl mx-auto" minHeight="100px" />
-                  </div>
-                )}
+
               </section>
             ))}
           </div>

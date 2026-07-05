@@ -7,7 +7,6 @@ import type { Blog } from '@/lib/types'
 import BlogCard from '@/components/ui/BlogCard'
 import Pagination from '@/components/ui/Pagination'
 import EmptyState from '@/components/ui/EmptyState'
-import MonetagAd from '@/components/ui/MonetagAd'
 import PageHeader from '@/components/ui/PageHeader'
 import { BLOG_CATEGORIES } from '@/lib/constants'
 
@@ -94,11 +93,7 @@ export default function BlogsPageClient({
                 <BlogCard key={blog._id} blog={blog} />
               ))}
             </div>
-            {filtered.length > 3 && (
-              <div className="my-8">
-                <MonetagAd placement="bannerBlog" className="max-w-4xl mx-auto" minHeight="100px" />
-              </div>
-            )}
+
           </>
         ) : (
           <EmptyState title="No articles found" description="Try adjusting your search or category filter." />

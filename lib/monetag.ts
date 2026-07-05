@@ -15,20 +15,4 @@ export const monetagConfig = {
 
   // Multitag zone ID (from your Monetag dashboard)
   zoneId: '256478',
-
-  // Additional per-placement zone IDs (for MonetagAd component)
-  zones: {
-    banner: '',
-    bannerMovie: '',
-    bannerBlog: '',
-  },
-}
-
-/**
- * Get zone ID for a specific placement
- */
-export function getMonetagZone(
-  placement: keyof typeof monetagConfig.zones
-): string {
-  return monetagConfig.zones[placement] || ''
 }

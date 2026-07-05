@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { Star, TrendingUp, Sparkles, ArrowRight, Cpu, Gem, Award, Calendar } from 'lucide-react'
 import MovieCard from '@/components/ui/MovieCard'
 import PageHeader from '@/components/ui/PageHeader'
-import MonetagAd from '@/components/ui/MonetagAd'
 
 interface MovieMinimal {
   _id: string
@@ -77,11 +76,6 @@ export default function RecommendationsPageClient({
           </section>
         )}
 
-        {/* Ad */}
-        <div className="my-4">
-          <MonetagAd placement="banner" className="max-w-4xl mx-auto" minHeight="100px" />
-        </div>
-
         {/* ── Trending Now ───────────────────────────────────────────────── */}
         {trending.length > 0 && (
           <section className="mb-12">
@@ -119,11 +113,6 @@ export default function RecommendationsPageClient({
             </div>
           </section>
         )}
-
-        {/* Ad */}
-        <div className="my-4">
-          <MonetagAd placement="banner" className="max-w-4xl mx-auto" minHeight="100px" />
-        </div>
 
         {/* ── Hidden Gems ────────────────────────────────────────────────── */}
         {hiddenGems.length > 0 && (
