@@ -1,8 +1,18 @@
 import { NextResponse } from 'next/server'
 import { promises as fs } from 'fs'
 import path from 'path'
+import os from 'os'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB limit
+
+// Use /tmp on serverless (Vercel) where cwd() is read-only, otherwise use ./data
+// Note: on serverless, data is ephemeral (lost between cold starts).
+// For persistent tracking, migrate to Vercel KV or a database.
+function getInteractionsFile(): string {
+  const isServerless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME
+  const dataDir = isServerless ? os.tmpdir() : path.join(process.cwd(), 'data')
+  return path.join(dataDir, 'interactions.jsonl')
+}
 
 /**
  * POST /api/interactions
@@ -39,9 +49,8 @@ export async function POST(request: Request) {
       timestamp: new Date().toISOString(),
     }
 
-    const dataDir = path.join(process.cwd(), 'data')
-    await fs.mkdir(dataDir, { recursive: true })
-    const interactionsFile = path.join(dataDir, 'interactions.jsonl')
+    const interactionsFile = getInteractionsFile()
+    await fs.mkdir(path.dirname(interactionsFile), { recursive: true })
 
     // Check file size before appending (prevent unbounded growth)
     try {
@@ -82,7 +91,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Missing slug parameter' }, { status: 400 })
     }
 
-    const interactionsFile = path.join(process.cwd(), 'data', 'interactions.jsonl')
+    const interactionsFile = getInteractionsFile()
 
     let content: string
     try {
