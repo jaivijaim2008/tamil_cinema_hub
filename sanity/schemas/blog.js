@@ -8,6 +8,7 @@ export default {
       title: 'Title (Tanglish)',
       type: 'string',
       description: 'Title in Tanglish (e.g., Vikram Movie Review: Semma Mass Bro!)',
+      validation: (Rule) => Rule.required(),
     },
     {
       name: 'slug',
@@ -17,6 +18,7 @@ export default {
         source: 'title',
         maxLength: 96,
       },
+      validation: (Rule) => Rule.required(),
     },
     {
       name: 'author',
@@ -27,6 +29,7 @@ export default {
       name: 'publishedAt',
       title: 'Published At',
       type: 'datetime',
+      validation: (Rule) => Rule.required(),
     },
     {
       name: 'category',
@@ -61,6 +64,7 @@ export default {
       title: 'Excerpt',
       type: 'text',
       description: 'Short summary of the blog post',
+      validation: (Rule) => Rule.required(),
     },
     {
       name: 'body',
@@ -91,11 +95,13 @@ export default {
       name: 'seoTitle',
       title: 'SEO Title',
       type: 'string',
+      validation: (Rule) => Rule.required().max(60),
     },
     {
       name: 'seoDescription',
       title: 'SEO Description',
       type: 'text',
+      validation: (Rule) => Rule.required().max(155),
     },
     {
       name: 'readTime',
