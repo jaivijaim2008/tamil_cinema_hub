@@ -27,7 +27,7 @@ function getSecurityHeaders(request: NextRequest): Record<string, string> {
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https: http:",
       "media-src 'self'",
-      "connect-src 'self' https://*.sanity.io https://api.groq.com https://generativelanguage.googleapis.com https://api.cerebras.ai https://openrouter.ai https://huggingface.co https://api.replicate.com https://plausible.io https://quge5.com https://6opo.com https://auqot.com https://ekhay.com https://b3mny.com https://my.rtmark.net https://jmosl.com https://094kk.com https://*.monetag.com https://*.serving-sys.com https://*.adnxous.com",
+      "connect-src 'self' https://*.sanity.io https://api.groq.com https://generativelanguage.googleapis.com https://api.cerebras.ai https://openrouter.ai https://huggingface.co https://api.replicate.com https://plausible.io https://quge5.com https://6opo.com https://auqot.com https://ekhay.com https://b3mny.com https://my.rtmark.net https://jmosl.com https://094kk.com https://*.monetag.com https://*.serving-sys.com https://*.adnxous.com https://tamilcinema-recommender.onrender.com",
       "frame-src https://*.monetag.com https://*.serving-sys.com https://*.adnxous.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",
