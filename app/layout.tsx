@@ -56,9 +56,7 @@ export const metadata: Metadata = {
     title: 'TamilCinemaHub — Tamil Cinema Archive',
     description: 'A high-fidelity archive of 1,600+ Tamil films. Discover, explore, and rediscover Kollywood.',
   },
-  other: {
-    'google-adsense-account': 'ca-pub-9250311764302161',
-  },
+  other: {},
   alternates: {
     canonical: '/',
   },
@@ -74,12 +72,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" className={`${playfair.variable} ${inter.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
-        {/* Google AdSense — beforeInteractive ensures the script tag is in the SSR HTML so Google's crawler can verify it */}
-        <Script
-          id="adsense-init"
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9250311764302161"
-          strategy="beforeInteractive"
-        />
+        {/* Monetag ads — loaded per-zone by MonetagAd components */}
         {/* Plausible Analytics — privacy-friendly, no cookies */}
         <Script
           id="plausible-init"

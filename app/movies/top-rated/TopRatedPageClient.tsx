@@ -4,7 +4,7 @@ import type { Movie } from '@/lib/types'
 import MovieCard from '@/components/ui/MovieCard'
 import PageHeader from '@/components/ui/PageHeader'
 import EmptyState from '@/components/ui/EmptyState'
-import AdUnit from '@/components/ui/AdUnit'
+import MonetagAd from '@/components/ui/MonetagAd'
 import { Star } from 'lucide-react'
 
 interface Props {
@@ -37,7 +37,7 @@ export default function TopRatedPageClient({ movies }: Props) {
             </div>
             {movies.length > 12 && (
               <div className="my-8">
-                <AdUnit adSlot="0000000009" className="max-w-4xl mx-auto" minHeight="100px" />
+                <MonetagAd placement="banner" className="max-w-4xl mx-auto" minHeight="100px" />
               </div>
             )}
             {movies.length > 12 && (

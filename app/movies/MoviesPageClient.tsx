@@ -12,7 +12,7 @@ import GenreChip from '@/components/ui/GenreChip';
 import Pagination from '@/components/ui/Pagination';
 import EmptyState from '@/components/ui/EmptyState';
 import PageHeader from '@/components/ui/PageHeader';
-import AdUnit from '@/components/ui/AdUnit';
+import MonetagAd from '@/components/ui/MonetagAd';
 
 interface Props {
   initialMovies: Movie[];
@@ -220,7 +220,7 @@ export default function MoviesPageClient({
 
         {/* Ad: Above movie grid */}
         <div className="mb-8">
-          <AdUnit adSlot="0000000005" className="max-w-4xl mx-auto" minHeight="90px" />
+          <MonetagAd placement="banner" className="max-w-4xl mx-auto" minHeight="90px" />
         </div>
 
         {/* Movie grid */}

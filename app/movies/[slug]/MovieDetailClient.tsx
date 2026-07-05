@@ -8,7 +8,7 @@ import type { Movie, CastMember } from '@/lib/types'
 import RatingStars from '@/components/ui/RatingStars'
 import { urlFor } from '@/sanity/lib/image'
 import PortableText from '@/components/ui/PortableText'
-import AdUnit from '@/components/ui/AdUnit'
+import MonetagAd from '@/components/ui/MonetagAd'
 import MLMoreLikeThis from '@/components/ui/MLMoreLikeThis'
 import { useTrackView } from '@/hooks/useTrackInteraction'
 
@@ -182,7 +182,7 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
 
         {/* Ad: Between Details and Review */}
         <div className="mt-10 md:mt-14">
-          <AdUnit adSlot="0000000003" className="max-w-3xl" minHeight="100px" />
+          <MonetagAd placement="bannerMovie" className="max-w-3xl" minHeight="100px" />
         </div>
 
         {/* Full Review */}

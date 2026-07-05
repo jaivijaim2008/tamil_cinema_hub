@@ -1,14 +1,12 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
-import { monetagConfig, isMonetagConfigured, getMonetagZone } from '@/lib/monetag'
+import { monetagConfig, getMonetagZone } from '@/lib/monetag'
 
 interface MonetagAdProps {
-  /** Monetag zone ID from your dashboard */
-  zoneId: string
-  /** The actual script URL provided by Monetag dashboard */
-  scriptUrl?: string
+  /** Placement key matching a zone in monetagConfig.zones */
+  placement: keyof typeof monetagConfig.zones
   /** Optional CSS class for the wrapper */
   className?: string
   /** Minimum height to prevent layout shift */
@@ -16,59 +14,62 @@ interface MonetagAdProps {
 }
 
 /**
- * Monetag Banner Ad Component
+ * Monetag Banner Ad Component — drop-in replacement for AdUnit.
  *
  * After signing up at https://monetag.com:
  * 1. Add your site and verify ownership
- * 2. Create an ad zone (banner format)
- * 3. Copy the script URL from Monetag dashboard
- * 4. Pass it as the scriptUrl prop
+ * 2. Create ad zones (banner format) for each placement
+ * 3. Copy the script URL and zone IDs into lib/monetag.ts
  *
  * Usage:
- *   <MonetagAd
- *     zoneId="12345"
- *     scriptUrl="https://your-actual-monetag-url.com/watch.js"
- *   />
+ *   <MonetagAd placement="banner" />
+ *   <MonetagAd placement="bannerMovie" className="max-w-3xl" minHeight="100px" />
  */
 export default function MonetagAd({
-  zoneId,
-  scriptUrl,
+  placement,
   className = '',
   minHeight = '90px',
 }: MonetagAdProps) {
-  const adRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
-  const [loaded, setLoaded] = useState(false)
+  const scriptRef = useRef<HTMLScriptElement | null>(null)
+
+  const zoneId = getMonetagZone(placement)
+  const { scriptUrl, enabled } = monetagConfig
 
   useEffect(() => {
-    if (!zoneId || !scriptUrl) return
+    // Don't render if not configured
+    if (!enabled || !zoneId || !scriptUrl || !containerRef.current) return
 
-    // Remove existing script for this zone
-    const existing = document.querySelector(`script[data-monetag-zone="${zoneId}"]`)
-    if (existing) existing.remove()
+    // Clean up any previous ad content in this container
+    containerRef.current.innerHTML = ''
+    scriptRef.current = null
 
-    // Inject Monetag script
+    // Inject Monetag script into the container div
     const script = document.createElement('script')
     script.type = 'text/javascript'
     script.src = scriptUrl
     script.async = true
     script.setAttribute('data-monetag-zone', zoneId)
 
-    document.head.appendChild(script)
-
-    script.onload = () => setLoaded(true)
+    containerRef.current.appendChild(script)
+    scriptRef.current = script
 
     return () => {
-      script.remove()
-      setLoaded(false)
+      // Remove script and any child elements it created (iframes, divs)
+      if (containerRef.current) {
+        containerRef.current.innerHTML = ''
+      }
+      scriptRef.current = null
     }
-  }, [zoneId, scriptUrl, pathname])
+  }, [zoneId, scriptUrl, enabled, pathname])
 
-  if (!zoneId || !scriptUrl) return null
+  // Don't render anything if not configured
+  if (!enabled || !zoneId || !scriptUrl) return null
 
   return (
     <div
-      ref={adRef}
+      ref={containerRef}
       className={`relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.03] to-transparent backdrop-blur-sm ${className}`}
       style={{ minHeight }}
     >

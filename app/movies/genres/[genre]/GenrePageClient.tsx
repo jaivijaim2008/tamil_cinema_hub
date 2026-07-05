@@ -6,7 +6,7 @@ import type { Movie } from '@/lib/types'
 import MovieCard from '@/components/ui/MovieCard'
 import PageHeader from '@/components/ui/PageHeader'
 import EmptyState from '@/components/ui/EmptyState'
-import AdUnit from '@/components/ui/AdUnit'
+import MonetagAd from '@/components/ui/MonetagAd'
 
 interface Props {
   genre: string
@@ -39,7 +39,7 @@ export default function GenrePageClient({ genre, movies }: Props) {
             </div>
             {movies.length > 12 && (
               <div className="my-8">
-                <AdUnit adSlot="0000000007" className="max-w-4xl mx-auto" minHeight="100px" />
+                <MonetagAd placement="banner" className="max-w-4xl mx-auto" minHeight="100px" />
               </div>
             )}
             {movies.length > 12 && (

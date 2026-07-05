@@ -7,7 +7,7 @@ import { GENRE_COLORS } from '@/lib/constants'
 import MovieCard from '@/components/ui/MovieCard'
 import BlogCard from '@/components/ui/BlogCard'
 import InteractiveHero from '@/components/ui/InteractiveHero'
-import AdUnit from '@/components/ui/AdUnit'
+import MonetagAd from '@/components/ui/MonetagAd'
 import { motion } from 'framer-motion'
 
 interface GenreCountItem {
@@ -38,7 +38,7 @@ export default function HomePageClient({
       {/* ── Ad: Below Hero ─────────────────────────────────────────────────── */}
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <AdUnit adSlot="9064239865" className="max-w-4xl mx-auto" minHeight="100px" />
+          <MonetagAd placement="banner" className="max-w-4xl mx-auto" minHeight="100px" />
         </div>
       </section>
 
@@ -64,7 +64,7 @@ export default function HomePageClient({
       {/* ── Ad: Between Movies and Genres ──────────────────────────────────── */}
       <section className="py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <AdUnit adSlot="0000000001" className="max-w-4xl mx-auto" />
+          <MonetagAd placement="banner" className="max-w-4xl mx-auto" />
         </div>
       </section>
 
@@ -144,7 +144,7 @@ export default function HomePageClient({
       {/* ── Ad: Before CTA ──────────────────────────────────────────────────── */}
       <section className="py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <AdUnit adSlot="0000000002" className="max-w-4xl mx-auto" />
+          <MonetagAd placement="banner" className="max-w-4xl mx-auto" />
         </div>
       </section>
 

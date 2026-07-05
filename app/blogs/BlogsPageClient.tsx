@@ -7,7 +7,7 @@ import type { Blog } from '@/lib/types'
 import BlogCard from '@/components/ui/BlogCard'
 import Pagination from '@/components/ui/Pagination'
 import EmptyState from '@/components/ui/EmptyState'
-import AdUnit from '@/components/ui/AdUnit'
+import MonetagAd from '@/components/ui/MonetagAd'
 import PageHeader from '@/components/ui/PageHeader'
 import { BLOG_CATEGORIES } from '@/lib/constants'
 
@@ -96,7 +96,7 @@ export default function BlogsPageClient({
             </div>
             {filtered.length > 3 && (
               <div className="my-8">
-                <AdUnit adSlot="0000000010" className="max-w-4xl mx-auto" minHeight="100px" />
+                <MonetagAd placement="bannerBlog" className="max-w-4xl mx-auto" minHeight="100px" />
               </div>
             )}
           </>
