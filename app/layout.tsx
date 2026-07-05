@@ -72,7 +72,15 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" className={`${playfair.variable} ${inter.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
-        {/* Monetag ads — loaded per-zone by MonetagAd components */}
+        {/* Monetag Multitag — auto-optimizes ad formats (popunder, push, vignette, in-page push) */}
+        <Script
+          id="monetag-init"
+          src="https://quge5.com/88/tag.min.js"
+          data-zone="256478"
+          strategy="afterInteractive"
+          async
+          data-cfasync="false"
+        />
         {/* Plausible Analytics — privacy-friendly, no cookies */}
         <Script
           id="plausible-init"

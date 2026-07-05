@@ -1,44 +1,26 @@
 /**
  * Monetag Ad Configuration
  *
- * Get your zone IDs and script URL from https://monetag.com dashboard:
- * 1. Sign up / Login
- * 2. Add your site (tamilcinemahub.xyz)
- * 3. Verify ownership (upload file or meta tag)
- * 4. Create Ad Zones for each format
- * 5. Paste your zone IDs and script URL below
- *
- * The script URL is provided by Monetag in your dashboard when you create
- * an ad zone. It typically looks like:
- *   https://g.msn/c/c.js?u=ZONE_ID
- *   or
- *   //some-monetag-domain.com/tag.js
+ * Multitag (all-in-one) — auto-optimizes across formats:
+ * popunder, push notifications, in-page push, vignette banners.
+ * Loaded globally in layout.tsx.
  */
 
 export const monetagConfig = {
   // Set to true to enable Monetag ads site-wide
   enabled: true,
 
-  // Your Monetag script URL (get this from your dashboard)
-  // Example: "https://g.msn/c/c.js"
-  scriptUrl: '',
+  // Multitag script URL (from your Monetag dashboard)
+  scriptUrl: 'https://quge5.com/88/tag.min.js',
 
-  // Your Monetag zone IDs (get these from your dashboard)
+  // Multitag zone ID (from your Monetag dashboard)
+  zoneId: '256478',
+
+  // Additional per-placement zone IDs (for MonetagAd component)
   zones: {
-    // Homepage banner ad
     banner: '',
-
-    // Movie detail page banner
     bannerMovie: '',
-
-    // Blog pages banner
     bannerBlog: '',
-  },
-
-  // Ad placement settings
-  settings: {
-    // Maximum number of ads per page
-    maxAdsPerPage: 3,
   },
 }
 
