@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { client } from '@/sanity/client'
 import { urlFor } from '@/sanity/lib/image'
 
+export const maxDuration = 30
+
 // ═══════════════════════════════════════════════════════════════
 // KNOWLEDGE BASE
 // ═══════════════════════════════════════════════════════════════
