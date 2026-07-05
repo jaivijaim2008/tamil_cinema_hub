@@ -44,12 +44,16 @@ export default function MLMoreLikeThis({ movieSlug }: Props) {
 
   useEffect(() => {
     let cancelled = false
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 8000) // 8s timeout
 
     async function fetchRecommendations() {
       try {
         const res = await fetch(
-          `${RECOMMENDER_API_URL}/recommend/${encodeURIComponent(movieSlug)}?n=6`
+          `${RECOMMENDER_API_URL}/recommend/${encodeURIComponent(movieSlug)}?n=6`,
+          { signal: controller.signal }
         )
+        clearTimeout(timeout)
         if (!res.ok) throw new Error('ML API unavailable')
         const data: MlResponse = await res.json()
 
@@ -113,6 +117,7 @@ export default function MLMoreLikeThis({ movieSlug }: Props) {
       } catch {
         if (!cancelled) setError(true)
       } finally {
+        clearTimeout(timeout)
         if (!cancelled) setLoading(false)
       }
     }
@@ -120,29 +125,13 @@ export default function MLMoreLikeThis({ movieSlug }: Props) {
     fetchRecommendations()
     return () => {
       cancelled = true
+      controller.abort()
+      clearTimeout(timeout)
     }
   }, [movieSlug])
 
-  if (loading) {
-    return (
-      <div className="mt-10 md:mt-14">
-        <div className="flex items-center gap-2 mb-4">
-          <Sparkles size={18} className="text-accent-gold" />
-          <h2 className="text-lg font-bold text-text-primary">More Like This</h2>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="aspect-[2/3] rounded-xl bg-bg-card border border-border/30 animate-pulse"
-            />
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  if (error || recommendations.length === 0) return null
+  // Don't show anything if loading, errored, or empty
+  if (loading || error || recommendations.length === 0) return null
 
   return (
     <div className="mt-10 md:mt-14">

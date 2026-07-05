@@ -9,6 +9,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   let movieSlugs: string[] = []
   let blogSlugs: string[] = []
+  let genres: string[] = []
+  let years: number[] = []
 
   // Gracefully handle missing Sanity config (e.g. during local builds)
   try {
@@ -23,31 +25,70 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // sitemap will just include static pages
   }
 
-  // Static Pages
-  const staticPages = [
-    { url: `${baseUrl}`, lastModified: new Date(), changeFrequency: 'daily' as const, priority: 1.0 },
-    { url: `${baseUrl}/movies`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.7 },
-    { url: `${baseUrl}/blogs`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.7 },
-    { url: `${baseUrl}/about`, lastModified: new Date(), changeFrequency: 'monthly' as const, priority: 0.5 },
-    { url: `${baseUrl}/privacy-policy`, lastModified: new Date(), changeFrequency: 'monthly' as const, priority: 0.3 },
-    { url: `${baseUrl}/contact`, lastModified: new Date(), changeFrequency: 'monthly' as const, priority: 0.5 },
+  try {
+    const rawGenres = await client.fetch<string[]>('*[_type == "movie"].genre[]')
+    genres = [...new Set(rawGenres)].sort()
+  } catch {
+    // skip
+  }
+
+  try {
+    const rawYears = await client.fetch<{ year: number }[]>('*[_type == "movie"]{year}')
+    years = [...new Set(rawYears.map((y) => y.year))].sort((a, b) => b - a)
+  } catch {
+    // skip
+  }
+
+  // ── Static Pages ──────────────────────────────────────────────────────────
+  const staticPages: MetadataRoute.Sitemap = [
+    { url: baseUrl, lastModified: new Date(), changeFrequency: 'daily', priority: 1.0 },
+    { url: `${baseUrl}/movies`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${baseUrl}/movies/latest`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
+    { url: `${baseUrl}/movies/top-rated`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${baseUrl}/blogs`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${baseUrl}/recommendations`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
+    { url: `${baseUrl}/about`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${baseUrl}/privacy-policy`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
+    { url: `${baseUrl}/contact`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
   ]
 
-  // Dynamic Movie Pages
-  const moviePages = movieSlugs.map((slug) => ({
-    url: `${baseUrl}/movies/${slug}`,
+  // ── Genre Pages ───────────────────────────────────────────────────────────
+  const genrePages: MetadataRoute.Sitemap = genres.map((genre) => ({
+    url: `${baseUrl}/movies/genres/${encodeURIComponent(genre)}`,
     lastModified: new Date(),
     changeFrequency: 'weekly' as const,
-    priority: 0.8,
+    priority: 0.7,
   }))
 
-  // Dynamic Blog Pages
-  const blogPages = blogSlugs.map((slug) => ({
-    url: `${baseUrl}/blogs/${slug}`,
+  // ── Year Pages ────────────────────────────────────────────────────────────
+  const yearPages: MetadataRoute.Sitemap = years.map((year) => ({
+    url: `${baseUrl}/movies/years/${year}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.6,
+  }))
+
+  // ── Dynamic Movie Pages ───────────────────────────────────────────────────
+  const moviePages: MetadataRoute.Sitemap = movieSlugs.map((slug) => ({
+    url: `${baseUrl}/movies/${slug}`,
     lastModified: new Date(),
     changeFrequency: 'weekly' as const,
     priority: 0.9,
   }))
 
-  return [...staticPages, ...moviePages, ...blogPages]
+  // ── Dynamic Blog Pages ────────────────────────────────────────────────────
+  const blogPages: MetadataRoute.Sitemap = blogSlugs.map((slug) => ({
+    url: `${baseUrl}/blogs/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.8,
+  }))
+
+  return [
+    ...staticPages,
+    ...genrePages,
+    ...yearPages,
+    ...moviePages,
+    ...blogPages,
+  ]
 }
