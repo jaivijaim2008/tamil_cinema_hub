@@ -9,16 +9,17 @@ export default {
       options: { source: 'title' } },
     { name: 'year', title: 'Release Year', type: 'number' },
     { name: 'director', title: 'Director', type: 'string' },
-    { 
-  name: 'cast', 
-  title: 'Main Cast', 
+    {
+  name: 'cast',
+  title: 'Main Cast',
   type: 'array',
-  of: [{ 
+  of: [{
     type: 'object',
     fields: [
       { name: 'name', title: 'Actor Name', type: 'string' },
       { name: 'character', title: 'Character Name', type: 'string' },
       { name: 'photo', title: 'Actor Photo', type: 'image' },
+      { name: 'posterUrl', title: 'Poster URL (TMDB)', type: 'string' },
       { name: 'tmdbPersonId', title: 'TMDB Person ID', type: 'number' },
     ]
   }]
