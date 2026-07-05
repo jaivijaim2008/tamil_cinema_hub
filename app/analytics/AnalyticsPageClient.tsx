@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   Film, Star, TrendingUp, Users, Calendar,
 } from 'lucide-react'
@@ -22,6 +22,11 @@ const PALETTE = ['#E8B84B', '#3b82f6', '#ef4444', '#a855f7', '#06b6d4', '#22c55e
 
 export default function AnalyticsPageClient({ movies, totalCount }: Props) {
   const [tab, setTab] = useState<'year' | 'genre' | 'rating' | 'directors'>('year')
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const stats = useMemo(() => {
     const yearMap = new Map<number, number>()
@@ -127,7 +132,9 @@ export default function AnalyticsPageClient({ movies, totalCount }: Props) {
 
         {/* Charts */}
         <div className="bg-bg-card border border-border rounded-2xl p-4 md:p-6 min-h-[400px]">
-          {tab === 'year' && (
+          {!mounted ? (
+            <div className="flex items-center justify-center h-[350px] text-text-muted text-sm">Loading chart…</div>
+          ) : tab === 'year' ? (
             <div>
               <h3 className="text-lg font-bold text-text-primary mb-4">Movies by Year</h3>
               <div className="h-[350px]">
@@ -151,9 +158,7 @@ export default function AnalyticsPageClient({ movies, totalCount }: Props) {
                 </ResponsiveContainer>
               </div>
             </div>
-          )}
-
-          {tab === 'genre' && (
+          ) : tab === 'genre' ? (
             <div>
               <h3 className="text-lg font-bold text-text-primary mb-4">Genre Distribution</h3>
               <div className="h-[350px]">
@@ -173,9 +178,7 @@ export default function AnalyticsPageClient({ movies, totalCount }: Props) {
                 </ResponsiveContainer>
               </div>
             </div>
-          )}
-
-          {tab === 'rating' && (
+          ) : tab === 'rating' ? (
             <div>
               <h3 className="text-lg font-bold text-text-primary mb-4">Rating Distribution</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -204,9 +207,7 @@ export default function AnalyticsPageClient({ movies, totalCount }: Props) {
                 </div>
               </div>
             </div>
-          )}
-
-          {tab === 'directors' && (
+          ) : tab === 'directors' ? (
             <div>
               <h3 className="text-lg font-bold text-text-primary mb-4">Top Directors</h3>
               <div className="h-[400px]">
@@ -220,7 +221,7 @@ export default function AnalyticsPageClient({ movies, totalCount }: Props) {
                 </ResponsiveContainer>
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

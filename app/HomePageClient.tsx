@@ -29,6 +29,12 @@ export default function HomePageClient({
   blogs,
   totalMovies,
   genreCounts,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  totalBlogs: _totalBlogs,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  recentTitles: _recentTitles,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  avgRating: _avgRating,
 }: Props) {
   return (
     <div className="min-h-screen">

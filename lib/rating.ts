@@ -1,6 +1,6 @@
-// Utility to normalize a 0‑10 rating to a 0‑5 star scale
+// Utility to normalize/clamp a rating to the 0-5 star scale.
+// Ratings are stored as 0-5 in Sanity. This clamps any out-of-range values.
 export function normalizeRating(value: number | null | undefined): number {
   if (value == null) return 0;
-  const normalized = value / 2;
-  return Math.min(5, Math.max(0, normalized));
+  return Math.min(5, Math.max(0, value));
 }

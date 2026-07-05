@@ -39,7 +39,14 @@ export default function SearchInput({ defaultValue = '', placeholder = 'Searchâ€
       />
       {value && (
         <button
-          onClick={() => { setValue(''); onSearch?.('') }}
+          onClick={() => {
+            setValue('')
+            if (onSearch) {
+              onSearch('')
+            } else if (basePath) {
+              router.push(basePath)
+            }
+          }}
           className="absolute right-3 text-text-muted hover:text-text-primary transition-colors"
           aria-label="Clear search"
         >

@@ -87,10 +87,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           dangerouslySetInnerHTML={{
             __html: `window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};plausible.init()`,
           }}
+          strategy="afterInteractive"
         />
         <Script
+          id="plausible-script"
           async
           src="https://plausible.io/js/pa-XAOaek-Iwb_EI-8oRm3Cg.js"
+          strategy="afterInteractive"
         />
       </head>
       <body className="bg-bg-primary text-text-primary font-inter antialiased overflow-x-hidden">

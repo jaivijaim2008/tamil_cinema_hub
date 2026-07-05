@@ -156,7 +156,7 @@ export default async function RecommendationsPage() {
     try {
       ;[fallbackTopRated, fallbackAllMovies] = await Promise.all([
         client.fetch<SanityMovie[]>(
-          `*[_type == "movie" && rating >= 7] | order(rating desc)[0...12] {
+          `*[_type == "movie" && rating >= 4] | order(rating desc)[0...12] {
             _id, title, "slug": slug.current, year, director, genre, rating, poster, posterUrl
           }`
         ).catch(() => []),
