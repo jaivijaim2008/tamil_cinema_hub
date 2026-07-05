@@ -44,8 +44,7 @@ async function main() {
       )
       const data = await res.json()
 
-      // CHANGE TO
-const castList = data.credits?.cast?.slice(0, 5) || []
+      const castList = data.credits?.cast?.slice(0, 5) || []
       const newCast = []
 
       for (const actor of castList) {
