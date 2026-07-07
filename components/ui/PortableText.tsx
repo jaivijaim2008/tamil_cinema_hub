@@ -5,9 +5,10 @@ import { PortableText as SanityPortableText } from '@portabletext/react'
 import Image from 'next/image'
 import { urlFor } from '@/sanity/lib/image'
 import type { PortableTextBlock, SanityImageBlock } from '@/lib/types'
+import InteractivePoll from './InteractivePoll'
 
 interface Props {
-  value: PortableTextBlock[]
+  value: (PortableTextBlock | SanityImageBlock | { _type: 'poll'; _key: string; question: string; options: string[]; pollId?: string })[]
 }
 
 const components: Partial<import('@portabletext/react').PortableTextReactComponents> = {
@@ -31,6 +32,15 @@ const components: Partial<import('@portabletext/react').PortableTextReactCompone
             <figcaption className="text-xs text-text-muted mt-2 text-center">{value.caption}</figcaption>
           )}
         </figure>
+      )
+    },
+    poll: ({ value }: { value: { question: string; options: string[]; pollId?: string } }) => {
+      return (
+        <InteractivePoll
+          question={value.question}
+          options={value.options}
+          pollId={value.pollId}
+        />
       )
     },
   },
