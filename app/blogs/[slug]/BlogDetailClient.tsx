@@ -7,6 +7,7 @@ import type { BlogDetail, Blog, PortableTextBlock } from '@/lib/types'
 import { urlFor } from '@/sanity/lib/image'
 import PortableText from '@/components/ui/PortableText'
 import BlogCard from '@/components/ui/BlogCard'
+import CommentBox from '@/components/ui/CommentBox'
 
 interface Props {
   blog: BlogDetail
@@ -168,6 +169,9 @@ export default function BlogDetailClient({ blog, related }: Props) {
               <PortableText value={blog.body as PortableTextBlock[]} />
             </div>
           )}
+
+          {/* Comments */}
+          <CommentBox blogSlug={blog.slug} />
 
           {/* Tags */}
           {blog.tags && blog.tags.length > 0 && (
