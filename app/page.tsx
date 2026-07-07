@@ -5,7 +5,7 @@ import type { Movie } from '../components/ui/MovieCard'
 import type { Blog } from '@/lib/types'
 import HomePageClient from './HomePageClient'
 
-const allGenresAndRatingsQuery = `*[_type == "movie"]{ genre, rating }`
+const allGenresQuery = `*[_type == "movie"){ genre }`
 
 interface GenreCount {
   genre: string
@@ -16,36 +16,25 @@ export default async function Home() {
   let movies: Movie[] = []
   let blogs: Blog[] = []
   let totalMovies = 0
-  let totalBlogs = 0
   let genreCounts: GenreCount[] = []
-  let avgRating = 0
 
   try {
-    ;[movies, blogs, totalMovies, totalBlogs] = await Promise.all([
+    ;[movies, blogs, totalMovies] = await Promise.all([
       client.fetch<Movie[]>(latestMoviesQuery).catch(() => []),
       client.fetch<Blog[]>(latestBlogsQuery).catch(() => []),
       client.fetch<number>('count(*[_type == "movie"])').catch(() => 0),
-      client.fetch<number>('count(*[_type == "blog"])').catch(() => 0),
     ])
 
-    // Fetch all genres and ratings to compute real stats
-    const allData = await client.fetch<{ genre: string | string[] | null; rating: number | null }[]>(allGenresAndRatingsQuery).catch(() => [])
+    // Fetch all genres to compute real stats
+    const allData = await client.fetch<{ genre: string | string[] | null }[]>(allGenresQuery).catch(() => [])
 
     // Compute genre counts from all movies in the database
     const genreMap = new Map<string, number>()
-    let ratingSum = 0
-    let ratingCount = 0
 
     for (const item of allData) {
       const genres = toArray(item.genre)
       for (const g of genres) {
         if (g) genreMap.set(g, (genreMap.get(g) || 0) + 1)
-      }
-      if (item.rating) {
-        // Clamp to 0-5 to handle any 0-10 raw values from Sanity
-        const clamped = Math.min(5, Math.max(0, item.rating))
-        ratingSum += clamped
-        ratingCount++
       }
     }
 
@@ -53,13 +42,9 @@ export default async function Home() {
       .map(([genre, count]) => ({ genre, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 8)
-
-    avgRating = ratingCount > 0 ? Math.round((ratingSum / ratingCount) * 10) / 10 : 0
   } catch {
     // fallback
   }
 
-  const recentTitles = movies.slice(0, 20).map((m) => m.title)
-
-  return <HomePageClient movies={movies} blogs={blogs} recentTitles={recentTitles} totalMovies={totalMovies} totalBlogs={totalBlogs} genreCounts={genreCounts} avgRating={avgRating} />
+  return <HomePageClient movies={movies} blogs={blogs} totalMovies={totalMovies} genreCounts={genreCounts} />
 }

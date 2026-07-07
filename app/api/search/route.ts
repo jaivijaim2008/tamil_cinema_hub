@@ -31,12 +31,12 @@ export async function GET(request: Request) {
         title match $q ||
         director match $q ||
         cast[] match $q
-      )] | order(year desc) [0...10] {
+      )] | order(year desc) [0...10]      {
         _id,
         title,
         year,
         genre,
-        slug
+        "slug": slug.current
       }`,
       { q: `*${query}*` }
     )

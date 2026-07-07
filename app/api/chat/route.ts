@@ -1211,6 +1211,14 @@ function checkRateLimit(ip: string): { ok: boolean; retryAfter: number } {
   const WINDOW = 60_000
   const MAX = 30
   const now = Date.now()
+
+  // Evict stale entries every 1000 requests to prevent unbounded growth
+  if (RL_MAP.size > 1000) {
+    for (const [key, entry] of RL_MAP) {
+      if (now - entry.start > WINDOW) RL_MAP.delete(key)
+    }
+  }
+
   const entry = RL_MAP.get(ip)
   if (!entry || now - entry.start > WINDOW) {
     RL_MAP.set(ip, { count: 1, start: now })

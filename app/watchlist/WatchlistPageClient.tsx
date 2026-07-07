@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { Bookmark, Trash2, ArrowRight, Star, Film } from 'lucide-react'
 import { useWatchlist } from '@/hooks/useWatchlist'
 import PageHeader from '@/components/ui/PageHeader'
@@ -63,11 +64,13 @@ export default function WatchlistPageClient() {
                 <Link href={`/movies/${movie.slug}`} className="shrink-0">
                   {movie.posterUrl ? (
                     <div className="w-14 h-20 sm:w-16 sm:h-24 rounded-lg overflow-hidden bg-bg-elevated">
-                      <img
+                      <Image
                         src={movie.posterUrl}
                         alt={movie.title}
+                        width={64}
+                        height={96}
                         className="w-full h-full object-cover"
-                        loading="lazy"
+                        unoptimized
                       />
                     </div>
                   ) : (

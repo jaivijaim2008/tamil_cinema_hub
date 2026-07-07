@@ -32,7 +32,7 @@ export default function LatestPageClient({ movies }: Props) {
 
         {years.length > 0 ? (
           <div className="space-y-12">
-            {years.map(([year, yearMovies], yearIdx) => (
+            {years.map(([year, yearMovies]) => (
               <section key={year}>
                 <h2 className="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
                   <span className="text-accent-gold">{year}</span>

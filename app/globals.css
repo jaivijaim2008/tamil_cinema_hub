@@ -28,6 +28,7 @@
   --color-success: #22c55e;
   --color-error: #ef4444;
   --color-warning: #f59e0b;
+  --color-accent-red: #ef4444;
 
   /* Fonts — Next.js sets --font-playfair, --font-inter, --font-mono on <html> */
   --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
