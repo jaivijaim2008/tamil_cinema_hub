@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { client } from '@/sanity/client'
 import { writeClient } from '@/sanity/writeClient'
 import { escapeHtml, isValidSlug, getIP } from '@/lib/sanitize'
+import { Resend } from 'resend'
 
 export async function GET(req: NextRequest) {
   const slug = req.nextUrl.searchParams.get('slug')
@@ -126,6 +127,48 @@ export async function POST(req: NextRequest) {
       .setIfMissing({ comments: [] })
       .append('comments', [comment])
       .commit({ returnDocuments: true })
+
+    // Send email notification if this is a reply
+    if (parentId && typeof email === 'string' && email.trim()) {
+      try {
+        const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+        if (resend) {
+          // Find the parent comment author's email
+          const parentDoc = await client.fetch<{ comments?: Array<{ _key: string; author?: string; email?: string; content?: string }> }>(
+            `*[_type == "blog" && _id == $id][0]{ comments[_key == $parentId] }`,
+            { id: docId, parentId }
+          )
+          const parentComment = parentDoc?.comments?.[0]
+
+          if (parentComment?.email) {
+            const blogUrl = `https://tamilcinemahub.xyz/blogs/${slug}`
+            await resend.emails.send({
+              from: 'TamilCinemaHub <onboarding@resend.dev>',
+              to: parentComment.email,
+              replyTo: email.trim(),
+              subject: `💬 ${cleanAuthor} replied to your comment on TamilCinemaHub`,
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                  <h2 style="color: #E8B84B;">💬 New Reply to Your Comment</h2>
+                  <div style="background: #f8f8ff; border-radius: 12px; padding: 20px; margin: 16px 0;">
+                    <p style="color: #666; font-size: 12px; margin-bottom: 12px;">${cleanAuthor} replied to your comment:</p>
+                    <div style="background: white; border-left: 3px solid #E8B84B; padding: 12px; margin: 12px 0; border-radius: 0 8px 8px 0;">
+                      <p style="color: #333; margin: 0; line-height: 1.5;">${cleanContent}</p>
+                    </div>
+                    <p style="margin-top: 16px;">
+                      <a href="${blogUrl}" style="background: #E8B84B; color: #000; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold;">View & Reply →</a>
+                    </p>
+                  </div>
+                  <p style="color: #888; font-size: 12px;">You received this because someone replied to your comment on TamilCinemaHub.</p>
+                </div>
+              `,
+            })
+          }
+        }
+      } catch (emailErr) {
+        console.error('[Comment Email]', emailErr instanceof Error ? emailErr.message : emailErr)
+      }
+    }
 
     return NextResponse.json({
       ok: true,
