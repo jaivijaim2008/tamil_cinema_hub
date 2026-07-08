@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Film, Code, Database, Globe, ArrowRight, Star, Users } from 'lucide-react'
+import AdSenseBanner from '@/components/ui/AdSenseBanner'
 
 interface Props {
   totalCount: number
@@ -74,6 +75,11 @@ export default function AboutPageClient({ totalCount, directorCount }: Props) {
             <TechItem icon={<Star size={18} />} name="Recharts" desc="Interactive data visualization" />
           </div>
         </section>
+
+        {/* AdSense */}
+        <div className="mb-16">
+          <AdSenseBanner slot="0" format="horizontal" minHeight={100} />
+        </div>
 
         {/* CTA */}
         <div className="text-center">

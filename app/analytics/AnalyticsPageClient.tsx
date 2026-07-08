@@ -12,6 +12,7 @@ import {
 import { normalizeRating } from '@/lib/rating';
 import { MovieAnalytics } from '@/lib/types';
 import PageHeader from '@/components/ui/PageHeader'
+import AdSenseBanner from '@/components/ui/AdSenseBanner'
 
 interface Props {
   movies: MovieAnalytics[]
@@ -128,6 +129,11 @@ export default function AnalyticsPageClient({ movies, totalCount }: Props) {
               {t.label}
             </button>
           ))}
+        </div>
+
+        {/* AdSense */}
+        <div className="mb-8">
+          <AdSenseBanner slot="0" format="horizontal" minHeight={100} />
         </div>
 
         {/* Charts */}

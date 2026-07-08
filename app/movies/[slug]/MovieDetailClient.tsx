@@ -8,6 +8,7 @@ import type { Movie, CastMember } from '@/lib/types'
 import RatingStars from '@/components/ui/RatingStars'
 import { urlFor } from '@/sanity/lib/image'
 import PortableText from '@/components/ui/PortableText'
+import AdSenseBanner from '@/components/ui/AdSenseBanner'
 
 interface Props {
   movie: Movie
@@ -167,6 +168,11 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
               </div>
             )}
           </div>
+        </div>
+
+        {/* AdSense */}
+        <div className="mt-10 md:mt-14 max-w-3xl">
+          <AdSenseBanner slot="0" format="horizontal" minHeight={100} />
         </div>
 
         {/* Full Review */}

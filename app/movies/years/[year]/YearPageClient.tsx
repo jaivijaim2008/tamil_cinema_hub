@@ -6,6 +6,7 @@ import type { Movie } from '@/lib/types'
 import MovieCard from '@/components/ui/MovieCard'
 import PageHeader from '@/components/ui/PageHeader'
 import EmptyState from '@/components/ui/EmptyState'
+import AdSenseBanner from '@/components/ui/AdSenseBanner'
 
 interface Props {
   year: number
@@ -28,6 +29,11 @@ export default function YearPageClient({ year, movies }: Props) {
           title={`${year}`}
           description={`${movies.length} Tamil films from ${year}`}
         />
+
+        {/* AdSense */}
+        <div className="mb-8">
+          <AdSenseBanner slot="0" format="horizontal" minHeight={100} />
+        </div>
 
         {movies.length > 0 ? (
           <>

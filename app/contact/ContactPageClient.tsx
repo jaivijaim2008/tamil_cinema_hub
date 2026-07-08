@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Mail, Send, CheckCircle, MessageSquare } from 'lucide-react'
+import AdSenseBanner from '@/components/ui/AdSenseBanner'
 
 export default function ContactPageClient() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
@@ -34,6 +35,11 @@ export default function ContactPageClient() {
           <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-accent-gold mb-3 block">Contact</span>
           <h1 className="text-3xl md:text-4xl font-bold text-text-primary mb-3">Get in Touch</h1>
           <p className="text-sm text-text-secondary">Have a suggestion, correction, or just want to say hi?</p>
+        </div>
+
+        {/* AdSense */}
+        <div className="mb-8">
+          <AdSenseBanner slot="0" format="horizontal" minHeight={100} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

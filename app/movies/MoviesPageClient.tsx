@@ -12,6 +12,7 @@ import GenreChip from '@/components/ui/GenreChip';
 import Pagination from '@/components/ui/Pagination';
 import EmptyState from '@/components/ui/EmptyState';
 import PageHeader from '@/components/ui/PageHeader';
+import AdSenseBanner from '@/components/ui/AdSenseBanner';
 
 interface Props {
   initialMovies: Movie[];
@@ -230,6 +231,11 @@ export default function MoviesPageClient({
             description="Try adjusting your search or filter criteria."
           />
         )}
+
+        {/* AdSense */}
+        <div className="my-8">
+          <AdSenseBanner slot="0" format="horizontal" minHeight={100} />
+        </div>
 
         {/* Pagination */}
         <Pagination

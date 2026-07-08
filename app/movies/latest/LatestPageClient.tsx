@@ -4,6 +4,7 @@ import type { Movie } from '@/lib/types'
 import MovieCard from '@/components/ui/MovieCard'
 import PageHeader from '@/components/ui/PageHeader'
 import EmptyState from '@/components/ui/EmptyState'
+import AdSenseBanner from '@/components/ui/AdSenseBanner'
 import { Film } from 'lucide-react'
 
 interface Props {
@@ -29,6 +30,11 @@ export default function LatestPageClient({ movies }: Props) {
           title="Latest Movies"
           description={`${movies.length} Tamil films, sorted by year`}
         />
+
+        {/* AdSense */}
+        <div className="mb-8">
+          <AdSenseBanner slot="0" format="horizontal" minHeight={100} />
+        </div>
 
         {years.length > 0 ? (
           <div className="space-y-12">

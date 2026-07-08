@@ -10,6 +10,7 @@ import PortableText, { extractHeadings } from '@/components/ui/PortableText'
 import TableOfContents from '@/components/ui/TableOfContents'
 import BlogCard from '@/components/ui/BlogCard'
 import CommentBox from '@/components/ui/CommentBox'
+import AdSenseBanner from '@/components/ui/AdSenseBanner'
 
 interface Props {
   blog: BlogDetail
@@ -421,6 +422,11 @@ export default function BlogDetailClient({ blog, related }: Props) {
             >
               {copied ? <Check size={16} /> : <Copy size={16} />}
             </button>
+          </div>
+
+          {/* AdSense */}
+          <div className="my-8">
+            <AdSenseBanner slot="0" format="horizontal" minHeight={100} />
           </div>
 
           {/* Comments */}

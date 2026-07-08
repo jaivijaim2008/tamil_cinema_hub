@@ -7,6 +7,7 @@ import { useWatchlist } from '@/hooks/useWatchlist'
 import PageHeader from '@/components/ui/PageHeader'
 import type { WatchlistMovie } from '@/hooks/useWatchlist'
 import RatingStars from '@/components/ui/RatingStars'
+import AdSenseBanner from '@/components/ui/AdSenseBanner'
 
 export default function WatchlistPageClient() {
   const { watchlist, mounted, removeFromWatchlist } = useWatchlist()
@@ -36,6 +37,11 @@ export default function WatchlistPageClient() {
               : 'Movies you want to watch'
           }
         />
+
+        {/* AdSense */}
+        <div className="mb-8">
+          <AdSenseBanner slot="0" format="horizontal" minHeight={100} />
+        </div>
 
         {watchlist.length === 0 ? (
           <div className="text-center py-20">

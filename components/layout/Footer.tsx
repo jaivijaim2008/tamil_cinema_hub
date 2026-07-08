@@ -23,6 +23,10 @@ const INFO_LINKS = [
   { label: 'Privacy Policy', href: '/privacy-policy' },
 ]
 
+function openCookieSettings() {
+  window.dispatchEvent(new Event('withdraw-consent'))
+}
+
 export default function Footer() {
   const year = new Date().getFullYear()
 
@@ -88,6 +92,14 @@ export default function Footer() {
               {INFO_LINKS.map((link) => (
                 <FooterLink key={link.href} href={link.href}>{link.label}</FooterLink>
               ))}
+              <li>
+                <button
+                  onClick={openCookieSettings}
+                  className="text-sm text-text-secondary hover:text-accent-gold transition-colors duration-200"
+                >
+                  Cookie Settings
+                </button>
+              </li>
             </ul>
           </div>
         </div>

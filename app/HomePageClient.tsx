@@ -8,6 +8,7 @@ import MovieCard from '@/components/ui/MovieCard'
 import BlogCard from '@/components/ui/BlogCard'
 import InteractiveHero from '@/components/ui/InteractiveHero'
 import { motion } from 'framer-motion'
+import AdSenseBanner from '@/components/ui/AdSenseBanner'
 
 interface GenreCountItem {
   genre: string
@@ -95,6 +96,11 @@ export default function HomePageClient({
           </div>
         </section>
       )}
+
+      {/* ── AdSense Ad ──────────────────────────────────────────────────────── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <AdSenseBanner slot="0" format="horizontal" minHeight={100} />
+      </div>
 
       {/* ── Latest Reviews ────────────────────────────────────────────────── */}
       {blogs.length > 0 && (

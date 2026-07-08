@@ -6,6 +6,7 @@ import type { Movie } from '@/lib/types'
 import MovieCard from '@/components/ui/MovieCard'
 import PageHeader from '@/components/ui/PageHeader'
 import EmptyState from '@/components/ui/EmptyState'
+import AdSenseBanner from '@/components/ui/AdSenseBanner'
 
 interface Props {
   genre: string
@@ -28,6 +29,11 @@ export default function GenrePageClient({ genre, movies }: Props) {
           title={genre}
           description={`${movies.length} ${genre} films in the archive`}
         />
+
+        {/* AdSense */}
+        <div className="mb-8">
+          <AdSenseBanner slot="0" format="horizontal" minHeight={100} />
+        </div>
 
         {movies.length > 0 ? (
           <>

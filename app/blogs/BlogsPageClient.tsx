@@ -8,6 +8,7 @@ import BlogCard from '@/components/ui/BlogCard'
 import Pagination from '@/components/ui/Pagination'
 import EmptyState from '@/components/ui/EmptyState'
 import PageHeader from '@/components/ui/PageHeader'
+import AdSenseBanner from '@/components/ui/AdSenseBanner'
 import { BLOG_CATEGORIES } from '@/lib/constants'
 
 interface Props {
@@ -98,6 +99,11 @@ export default function BlogsPageClient({
         ) : (
           <EmptyState title="No articles found" description="Try adjusting your search or category filter." />
         )}
+
+        {/* AdSense */}
+        <div className="my-8">
+          <AdSenseBanner slot="0" format="horizontal" minHeight={100} />
+        </div>
 
         {/* Pagination */}
         <Pagination

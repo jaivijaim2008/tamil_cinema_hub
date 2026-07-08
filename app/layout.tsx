@@ -7,6 +7,8 @@ import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
 import BottomNav from '../components/layout/BottomNav'
 import AIChatBubble from '../components/ui/AIChatBubble'
+import CookieConsent from '../components/ui/CookieConsent'
+import AdSenseScript from '../components/ui/AdSenseScript'
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -72,15 +74,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" className={`${playfair.variable} ${inter.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
-        {/* Monetag Multitag — auto-optimizes ad formats (popunder, push, vignette, in-page push) */}
-        <Script
-          id="monetag-init"
-          src="https://quge5.com/88/tag.min.js"
-          data-zone="256478"
-          strategy="afterInteractive"
-          async
-          data-cfasync="false"
-        />
+        {/* Google AdSense — loaded conditionally via AdSenseScript after consent */}
+        <AdSenseScript />
         {/* Plausible Analytics — privacy-friendly, no cookies */}
         <Script
           id="plausible-init"
@@ -109,6 +104,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <Footer />
           <BottomNav />
           <AIChatBubble />
+          <CookieConsent />
         </Providers>
       </body>
     </html>
