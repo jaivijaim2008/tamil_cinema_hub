@@ -39,8 +39,6 @@ export default function AdSenseBanner({
     return () => window.removeEventListener('consent-changed', onConsentChange)
   }, [])
 
-  if (!consented) return null
-
   useEffect(() => {
     if (!consented || pushed.current) return
     try {
@@ -50,7 +48,10 @@ export default function AdSenseBanner({
     } catch {
       // AdSense not loaded yet or blocked — silently ignore
     }
-  }, [])
+  }, [consented])
+
+  // Don't render anything until consent is given
+  if (!consented) return null
 
   return (
     <div
