@@ -8,10 +8,6 @@ import type { Movie, CastMember } from '@/lib/types'
 import RatingStars from '@/components/ui/RatingStars'
 import { urlFor } from '@/sanity/lib/image'
 import PortableText from '@/components/ui/PortableText'
-import MLMoreLikeThis from '@/components/ui/MLMoreLikeThis'
-import { useTrackView } from '@/hooks/useTrackInteraction'
-
-
 
 interface Props {
   movie: Movie
@@ -22,9 +18,6 @@ interface Props {
 export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Props) {
   const [posterError, setPosterError] = useState(false)
   const [backdropError, setBackdropError] = useState(false)
-
-  // Track this movie view for ML personalization
-  useTrackView(movie.slug)
 
   const displayPoster = !posterError && posterUrl
   const displayBackdrop = !backdropError && backdropUrl
@@ -175,9 +168,6 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
             )}
           </div>
         </div>
-
-        {/* ML-Powered More Like This */}
-        <MLMoreLikeThis movieSlug={movie.slug} />
 
         {/* Full Review */}
         {movie.review && (

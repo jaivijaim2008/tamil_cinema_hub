@@ -4,7 +4,7 @@ import { client } from '@/sanity/client'
  * POST /api/movies/by-slugs
  * Body: { slugs: string[] }
  * Returns Sanity movie data (with poster URLs) for the given slugs.
- * Used by MLMoreLikeThis to enrich ML recommendations with poster images.
+ * Used to fetch Sanity movie data by slug for various client components.
  */
 export async function POST(request: Request) {
   try {

@@ -147,14 +147,14 @@ export default function HomePageClient({
                   Find Your Next Favorite Film
                 </h2>
                 <p className="text-sm text-text-secondary max-w-lg mx-auto mb-8 leading-relaxed">
-                  Let our AI analyze your preferences and recommend Tamil films you&apos;ll love.
-                  Discover hidden gems and timeless classics tailored to your taste.
+                  Explore our curated archive of Tamil films, reviews, and in-depth analysis.
+                  Find your next favorite movie from hundreds of titles.
                 </p>
                 <Link
-                  href="/recommendations"
+                  href="/movies"
                   className="inline-flex items-center gap-2 bg-accent-gold text-text-inverse px-8 py-3.5 rounded-xl text-sm font-semibold hover:bg-accent-gold-dim transition-all duration-300 glow-button"
                 >
-                  Get Recommendations <ArrowRight size={16} />
+                  Browse Movies <ArrowRight size={16} />
                 </Link>
               </motion.div>
             </div>

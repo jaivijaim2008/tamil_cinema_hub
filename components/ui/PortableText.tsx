@@ -5,10 +5,9 @@ import { PortableText as SanityPortableText } from '@portabletext/react'
 import Image from 'next/image'
 import { urlFor } from '@/sanity/lib/image'
 import type { PortableTextBlock, SanityImageBlock } from '@/lib/types'
-import InteractivePoll from './InteractivePoll'
 
 interface Props {
-  value: (PortableTextBlock | SanityImageBlock | { _type: 'poll'; _key: string; question: string; options: string[]; pollId?: string })[]
+  value: (PortableTextBlock | SanityImageBlock)[]
 }
 
 const components: Partial<import('@portabletext/react').PortableTextReactComponents> = {
@@ -17,7 +16,7 @@ const components: Partial<import('@portabletext/react').PortableTextReactCompone
       const src = value.asset ? urlFor(value).width(1200).url() : null
       if (!src) return null
       return (
-        <figure className="my-8">
+        <figure className="my-6 sm:my-8">
           <div className="relative w-full rounded-xl overflow-hidden bg-bg-card">
             <Image
               src={src}
@@ -25,33 +24,34 @@ const components: Partial<import('@portabletext/react').PortableTextReactCompone
               width={1200}
               height={800}
               className="w-full h-auto object-contain rounded-xl"
-              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 80vw, 720px"
+              sizes="(max-width: 640px) 100vw, (max-width: 768px) 90vw, (max-width: 1024px) 80vw, 720px"
             />
           </div>
           {value.caption && (
-            <figcaption className="text-xs text-text-muted mt-2 text-center">{value.caption}</figcaption>
+            <figcaption className="text-xs text-text-muted mt-2 text-center px-2">{value.caption}</figcaption>
           )}
         </figure>
       )
     },
-    poll: ({ value }: { value: { question: string; options: string[]; pollId?: string } }) => {
-      return (
-        <InteractivePoll
-          question={value.question}
-          options={value.options}
-          pollId={value.pollId}
-        />
-      )
-    },
   },
   block: {
-    h1: ({ children }: { children?: React.ReactNode }) => <h1 className="text-2xl md:text-3xl font-bold text-text-primary mt-10 mb-4">{children}</h1>,
-    h2: ({ children }: { children?: React.ReactNode }) => <h2 className="text-xl md:text-2xl font-bold text-text-primary mt-8 mb-3">{children}</h2>,
-    h3: ({ children }: { children?: React.ReactNode }) => <h3 className="text-lg md:text-xl font-semibold text-text-primary mt-6 mb-2">{children}</h3>,
-    h4: ({ children }: { children?: React.ReactNode }) => <h4 className="text-base md:text-lg font-semibold text-text-primary mt-5 mb-2">{children}</h4>,
-    normal: ({ children }: { children?: React.ReactNode }) => <p className="text-sm md:text-base text-text-secondary leading-relaxed mb-4">{children}</p>,
+    h1: ({ children }: { children?: React.ReactNode }) => (
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-text-primary mt-8 sm:mt-10 mb-3 sm:mb-4">{children}</h1>
+    ),
+    h2: ({ children }: { children?: React.ReactNode }) => (
+      <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-text-primary mt-6 sm:mt-8 mb-2 sm:mb-3">{children}</h2>
+    ),
+    h3: ({ children }: { children?: React.ReactNode }) => (
+      <h3 className="text-base sm:text-lg md:text-xl font-semibold text-text-primary mt-5 sm:mt-6 mb-2">{children}</h3>
+    ),
+    h4: ({ children }: { children?: React.ReactNode }) => (
+      <h4 className="text-sm sm:text-base md:text-lg font-semibold text-text-primary mt-4 sm:mt-5 mb-2">{children}</h4>
+    ),
+    normal: ({ children }: { children?: React.ReactNode }) => (
+      <p className="text-[15px] sm:text-base text-text-secondary leading-[1.75] sm:leading-relaxed mb-4">{children}</p>
+    ),
     blockquote: ({ children }: { children?: React.ReactNode }) => (
-      <blockquote className="border-l-3 border-accent-gold pl-4 my-6 italic text-text-secondary">{children}</blockquote>
+      <blockquote className="border-l-3 border-accent-gold pl-4 my-5 sm:my-6 italic text-text-secondary">{children}</blockquote>
     ),
   },
   marks: {
@@ -68,8 +68,8 @@ const components: Partial<import('@portabletext/react').PortableTextReactCompone
     number: ({ children }: { children?: React.ReactNode }) => <ol className="list-decimal list-inside space-y-2 mb-4 text-text-secondary">{children}</ol>,
   },
   listItem: {
-    bullet: ({ children }: { children?: React.ReactNode }) => <li className="text-sm md:text-base leading-relaxed">{children}</li>,
-    number: ({ children }: { children?: React.ReactNode }) => <li className="text-sm md:text-base leading-relaxed">{children}</li>,
+    bullet: ({ children }: { children?: React.ReactNode }) => <li className="text-[15px] sm:text-base leading-[1.75] sm:leading-relaxed">{children}</li>,
+    number: ({ children }: { children?: React.ReactNode }) => <li className="text-[15px] sm:text-base leading-[1.75] sm:leading-relaxed">{children}</li>,
   },
 }
 

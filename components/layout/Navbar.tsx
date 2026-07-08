@@ -10,7 +10,6 @@ const NAV_LINKS = [
   { label: 'Movies', href: '/movies' },
   { label: 'Reviews', href: '/blogs' },
   { label: 'Analytics', href: '/analytics' },
-  { label: 'Recommendations', href: '/recommendations' },
   { label: 'About', href: '/about' },
 ]
 

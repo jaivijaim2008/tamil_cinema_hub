@@ -8,7 +8,6 @@
     "start": "next start",
     "lint": "eslint",
     "import-movies": "node scripts/importMovies.js",
-    "export-recommender": "node scripts/exportForRecommender.js",
     "patch-posters": "node scripts/patchPosters.js",
     "patch-cast": "node scripts/patchCast.js",
     "patch-all": "node scripts/ai-patch-all.js"

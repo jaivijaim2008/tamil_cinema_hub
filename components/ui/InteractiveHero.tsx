@@ -94,11 +94,11 @@ export default function InteractiveHero({ totalMovies }: InteractiveHeroProps) {
             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform duration-300" />
           </Link>
           <Link
-            href="/recommendations"
+            href="/blogs"
             className="group inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-sm font-medium text-text-secondary border border-border hover:border-accent-gold/30 hover:text-text-primary bg-bg-card/50 backdrop-blur-sm transition-all duration-300"
           >
             <Play size={14} className="text-accent-gold" />
-            AI Recommendations
+            Read Reviews
           </Link>
         </motion.div>
 

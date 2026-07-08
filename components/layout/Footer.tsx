@@ -7,7 +7,6 @@ const EXPLORE_LINKS = [
   { label: 'All Movies', href: '/movies' },
   { label: 'Reviews', href: '/blogs' },
   { label: 'Analytics', href: '/analytics' },
-  { label: 'Recommendations', href: '/recommendations' },
 ]
 
 const GENRE_LINKS = [
