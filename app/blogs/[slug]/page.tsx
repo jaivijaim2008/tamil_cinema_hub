@@ -30,30 +30,62 @@ export async function generateMetadata({
   const blog = await client.fetch<BlogDetail>(blogBySlugQuery, { slug })
   if (!blog) return { title: 'Post Not Found' }
 
-  const ogImage = blog.mainImage ? urlFor(blog.mainImage).width(1200).height(630).url() : undefined
+  const ogImage = blog.mainImage
+    ? urlFor(blog.mainImage).width(1200).height(630).url()
+    : undefined
+
+  const title = blog.seoTitle || blog.title
+  const description = blog.seoDescription || blog.excerpt || blog.title
+  const url = `https://tamilcinemahub.xyz/blogs/${slug}`
+  const siteName = 'TamilCinemaHub'
 
   return {
-    title: blog.seoTitle || blog.title,
-    description: blog.seoDescription || blog.excerpt,
+    title,
+    description,
     keywords: blog.tags,
     authors: blog.author ? [{ name: blog.author }] : undefined,
     openGraph: {
       type: 'article',
-      title: blog.title,
-      description: blog.excerpt,
-      images: ogImage ? [{ url: ogImage, width: 1200, height: 630, alt: blog.title }] : [],
+      title,
+      description,
+      url,
+      siteName,
+      locale: 'en_US',
+      images: ogImage
+        ? [{
+            url: ogImage,
+            width: 1200,
+            height: 630,
+            alt: blog.title,
+            type: 'image/jpeg',
+          }]
+        : [],
       publishedTime: blog.publishedAt,
+      modifiedTime: blog.publishedAt,
       section: blog.category,
       tags: blog.tags,
     },
     twitter: {
       card: 'summary_large_image',
-      title: blog.title,
-      description: blog.excerpt,
-      images: ogImage ? [ogImage] : [],
+      title,
+      description,
+      images: ogImage ? [{ url: ogImage, alt: blog.title, width: 1200, height: 630 }] : [],
+      creator: '@TamilCinemaHub',
+      site: '@TamilCinemaHub',
     },
     alternates: {
-      canonical: `/blogs/${slug}`,
+      canonical: url,
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
     },
   }
 }

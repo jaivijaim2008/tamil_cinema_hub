@@ -10,6 +10,28 @@ interface Props {
   value: (PortableTextBlock | SanityImageBlock)[]
 }
 
+/** Generate a URL-safe slug from heading text */
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+/** Extract plain text from heading children */
+function extractText(children: React.ReactNode): string {
+  if (typeof children === 'string') return children
+  if (typeof children === 'number') return String(children)
+  if (Array.isArray(children)) return children.map(extractText).join('')
+  if (React.isValidElement(children)) {
+    const childProps = children.props as { children?: React.ReactNode }
+    return extractText(childProps.children)
+  }
+  return ''
+}
+
 const components: Partial<import('@portabletext/react').PortableTextReactComponents> = {
   types: {
     image: ({ value }: { value: SanityImageBlock }) => {
@@ -38,12 +60,24 @@ const components: Partial<import('@portabletext/react').PortableTextReactCompone
     h1: ({ children }: { children?: React.ReactNode }) => (
       <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-text-primary mt-8 sm:mt-10 mb-3 sm:mb-4">{children}</h1>
     ),
-    h2: ({ children }: { children?: React.ReactNode }) => (
-      <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-text-primary mt-6 sm:mt-8 mb-2 sm:mb-3">{children}</h2>
-    ),
-    h3: ({ children }: { children?: React.ReactNode }) => (
-      <h3 className="text-base sm:text-lg md:text-xl font-semibold text-text-primary mt-5 sm:mt-6 mb-2">{children}</h3>
-    ),
+    h2: ({ children }: { children?: React.ReactNode }) => {
+      const text = extractText(children)
+      const id = slugify(text)
+      return (
+        <h2 id={id} className="text-lg sm:text-xl md:text-2xl font-bold text-text-primary mt-6 sm:mt-8 mb-2 sm:mb-3 scroll-mt-24">
+          {children}
+        </h2>
+      )
+    },
+    h3: ({ children }: { children?: React.ReactNode }) => {
+      const text = extractText(children)
+      const id = slugify(text)
+      return (
+        <h3 id={id} className="text-base sm:text-lg md:text-xl font-semibold text-text-primary mt-5 sm:mt-6 mb-2 scroll-mt-24">
+          {children}
+        </h3>
+      )
+    },
     h4: ({ children }: { children?: React.ReactNode }) => (
       <h4 className="text-sm sm:text-base md:text-lg font-semibold text-text-primary mt-4 sm:mt-5 mb-2">{children}</h4>
     ),
@@ -71,6 +105,20 @@ const components: Partial<import('@portabletext/react').PortableTextReactCompone
     bullet: ({ children }: { children?: React.ReactNode }) => <li className="text-[15px] sm:text-base leading-[1.75] sm:leading-relaxed">{children}</li>,
     number: ({ children }: { children?: React.ReactNode }) => <li className="text-[15px] sm:text-base leading-[1.75] sm:leading-relaxed">{children}</li>,
   },
+}
+
+/** Extract h2/h3 headings from PortableText blocks for the Table of Contents */
+export function extractHeadings(body: (PortableTextBlock | SanityImageBlock)[]): { id: string; text: string; level: 2 | 3 }[] {
+  return body
+    .filter((block): block is PortableTextBlock => block._type === 'block' && (block.style === 'h2' || block.style === 'h3'))
+    .map((block) => {
+      const text = (block.children ?? []).map((c) => c.text).join('')
+      return {
+        id: slugify(text),
+        text,
+        level: block.style === 'h3' ? (3 as const) : (2 as const),
+      }
+    })
 }
 
 export default function PortableText({ value }: Props) {
