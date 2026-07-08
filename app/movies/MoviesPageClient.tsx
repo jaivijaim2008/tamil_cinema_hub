@@ -234,7 +234,7 @@ export default function MoviesPageClient({
 
         {/* AdSense */}
         <div className="my-8">
-          <AdSenseBanner slot="0" format="horizontal" minHeight={100} />
+          <AdSenseBanner slot="9784001579" format="horizontal" minHeight={100} />
         </div>
 
         {/* Pagination */}

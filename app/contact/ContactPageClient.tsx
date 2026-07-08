@@ -39,7 +39,7 @@ export default function ContactPageClient() {
 
         {/* AdSense */}
         <div className="mb-8">
-          <AdSenseBanner slot="0" format="horizontal" minHeight={100} />
+          <AdSenseBanner slot="9784001579" format="horizontal" minHeight={100} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

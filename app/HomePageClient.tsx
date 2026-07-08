@@ -99,7 +99,7 @@ export default function HomePageClient({
 
       {/* ── AdSense Ad ──────────────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <AdSenseBanner slot="0" format="horizontal" minHeight={100} />
+        <AdSenseBanner slot="9784001579" format="horizontal" minHeight={100} />
       </div>
 
       {/* ── Latest Reviews ────────────────────────────────────────────────── */}

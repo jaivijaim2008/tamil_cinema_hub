@@ -40,7 +40,7 @@ export default function WatchlistPageClient() {
 
         {/* AdSense */}
         <div className="mb-8">
-          <AdSenseBanner slot="0" format="horizontal" minHeight={100} />
+          <AdSenseBanner slot="9784001579" format="horizontal" minHeight={100} />
         </div>
 
         {watchlist.length === 0 ? (

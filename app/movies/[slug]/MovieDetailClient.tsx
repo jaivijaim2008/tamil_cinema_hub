@@ -172,7 +172,7 @@ export default function MovieDetailClient({ movie, posterUrl, backdropUrl }: Pro
 
         {/* AdSense */}
         <div className="mt-10 md:mt-14 max-w-3xl">
-          <AdSenseBanner slot="0" format="horizontal" minHeight={100} />
+          <AdSenseBanner slot="9784001579" format="horizontal" minHeight={100} />
         </div>
 
         {/* Full Review */}

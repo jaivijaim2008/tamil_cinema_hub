@@ -32,7 +32,7 @@ export default function YearPageClient({ year, movies }: Props) {
 
         {/* AdSense */}
         <div className="mb-8">
-          <AdSenseBanner slot="0" format="horizontal" minHeight={100} />
+          <AdSenseBanner slot="9784001579" format="horizontal" minHeight={100} />
         </div>
 
         {movies.length > 0 ? (

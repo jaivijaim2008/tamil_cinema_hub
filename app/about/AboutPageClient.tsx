@@ -78,7 +78,7 @@ export default function AboutPageClient({ totalCount, directorCount }: Props) {
 
         {/* AdSense */}
         <div className="mb-16">
-          <AdSenseBanner slot="0" format="horizontal" minHeight={100} />
+          <AdSenseBanner slot="9784001579" format="horizontal" minHeight={100} />
         </div>
 
         {/* CTA */}
