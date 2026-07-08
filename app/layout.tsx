@@ -74,6 +74,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" className={`${playfair.variable} ${inter.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
+        <meta name="google-adsense-account" content="ca-pub-9250311764302161" />
         {/* Google AdSense — loaded conditionally via AdSenseScript after consent */}
         <AdSenseScript />
         {/* Plausible Analytics — privacy-friendly, no cookies */}
