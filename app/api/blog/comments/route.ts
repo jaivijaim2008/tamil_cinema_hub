@@ -141,7 +141,7 @@ export async function POST(req: NextRequest) {
           const parentComment = parentDoc?.comments?.[0]
 
           if (parentComment?.email) {
-            const blogUrl = `https://tamilcinemahub.xyz/blogs/${slug}`
+            const blogUrl = `https://www.tamilcinemahub.xyz/blogs/${slug}`
             await resend.emails.send({
               from: 'TamilCinemaHub <onboarding@resend.dev>',
               to: parentComment.email,

@@ -36,7 +36,7 @@ export async function generateMetadata({
 
   const title = blog.seoTitle || blog.title
   const description = blog.seoDescription || blog.excerpt || blog.title
-  const url = `https://tamilcinemahub.xyz/blogs/${slug}`
+  const url = `https://www.tamilcinemahub.xyz/blogs/${slug}`
   const siteName = 'TamilCinemaHub'
 
   return {

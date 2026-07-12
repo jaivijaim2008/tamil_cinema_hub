@@ -37,7 +37,7 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://tamilcinemahub.xyz'),
+  metadataBase: new URL('https://www.tamilcinemahub.xyz'),
   title: {
     default: 'TamilCinemaHub — Tamil Cinema Archive',
     template: '%s | TamilCinemaHub',
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://tamilcinemahub.xyz',
+    url: 'https://www.tamilcinemahub.xyz',
     title: 'TamilCinemaHub — Tamil Cinema Archive',
     description: 'A high-fidelity archive of 1,600+ Tamil films. Discover, explore, and rediscover Kollywood.',
     siteName: 'TamilCinemaHub',

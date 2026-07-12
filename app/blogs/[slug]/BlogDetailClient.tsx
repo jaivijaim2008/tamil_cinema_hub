@@ -88,7 +88,7 @@ export default function BlogDetailClient({ blog, related }: Props) {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [showShareMenu])
 
-  const currentUrl = typeof window !== 'undefined' ? window.location.href : `https://tamilcinemahub.xyz/blogs/${blog.slug}`
+  const currentUrl = typeof window !== 'undefined' ? window.location.href : `https://www.tamilcinemahub.xyz/blogs/${blog.slug}`
 
   const shareLinks = {
     whatsapp: `https://wa.me/?text=${encodeURIComponent(`${blog.title}\n\n${currentUrl}`)}`,
@@ -142,20 +142,20 @@ export default function BlogDetailClient({ blog, related }: Props) {
             author: {
               '@type': 'Person',
               name: blog.author ?? 'TamilCinemaHub Team',
-              url: 'https://tamilcinemahub.xyz',
+              url: 'https://www.tamilcinemahub.xyz',
             },
             publisher: {
               '@type': 'Organization',
               name: 'TamilCinemaHub',
-              url: 'https://tamilcinemahub.xyz',
+              url: 'https://www.tamilcinemahub.xyz',
               logo: {
                 '@type': 'ImageObject',
-                url: 'https://tamilcinemahub.xyz/og-image.png',
+                url: 'https://www.tamilcinemahub.xyz/og-image.png',
               },
             },
             mainEntityOfPage: {
               '@type': 'WebPage',
-              '@id': `https://tamilcinemahub.xyz/blogs/${blog.slug}`,
+              '@id': `https://www.tamilcinemahub.xyz/blogs/${blog.slug}`,
             },
             articleSection: blog.category,
             keywords: blog.tags?.join(', '),
@@ -178,19 +178,19 @@ export default function BlogDetailClient({ blog, related }: Props) {
                 '@type': 'ListItem',
                 position: 1,
                 name: 'Home',
-                item: 'https://tamilcinemahub.xyz',
+                item: 'https://www.tamilcinemahub.xyz',
               },
               {
                 '@type': 'ListItem',
                 position: 2,
                 name: 'Blog',
-                item: 'https://tamilcinemahub.xyz/blogs',
+                item: 'https://www.tamilcinemahub.xyz/blogs',
               },
               {
                 '@type': 'ListItem',
                 position: 3,
                 name: blog.title,
-                item: `https://tamilcinemahub.xyz/blogs/${blog.slug}`,
+                item: `https://www.tamilcinemahub.xyz/blogs/${blog.slug}`,
               },
             ],
           }),
